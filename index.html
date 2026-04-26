@@ -11,19 +11,10 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <style>
-        :root {
-            --primary: #6F4E37; /* Café Moderno */
-            --bg: #F8FAFC;
-            --card: #FFFFFF;
-            --text: #1E293B;
-            --border: #E2E8F0;
-            --accent: #10B981; /* Verde esmeralda para distancias */
-        }
-
+        :root { --primary: #6F4E37; --bg: #F8FAFC; --card: #FFFFFF; --text: #1E293B; --border: #E2E8F0; --accent: #10B981; }
         body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; line-height: 1.6; }
         .container { max-width: 1000px; margin: auto; }
         
-        /* HEADER Y CONTADOR GLOBAL */
         header { text-align: center; margin-bottom: 30px; }
         h1 { font-size: 2.2rem; font-weight: 700; color: var(--primary); margin-bottom: 5px; }
         .contador-global {
@@ -31,9 +22,8 @@
             padding: 5px 15px; border-radius: 20px; font-weight: 600; font-size: 0.9rem;
             margin-bottom: 15px; box-shadow: 0 4px 6px rgba(111, 78, 55, 0.2);
         }
-        .status { font-size: 0.85rem; color: #64748B; text-transform: uppercase; letter-spacing: 1px; }
+        .status { font-size: 0.85rem; color: #64748B; text-transform: uppercase; font-weight: 600; }
 
-        /* NAVEGACIÓN MINIMALISTA */
         .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; background: #EDF2F7; padding: 5px; border-radius: 12px; }
         .tab-btn {
             background: transparent; border: none; padding: 10px 20px; font-family: inherit; font-weight: 600;
@@ -41,43 +31,29 @@
         }
         .tab-btn.active { background: var(--card); color: var(--primary); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 
-        /* FILTROS Y GPS */
         .filters-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
-        select, input[type="text"] {
-            width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border);
-            font-family: inherit; font-size: 1rem; outline: none; background: var(--card); transition: border 0.3s;
-        }
-        select:focus, input:focus { border-color: var(--primary); }
+        select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); font-family: inherit; font-size: 1rem; background: var(--card); }
+        
+        .search-wrapper { display: flex; gap: 10px; width: 100%; }
+        input[type="text"] { flex-grow: 1; padding: 14px; border-radius: 12px; border: 1px solid var(--border); font-family: inherit; font-size: 1rem; }
+        .btn-lupa { background: var(--primary); color: white; border: none; border-radius: 12px; padding: 0 20px; cursor: pointer; font-size: 1.2rem; }
+        
+        .btn-gps { grid-column: span 2; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 600; font-size: 1rem; cursor: pointer; }
 
-        .btn-gps {
-            grid-column: span 2; background: var(--primary); color: white; border: none;
-            padding: 15px; border-radius: 12px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: opacity 0.3s;
-        }
-        .btn-gps:hover { opacity: 0.9; }
-
-        /* TARJETAS DE RESULTADOS */
         .results-grid { display: grid; gap: 15px; }
         .cafe-card {
             background: var(--card); border-radius: 16px; padding: 20px; border: 1px solid var(--border);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02); display: flex; justify-content: space-between; align-items: center;
+            display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
         .cafe-info h3 { margin: 0; font-size: 1.1rem; color: var(--text); }
         .cafe-info p { margin: 5px 0 0; font-size: 0.9rem; color: #64748B; }
-        
         .top-mark { color: #D97706; font-weight: bold; font-size: 0.75rem; text-transform: uppercase; }
-        .distancia-mark { 
-            display: inline-block; background: var(--accent); color: white; 
-            padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; margin-top: 8px;
-        }
+        .distancia-mark { display: inline-block; background: var(--accent); color: white; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; margin-top: 8px; }
         
         .actions { display: flex; gap: 8px; }
-        .btn-action {
-            background: #F1F5F9; color: var(--text); text-decoration: none; padding: 8px 12px;
-            border-radius: 8px; font-size: 0.8rem; font-weight: 600; transition: all 0.2s;
-        }
+        .btn-action { background: #F1F5F9; color: var(--text); text-decoration: none; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; }
         .btn-action:hover { background: var(--primary); color: white; }
 
-        /* MAPA */
         #map { height: 500px; width: 100%; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 20px; z-index: 1; }
         .hidden { display: none; }
 
@@ -104,15 +80,19 @@
 
     <div id="tab-lista">
         <div class="filters-grid">
-            <select id="select-ciudad" onchange="filtrar()">
+            <select id="select-ciudad" onchange="filtrarNormal()">
                 <option value="Todas">Descargando ciudades...</option>
             </select>
-            <input type="text" id="input-busqueda" placeholder="Buscar local o calle..." onkeyup="filtrar()">
-            <button class="btn-gps" onclick="activarGPS()">📍 Buscar a cuántas cuadras estoy</button>
+            
+            <div class="search-wrapper">
+                <input type="text" id="input-busqueda" placeholder="Local o dirección (Presionar Enter)..." onkeyup="manejarTeclado(event)">
+                <button class="btn-lupa" onclick="buscarPorDireccion()" title="Buscar por Dirección">🔍</button>
+            </div>
+
+            <button class="btn-gps" onclick="activarGPS()">📍 Buscar cafeterías cerca de mi ubicación</button>
         </div>
 
-        <div id="resultados" class="results-grid">
-            </div>
+        <div id="resultados" class="results-grid"></div>
     </div>
 
     <div id="tab-mapa" class="hidden">
@@ -159,7 +139,7 @@
                     });
                     count++;
                     if (count === total) {
-                        document.getElementById('status').innerText = "Sistema listo para usar.";
+                        document.getElementById('status').innerText = "Sistema actualizado y listo.";
                         document.getElementById('contador-total').innerText = `☕ ${baseDeDatos.length} CAFETERÍAS REGISTRADAS`;
                         generarMenuCiudades();
                         render(baseDeDatos);
@@ -173,47 +153,39 @@
         const select = document.getElementById('select-ciudad');
         select.innerHTML = `<option value="Todas">Todas las ciudades (${baseDeDatos.length})</option>`;
         
-        // Extraer ciudades únicas y contar
         const ciudadesUnicas = [...new Set(baseDeDatos.map(c => c.ciudad))].sort();
-        
         ciudadesUnicas.forEach(ciu => {
             const cantidad = baseDeDatos.filter(c => c.ciudad === ciu).length;
             select.innerHTML += `<option value="${ciu}">${ciu} (${cantidad})</option>`;
         });
     }
 
-    // Fórmula para calcular Cuadras exactas según la ciudad
     function calcularCuadras(km, ciudad) {
         const metros = km * 1000;
         const divisor = (ciudad === "Mar del Plata") ? 87 : 100;
         const cuadras = Math.floor(metros / divisor);
-        
         if (cuadras === 0) return "A pasos";
         if (cuadras === 1) return "1 cuadra";
         return `${cuadras} cuadras`;
     }
 
-    function render(datos, usarGPS = false) {
+    function render(datos, usarDistancia = false) {
         const container = document.getElementById('resultados');
         container.innerHTML = "";
         markers.clearLayers();
 
         if (datos.length === 0) {
-            container.innerHTML = "<p style='text-align:center; color:#64748B;'>No se encontraron cafeterías.</p>";
+            container.innerHTML = "<p style='text-align:center;'>No se encontraron cafeterías.</p>";
             return;
         }
 
         datos.forEach(cafe => {
-            // Lógica de tarjetas
             const card = document.createElement('div');
             card.className = 'cafe-card';
-            
             let badgeTop = cafe.esTop ? '<div class="top-mark">★ TOP 100</div>' : '';
-            let badgeCuadras = (usarGPS && cafe.distanciaKm !== undefined) 
-                                ? `<div class="distancia-mark">📍 A ${calcularCuadras(cafe.distanciaKm, cafe.ciudad)}</div>` 
-                                : '';
-            
-            let mapsLink = `https://www.google.com/maps/search/?api=1&query=${cafe.lat},${cafe.lon}`;
+            let badgeCuadras = (usarDistancia && cafe.distanciaKm !== undefined) 
+                                ? `<div class="distancia-mark">📍 A ${calcularCuadras(cafe.distanciaKm, cafe.ciudad)}</div>` : '';
+            let mapsLink = `https://www.google.com/maps/search/?api=1&query=$${cafe.lat},${cafe.lon}`;
 
             card.innerHTML = `
                 <div class="cafe-info">
@@ -224,26 +196,22 @@
                 </div>
                 <div class="actions">
                     <a href="${cafe.instagram}" target="_blank" class="btn-action">Instagram</a>
-                    <a href="${mapsLink}" target="_blank" class="btn-action">Ir al mapa</a>
+                    <a href="${mapsLink}" target="_blank" class="btn-action">Mapa</a>
                 </div>
             `;
             container.appendChild(card);
 
-            // Lógica del mapa (asegurando que todos aparezcan)
             const colorPunto = cafe.esTop ? '#D97706' : '#6F4E37';
-            L.circleMarker([cafe.lat, cafe.lon], {
-                radius: cafe.esTop ? 7 : 5, color: colorPunto, fillColor: colorPunto, fillOpacity: 0.8
-            }).addTo(markers).bindPopup(`<b>${cafe.nombre}</b><br>${cafe.ubicacion}`);
+            L.circleMarker([cafe.lat, cafe.lon], { radius: cafe.esTop ? 7 : 5, color: colorPunto, fillColor: colorPunto, fillOpacity: 0.8 }).addTo(markers).bindPopup(`<b>${cafe.nombre}</b><br>${cafe.ubicacion}`);
         });
 
-        // Ajustar el mapa para que abarque todos los puntos visibles
-        if (datos.length > 0 && !usarGPS) {
+        if (datos.length > 0 && !usarDistancia) {
             const group = new L.featureGroup(markers.getLayers());
             mapa.fitBounds(group.getBounds().pad(0.1));
         }
     }
 
-    function filtrar() {
+    function filtrarNormal() {
         const ciudad = document.getElementById('select-ciudad').value;
         const texto = document.getElementById('input-busqueda').value.toLowerCase();
 
@@ -253,8 +221,81 @@
             return coincideCiudad && coincideTexto;
         });
 
-        // Reseteamos el modo GPS al filtrar manualmente
+        document.getElementById('status').innerText = "Filtrando base de datos...";
         render(filtrados, false);
+    }
+
+    function manejarTeclado(event) {
+        if (event.key === "Enter") {
+            buscarPorDireccion();
+        } else {
+            filtrarNormal();
+        }
+    }
+
+    async function buscarPorDireccion() {
+        const inputDir = document.getElementById('input-busqueda').value.trim();
+        const ciudadSel = document.getElementById('select-ciudad').value;
+        
+        if (!inputDir) return filtrarNormal();
+
+        document.getElementById('status').innerText = "Rastreando dirección en el satélite...";
+        
+        let query = inputDir + ", Argentina";
+        if (ciudadSel !== "Todas" && ciudadSel !== "Top Sudamérica") {
+            query = inputDir + ", " + ciudadSel + ", Argentina";
+        }
+
+        try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+            const data = await res.json();
+
+            if (data && data.length > 0) {
+                const latBusqueda = parseFloat(data[0].lat);
+                const lonBusqueda = parseFloat(data[0].lon);
+                procesarCoordenadas(latBusqueda, lonBusqueda, "Mostrando locales cercanos a tu búsqueda");
+            } else {
+                document.getElementById('status').innerText = "Dirección no encontrada. Mostrando filtro por nombre.";
+                filtrarNormal();
+            }
+        } catch (e) {
+            document.getElementById('status').innerText = "Error satelital. Filtrando normal.";
+            filtrarNormal();
+        }
+    }
+
+    function activarGPS() {
+        if (!navigator.geolocation) return alert("GPS no soportado");
+        document.getElementById('status').innerText = "Rastreando tu ubicación satelital...";
+        navigator.geolocation.getCurrentPosition(
+            pos => procesarCoordenadas(pos.coords.latitude, pos.coords.longitude, "Mostrando locales más cercanos a tu posición actual"),
+            err => { document.getElementById('status').innerText = "Error GPS. Activa tu ubicación."; }
+        );
+    }
+
+    function procesarCoordenadas(lat, lon, mensaje) {
+        const ciudadSel = document.getElementById('select-ciudad').value;
+        const R = 6371; 
+        
+        let calculados = baseDeDatos.map(c => {
+            const dLat = (c.lat - lat) * Math.PI / 180;
+            const dLon = (c.lon - lon) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat * Math.PI / 180) * Math.cos(c.lat * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return { ...c, distanciaKm: R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))) };
+        });
+
+        if (ciudadSel !== "Todas") {
+            calculados = calculados.filter(c => c.ciudad === ciudadSel || (ciudadSel === "Top Sudamérica" && c.esTop));
+        }
+
+        calculados.sort((a, b) => a.distanciaKm - b.distanciaKm);
+        document.getElementById('status').innerText = mensaje;
+        
+        if(userMarker) mapa.removeLayer(userMarker);
+        userMarker = L.circleMarker([lat, lon], { radius: 8, color: "#10B981", fillColor: "#10B981", fillOpacity: 1 }).addTo(mapa).bindPopup("<b>Punto de Referencia</b>");
+        
+        render(calculados.slice(0, 20), true);
+        mapa.setView([lat, lon], 14);
     }
 
     function switchTab(tab, btn) {
@@ -262,61 +303,7 @@
         document.getElementById('tab-mapa').classList.toggle('hidden', tab !== 'mapa');
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        
-        // El mapa necesita recalcular su tamaño al volverse visible
-        if (tab === 'mapa') {
-            setTimeout(() => {
-                mapa.invalidateSize();
-                const group = new L.featureGroup(markers.getLayers());
-                if (markers.getLayers().length > 0) mapa.fitBounds(group.getBounds().pad(0.1));
-            }, 200);
-        }
-    }
-
-    function activarGPS() {
-        if (!navigator.geolocation) {
-            alert("Tu dispositivo no soporta geolocalización.");
-            return;
-        }
-        
-        document.getElementById('status').innerText = "Rastreando ubicación satelital...";
-        
-        navigator.geolocation.getCurrentPosition(pos => {
-            const lat1 = pos.coords.latitude;
-            const lon1 = pos.coords.longitude;
-            
-            // Fórmula Haversine para distancias precisas
-            const R = 6371; 
-            const calculados = baseDeDatos.map(c => {
-                const dLat = (c.lat - lat1) * Math.PI / 180;
-                const dLon = (c.lon - lon1) * Math.PI / 180;
-                const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(c.lat * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-                const distanciaKm = R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-                return { ...c, distanciaKm };
-            });
-            
-            // Ordenar de más cerca a más lejos
-            calculados.sort((a, b) => a.distanciaKm - b.distanciaKm);
-            
-            // Mostrar los 20 más cercanos
-            const cercanos = calculados.slice(0, 20);
-            document.getElementById('status').innerText = "Mostrando las opciones más cercanas a tu ubicación.";
-            
-            // Limpiar buscador
-            document.getElementById('input-busqueda').value = "";
-            document.getElementById('select-ciudad').value = "Todas";
-            
-            // Dibujar al usuario en el mapa
-            if(userMarker) mapa.removeLayer(userMarker);
-            userMarker = L.circleMarker([lat1, lon1], { radius: 8, color: "#10B981", fillColor: "#10B981", fillOpacity: 1 }).addTo(mapa).bindPopup("<b>Estás acá</b>");
-            
-            render(cercanos, true);
-            mapa.setView([lat1, lon1], 14);
-
-        }, err => {
-            alert("No pudimos acceder a tu ubicación. Asegurate de darle permisos al navegador.");
-            document.getElementById('status').innerText = "Error de GPS.";
-        }, { enableHighAccuracy: true });
+        if (tab === 'mapa') setTimeout(() => { mapa.invalidateSize(); }, 200);
     }
 
     init();
