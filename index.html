@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -17,34 +17,23 @@
         
         header { text-align: center; margin-bottom: 30px; }
         h1 { font-size: 2.2rem; font-weight: 700; color: var(--primary); margin-bottom: 5px; }
-        .contador-global {
-            display: inline-block; background: var(--primary); color: white;
-            padding: 5px 15px; border-radius: 20px; font-weight: 600; font-size: 0.9rem;
-            margin-bottom: 15px; box-shadow: 0 4px 6px rgba(111, 78, 55, 0.2);
-        }
-        .status { font-size: 0.85rem; color: #64748B; text-transform: uppercase; font-weight: 600; }
+        .contador-global { display: inline-block; background: var(--primary); color: white; padding: 5px 15px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; margin-bottom: 15px; }
 
         .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; background: #EDF2F7; padding: 5px; border-radius: 12px; }
-        .tab-btn {
-            background: transparent; border: none; padding: 10px 20px; font-family: inherit; font-weight: 600;
-            color: #718096; cursor: pointer; border-radius: 8px; transition: all 0.3s;
-        }
+        .tab-btn { background: transparent; border: none; padding: 10px 20px; font-family: inherit; font-weight: 600; color: #718096; cursor: pointer; border-radius: 8px; transition: all 0.3s; }
         .tab-btn.active { background: var(--card); color: var(--primary); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 
         .filters-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
         select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); font-family: inherit; font-size: 1rem; background: var(--card); }
         
-        .search-wrapper { display: flex; gap: 10px; width: 100%; }
+        .search-wrapper { display: flex; gap: 10px; width: 100%; grid-column: span 1; }
         input[type="text"] { flex-grow: 1; padding: 14px; border-radius: 12px; border: 1px solid var(--border); font-family: inherit; font-size: 1rem; }
         .btn-lupa { background: var(--primary); color: white; border: none; border-radius: 12px; padding: 0 20px; cursor: pointer; font-size: 1.2rem; }
         
-        .btn-gps { grid-column: span 2; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 600; font-size: 1rem; cursor: pointer; }
+        .btn-gps { grid-column: span 2; background: #1E293B; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 600; font-size: 1rem; cursor: pointer; }
 
         .results-grid { display: grid; gap: 15px; }
-        .cafe-card {
-            background: var(--card); border-radius: 16px; padding: 20px; border: 1px solid var(--border);
-            display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
+        .cafe-card { background: var(--card); border-radius: 16px; padding: 20px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .cafe-info h3 { margin: 0; font-size: 1.1rem; color: var(--text); }
         .cafe-info p { margin: 5px 0 0; font-size: 0.9rem; color: #64748B; }
         .top-mark { color: #D97706; font-weight: bold; font-size: 0.75rem; text-transform: uppercase; }
@@ -52,16 +41,9 @@
         
         .actions { display: flex; gap: 8px; }
         .btn-action { background: #F1F5F9; color: var(--text); text-decoration: none; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; }
-        .btn-action:hover { background: var(--primary); color: white; }
 
         #map { height: 500px; width: 100%; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 20px; z-index: 1; }
         .hidden { display: none; }
-
-        @media (max-width: 600px) {
-            .filters-grid { grid-template-columns: 1fr; }
-            .cafe-card { flex-direction: column; align-items: flex-start; gap: 15px; }
-            .actions { width: 100%; justify-content: space-between; }
-        }
     </style>
 </head>
 <body>
@@ -69,27 +51,26 @@
 <div class="container">
     <header>
         <h1>Buscador de Café</h1>
-        <div id="contador-total" class="contador-global">Calculando base de datos...</div>
-        <div class="status" id="status">Conectando con servidores...</div>
+        <div id="contador-total" class="contador-global">Sincronizando...</div>
     </header>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('lista', this)">Listado</button>
+        <button class="tab-btn active" onclick="switchTab('lista', this)">Listado Cercano</button>
         <button class="tab-btn" onclick="switchTab('mapa', this)">Mapa Federal</button>
     </div>
 
     <div id="tab-lista">
         <div class="filters-grid">
-            <select id="select-ciudad" onchange="filtrarNormal()">
-                <option value="Todas">Descargando ciudades...</option>
+            <select id="select-ciudad" onchange="resetBusqueda()">
+                <option value="Todas">Todas las ciudades</option>
             </select>
             
             <div class="search-wrapper">
-                <input type="text" id="input-busqueda" placeholder="Local o dirección (Presionar Enter)..." onkeyup="manejarTeclado(event)">
-                <button class="btn-lupa" onclick="buscarPorDireccion()" title="Buscar por Dirección">🔍</button>
+                <input type="text" id="input-busqueda" placeholder="Calle y Nro (Ej: Gascon 2525)" onkeypress="checkEnter(event)">
+                <button class="btn-lupa" onclick="buscarDireccion()">🔍</button>
             </div>
 
-            <button class="btn-gps" onclick="activarGPS()">📍 Buscar cafeterías cerca de mi ubicación</button>
+            <button class="btn-gps" onclick="activarGPS()">📍 Usar mi ubicación actual</button>
         </div>
 
         <div id="resultados" class="results-grid"></div>
@@ -111,7 +92,7 @@
     let baseDeDatos = [];
     let mapa = L.map('map').setView([-38.41, -63.61], 5);
     let markers = L.layerGroup().addTo(mapa);
-    let userMarker = null;
+    let refMarker = null;
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapa);
 
     async function init() {
@@ -119,17 +100,17 @@
         const total = Object.keys(GIDS).length;
 
         for (const [ciudad, gid] of Object.entries(GIDS)) {
-            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}`;
+            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid={gid}`;
             Papa.parse(url, {
                 download: true, header: true, skipEmptyLines: true,
                 complete: function(results) {
                     results.data.forEach(row => {
-                        const nombre = row.CAFE || row.Cafe || row.cafe;
+                        const nombre = row.CAFE || row.Cafe;
                         if (nombre && row.LAT && row.LONG) {
                             baseDeDatos.push({
                                 nombre,
-                                ciudad: ciudad === "Top Sudamérica" ? (row.CIUDAD || "Top Sudamérica") : ciudad,
-                                ubicacion: row.UBICACION || "Ubicación no especificada",
+                                ciudad: ciudad === "Top Sudamérica" ? (row.CIUDAD || "Top") : ciudad,
+                                ubicacion: row.UBICACION || "S/D",
                                 instagram: row.INSTAGRAM || "#",
                                 lat: parseFloat(row.LAT.replace(',', '.')),
                                 lon: parseFloat(row.LONG.replace(',', '.')),
@@ -139,9 +120,8 @@
                     });
                     count++;
                     if (count === total) {
-                        document.getElementById('status').innerText = "Sistema actualizado y listo.";
-                        document.getElementById('contador-total').innerText = `☕ ${baseDeDatos.length} CAFETERÍAS REGISTRADAS`;
-                        generarMenuCiudades();
+                        document.getElementById('contador-total').innerText = `☕ ${baseDeDatos.length} CAFETERÍAS CARGADAS`;
+                        actualizarMenuCiudades();
                         render(baseDeDatos);
                     }
                 }
@@ -149,166 +129,105 @@
         }
     }
 
-    function generarMenuCiudades() {
+    function actualizarMenuCiudades() {
         const select = document.getElementById('select-ciudad');
         select.innerHTML = `<option value="Todas">Todas las ciudades (${baseDeDatos.length})</option>`;
-        
-        const ciudadesUnicas = [...new Set(baseDeDatos.map(c => c.ciudad))].sort();
-        ciudadesUnicas.forEach(ciu => {
-            const cantidad = baseDeDatos.filter(c => c.ciudad === ciu).length;
-            select.innerHTML += `<option value="${ciu}">${ciu} (${cantidad})</option>`;
+        const ciudades = [...new Set(baseDeDatos.map(c => c.ciudad))].sort();
+        ciudades.forEach(ciu => {
+            const cant = baseDeDatos.filter(c => c.ciudad === ciu).length;
+            select.innerHTML += `<option value="${ciu}">${ciu} (${cant})</option>`;
         });
     }
 
-    function calcularCuadras(km, ciudad) {
-        const metros = km * 1000;
-        const divisor = (ciudad === "Mar del Plata") ? 87 : 100;
-        const cuadras = Math.floor(metros / divisor);
-        if (cuadras === 0) return "A pasos";
-        if (cuadras === 1) return "1 cuadra";
-        return `${cuadras} cuadras`;
-    }
-
-    function render(datos, usarDistancia = false) {
+    function render(datos, puntoReferencia = null) {
         const container = document.getElementById('resultados');
         container.innerHTML = "";
         markers.clearLayers();
 
-        if (datos.length === 0) {
-            container.innerHTML = "<p style='text-align:center;'>No se encontraron cafeterías.</p>";
-            return;
+        if (puntoReferencia) {
+            datos = datos.map(c => {
+                const dist = calcularKm(puntoReferencia.lat, puntoReferencia.lon, c.lat, c.lon);
+                return { ...c, distKm: dist };
+            }).sort((a, b) => a.distKm - b.distKm);
         }
 
         datos.forEach(cafe => {
             const card = document.createElement('div');
             card.className = 'cafe-card';
-            let badgeTop = cafe.esTop ? '<div class="top-mark">★ TOP 100</div>' : '';
-            let badgeCuadras = (usarDistancia && cafe.distanciaKm !== undefined) 
-                                ? `<div class="distancia-mark">📍 A ${calcularCuadras(cafe.distanciaKm, cafe.ciudad)}</div>` : '';
-            let mapsLink = `https://www.google.com/maps/search/?api=1&query=$${cafe.lat},${cafe.lon}`;
-
+            const distTxt = puntoReferencia ? `<div class="distancia-mark">📍 A ${calcularCuadras(cafe.distKm, cafe.ciudad)}</div>` : "";
+            
             card.innerHTML = `
                 <div class="cafe-info">
-                    ${badgeTop}
+                    ${cafe.esTop ? '<span class="top-mark">★ TOP 100</span>' : ''}
                     <h3>${cafe.nombre}</h3>
                     <p>${cafe.ubicacion} • ${cafe.ciudad}</p>
-                    ${badgeCuadras}
+                    ${distTxt}
                 </div>
                 <div class="actions">
                     <a href="${cafe.instagram}" target="_blank" class="btn-action">Instagram</a>
-                    <a href="${mapsLink}" target="_blank" class="btn-action">Mapa</a>
+                    <a href="https://www.google.com/maps/dir/?api=1&destination=${cafe.lat},${cafe.lon}" target="_blank" class="btn-action">Cómo llegar</a>
                 </div>
             `;
             container.appendChild(card);
 
-            const colorPunto = cafe.esTop ? '#D97706' : '#6F4E37';
-            L.circleMarker([cafe.lat, cafe.lon], { radius: cafe.esTop ? 7 : 5, color: colorPunto, fillColor: colorPunto, fillOpacity: 0.8 }).addTo(markers).bindPopup(`<b>${cafe.nombre}</b><br>${cafe.ubicacion}`);
+            L.circleMarker([cafe.lat, cafe.lon], {
+                radius: cafe.esTop ? 7 : 5, color: cafe.esTop ? '#D97706' : '#6F4E37', fillOpacity: 0.8
+            }).addTo(markers).bindPopup(`<b>${cafe.nombre}</b>`);
         });
 
-        if (datos.length > 0 && !usarDistancia) {
-            const group = new L.featureGroup(markers.getLayers());
-            mapa.fitBounds(group.getBounds().pad(0.1));
-        }
+        if (puntoReferencia) mapa.setView([puntoReferencia.lat, puntoReferencia.lon], 14);
     }
 
-    function filtrarNormal() {
+    function calcularKm(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+        return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+    }
+
+    function calcularCuadras(km, ciudad) {
+        const divisor = (ciudad === "Mar del Plata") ? 87 : 100;
+        const cuadras = Math.floor((km * 1000) / divisor);
+        return cuadras === 0 ? "A pasos" : (cuadras === 1 ? "1 cuadra" : `${cuadras} cuadras`);
+    }
+
+    async function buscarDireccion() {
+        const dir = document.getElementById('input-busqueda').value;
         const ciudad = document.getElementById('select-ciudad').value;
-        const texto = document.getElementById('input-busqueda').value.toLowerCase();
+        if (!dir) return;
 
-        const filtrados = baseDeDatos.filter(c => {
-            const coincideCiudad = (ciudad === "Todas") || (c.ciudad === ciudad);
-            const coincideTexto = c.nombre.toLowerCase().includes(texto) || c.ubicacion.toLowerCase().includes(texto);
-            return coincideCiudad && coincideTexto;
-        });
+        const query = `${dir}, ${ciudad !== 'Todas' ? ciudad : 'Argentina'}`;
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+        const data = await res.json();
 
-        document.getElementById('status').innerText = "Filtrando base de datos...";
-        render(filtrados, false);
-    }
-
-    function manejarTeclado(event) {
-        if (event.key === "Enter") {
-            buscarPorDireccion();
+        if (data.length > 0) {
+            const pos = { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+            if (refMarker) mapa.removeLayer(refMarker);
+            refMarker = L.circleMarker([pos.lat, pos.lon], { radius: 8, color: '#10B981', fillOpacity: 1 }).addTo(mapa);
+            render(baseDeDatos, pos);
         } else {
-            filtrarNormal();
-        }
-    }
-
-    async function buscarPorDireccion() {
-        const inputDir = document.getElementById('input-busqueda').value.trim();
-        const ciudadSel = document.getElementById('select-ciudad').value;
-        
-        if (!inputDir) return filtrarNormal();
-
-        document.getElementById('status').innerText = "Rastreando dirección en el satélite...";
-        
-        let query = inputDir + ", Argentina";
-        if (ciudadSel !== "Todas" && ciudadSel !== "Top Sudamérica") {
-            query = inputDir + ", " + ciudadSel + ", Argentina";
-        }
-
-        try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
-            const data = await res.json();
-
-            if (data && data.length > 0) {
-                const latBusqueda = parseFloat(data[0].lat);
-                const lonBusqueda = parseFloat(data[0].lon);
-                procesarCoordenadas(latBusqueda, lonBusqueda, "Mostrando locales cercanos a tu búsqueda");
-            } else {
-                document.getElementById('status').innerText = "Dirección no encontrada. Mostrando filtro por nombre.";
-                filtrarNormal();
-            }
-        } catch (e) {
-            document.getElementById('status').innerText = "Error satelital. Filtrando normal.";
-            filtrarNormal();
+            alert("Dirección no encontrada. Intentá con Calle y Número.");
         }
     }
 
     function activarGPS() {
-        if (!navigator.geolocation) return alert("GPS no soportado");
-        document.getElementById('status').innerText = "Rastreando tu ubicación satelital...";
-        navigator.geolocation.getCurrentPosition(
-            pos => procesarCoordenadas(pos.coords.latitude, pos.coords.longitude, "Mostrando locales más cercanos a tu posición actual"),
-            err => { document.getElementById('status').innerText = "Error GPS. Activa tu ubicación."; }
-        );
-    }
-
-    function procesarCoordenadas(lat, lon, mensaje) {
-        const ciudadSel = document.getElementById('select-ciudad').value;
-        const R = 6371; 
-        
-        let calculados = baseDeDatos.map(c => {
-            const dLat = (c.lat - lat) * Math.PI / 180;
-            const dLon = (c.lon - lon) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat * Math.PI / 180) * Math.cos(c.lat * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-            return { ...c, distanciaKm: R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))) };
+        navigator.geolocation.getCurrentPosition(p => {
+            const pos = { lat: p.coords.latitude, lon: p.coords.longitude };
+            render(baseDeDatos, pos);
         });
-
-        if (ciudadSel !== "Todas") {
-            calculados = calculados.filter(c => c.ciudad === ciudadSel || (ciudadSel === "Top Sudamérica" && c.esTop));
-        }
-
-        calculados.sort((a, b) => a.distanciaKm - b.distanciaKm);
-        document.getElementById('status').innerText = mensaje;
-        
-        if(userMarker) mapa.removeLayer(userMarker);
-        userMarker = L.circleMarker([lat, lon], { radius: 8, color: "#10B981", fillColor: "#10B981", fillOpacity: 1 }).addTo(mapa).bindPopup("<b>Punto de Referencia</b>");
-        
-        render(calculados.slice(0, 20), true);
-        mapa.setView([lat, lon], 14);
     }
 
-    function switchTab(tab, btn) {
-        document.getElementById('tab-lista').classList.toggle('hidden', tab !== 'lista');
-        document.getElementById('tab-mapa').classList.toggle('hidden', tab !== 'mapa');
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        if (tab === 'mapa') setTimeout(() => { mapa.invalidateSize(); }, 200);
+    function checkEnter(e) { if (e.key === "Enter") buscarDireccion(); }
+    function switchTab(t, b) {
+        document.getElementById('tab-lista').classList.toggle('hidden', t !== 'lista');
+        document.getElementById('tab-mapa').classList.toggle('hidden', t !== 'mapa');
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        b.classList.add('active');
+        if (t === 'mapa') setTimeout(() => mapa.invalidateSize(), 200);
     }
 
     init();
 </script>
 </body>
 </html>
-
-
