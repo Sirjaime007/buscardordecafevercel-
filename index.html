@@ -1,49 +1,50 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buscador de Café de Especialidad</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <style>
-        :root { --primary: #6F4E37; --bg: #F8FAFC; --card: #FFFFFF; --text: #1E293B; --border: #E2E8F0; --accent: #10B981; }
-        body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; line-height: 1.6; }
-        .container { max-width: 1000px; margin: auto; }
+        :root { --primary: #5D4037; --bg: #F8FAFC; --card: #FFFFFF; --text: #1E293B; --border: #E2E8F0; --accent: #059669; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: auto; }
         
-        header { text-align: center; margin-bottom: 30px; }
-        h1 { font-size: 2.2rem; font-weight: 700; color: var(--primary); margin-bottom: 5px; }
-        .contador-global { display: inline-block; background: var(--primary); color: white; padding: 5px 15px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; margin-bottom: 15px; }
+        header { text-align: center; margin-bottom: 20px; }
+        h1 { font-size: 2rem; color: var(--primary); margin-bottom: 10px; }
+        #contador-total { display: inline-block; background: var(--primary); color: white; padding: 8px 16px; border-radius: 20px; font-weight: 600; margin-bottom: 10px; }
+        #status { font-size: 0.9rem; color: #64748B; font-weight: 600; }
 
-        .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; background: #EDF2F7; padding: 5px; border-radius: 12px; }
-        .tab-btn { background: transparent; border: none; padding: 10px 20px; font-family: inherit; font-weight: 600; color: #718096; cursor: pointer; border-radius: 8px; transition: all 0.3s; }
-        .tab-btn.active { background: var(--card); color: var(--primary); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { background: #E2E8F0; border: none; padding: 12px 20px; font-weight: 600; border-radius: 8px; cursor: pointer; color: #475569; }
+        .tab-btn.active { background: var(--primary); color: white; }
 
-        .filters-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
-        select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); font-family: inherit; font-size: 1rem; background: var(--card); }
+        .panel-busqueda { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        select, input[type="text"] { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 1rem; box-sizing: border-box; }
         
-        .search-wrapper { display: flex; gap: 10px; width: 100%; grid-column: span 1; }
-        input[type="text"] { flex-grow: 1; padding: 14px; border-radius: 12px; border: 1px solid var(--border); font-family: inherit; font-size: 1rem; }
-        .btn-lupa { background: var(--primary); color: white; border: none; border-radius: 12px; padding: 0 20px; cursor: pointer; font-size: 1.2rem; }
-        
-        .btn-gps { grid-column: span 2; background: #1E293B; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 600; font-size: 1rem; cursor: pointer; }
+        .botones-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .btn-accion { padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; color: white; font-size: 0.95rem; }
+        .btn-filtro { background: #475569; }
+        .btn-distancia { background: #D97706; }
+        .btn-gps { grid-column: span 2; background: var(--accent); width: 100%; }
 
-        .results-grid { display: grid; gap: 15px; }
-        .cafe-card { background: var(--card); border-radius: 16px; padding: 20px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .cafe-info h3 { margin: 0; font-size: 1.1rem; color: var(--text); }
-        .cafe-info p { margin: 5px 0 0; font-size: 0.9rem; color: #64748B; }
-        .top-mark { color: #D97706; font-weight: bold; font-size: 0.75rem; text-transform: uppercase; }
-        .distancia-mark { display: inline-block; background: var(--accent); color: white; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; margin-top: 8px; }
+        .cafe-card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border); }
+        .cafe-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .cafe-title { margin: 0; font-size: 1.2rem; color: var(--text); }
+        .cafe-city { color: #64748B; font-size: 0.9rem; margin: 4px 0 10px; }
+        .top-badge { color: #D97706; font-size: 0.8rem; font-weight: 700; }
+        .distancia-badge { display: inline-block; background: #DEF7EC; color: #0369A1; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.9rem; margin-bottom: 10px; border: 1px solid #BAE6FD; }
         
-        .actions { display: flex; gap: 8px; }
-        .btn-action { background: #F1F5F9; color: var(--text); text-decoration: none; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; }
-
-        #map { height: 500px; width: 100%; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 20px; z-index: 1; }
-        .hidden { display: none; }
+        .links { display: flex; gap: 10px; }
+        .links a { background: #F1F5F9; color: var(--text); text-decoration: none; padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; }
+        
+        #map { height: 500px; width: 100%; border-radius: 12px; border: 1px solid var(--border); }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -51,29 +52,31 @@
 <div class="container">
     <header>
         <h1>Buscador de Café</h1>
-        <div id="contador-total" class="contador-global">Sincronizando...</div>
+        <div id="contador-total">Conectando a base de datos...</div>
+        <div id="status">Por favor, esperá...</div>
     </header>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('lista', this)">Listado Cercano</button>
-        <button class="tab-btn" onclick="switchTab('mapa', this)">Mapa Federal</button>
+        <button class="tab-btn active" onclick="cambiarPestaña('lista', this)">Directorio & Radar</button>
+        <button class="tab-btn" onclick="cambiarPestaña('mapa', this)">Mapa Federal</button>
     </div>
 
     <div id="tab-lista">
-        <div class="filters-grid">
-            <select id="select-ciudad" onchange="resetBusqueda()">
-                <option value="Todas">Todas las ciudades</option>
+        <div class="panel-busqueda">
+            <select id="select-ciudad">
+                <option value="Todas">Descargando ciudades...</option>
             </select>
             
-            <div class="search-wrapper">
-                <input type="text" id="input-busqueda" placeholder="Calle y Nro (Ej: Gascon 2525)" onkeypress="checkEnter(event)">
-                <button class="btn-lupa" onclick="buscarDireccion()">🔍</button>
+            <input type="text" id="input-busqueda" placeholder="Ej: Gascon 2525 o nombre del local...">
+            
+            <div class="botones-grid">
+                <button class="btn-accion btn-filtro" onclick="filtrarPorTexto()">🔍 Filtrar por Nombre</button>
+                <button class="btn-accion btn-distancia" onclick="medirDesdeDireccion()">📍 Medir distancias a esta calle</button>
+                <button class="btn-accion btn-gps" onclick="usarMiGPS()">📡 Usar mi ubicación GPS actual</button>
             </div>
-
-            <button class="btn-gps" onclick="activarGPS()">📍 Usar mi ubicación actual</button>
         </div>
 
-        <div id="resultados" class="results-grid"></div>
+        <div id="resultados"></div>
     </div>
 
     <div id="tab-mapa" class="hidden">
@@ -89,145 +92,214 @@
         "Bahía Blanca": "1634818534", "Top Sudamérica": "35250567"
     };
 
-    let baseDeDatos = [];
+    let bd = [];
     let mapa = L.map('map').setView([-38.41, -63.61], 5);
-    let markers = L.layerGroup().addTo(mapa);
-    let refMarker = null;
+    let layerLocales = L.layerGroup().addTo(mapa);
+    let markerUsuario = null;
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapa);
 
-    async function init() {
-        let count = 0;
-        const total = Object.keys(GIDS).length;
+    async function iniciarSistema() {
+        let completados = 0;
+        const totalHojas = Object.keys(GIDS).length;
 
         for (const [ciudad, gid] of Object.entries(GIDS)) {
-            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid={gid}`;
+            // EL FIX CRÍTICO ESTÁ ACÁ: ${gid} y un bypass de caché
+            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}&nocache=${new Date().getTime()}`;
+            
             Papa.parse(url, {
                 download: true, header: true, skipEmptyLines: true,
-                complete: function(results) {
-                    results.data.forEach(row => {
-                        const nombre = row.CAFE || row.Cafe;
-                        if (nombre && row.LAT && row.LONG) {
-                            baseDeDatos.push({
-                                nombre,
-                                ciudad: ciudad === "Top Sudamérica" ? (row.CIUDAD || "Top") : ciudad,
-                                ubicacion: row.UBICACION || "S/D",
-                                instagram: row.INSTAGRAM || "#",
-                                lat: parseFloat(row.LAT.replace(',', '.')),
-                                lon: parseFloat(row.LONG.replace(',', '.')),
+                complete: function(res) {
+                    res.data.forEach(fila => {
+                        const nombre = fila.CAFE || fila.Cafe;
+                        if (nombre && fila.LAT && fila.LONG) {
+                            bd.push({
+                                nombre: nombre.trim(),
+                                ciudad: ciudad === "Top Sudamérica" ? (fila.CIUDAD || "Top") : ciudad,
+                                ubicacion: fila.UBICACION || "-",
+                                instagram: fila.INSTAGRAM || "#",
+                                lat: parseFloat(fila.LAT.replace(',', '.')),
+                                lon: parseFloat(fila.LONG.replace(',', '.')),
                                 esTop: ciudad === "Top Sudamérica"
                             });
                         }
                     });
-                    count++;
-                    if (count === total) {
-                        document.getElementById('contador-total').innerText = `☕ ${baseDeDatos.length} CAFETERÍAS CARGADAS`;
-                        actualizarMenuCiudades();
-                        render(baseDeDatos);
+                    
+                    completados++;
+                    if (completados === totalHojas) {
+                        armarMenu();
+                        renderizarLocales(bd);
+                        document.getElementById('contador-total').innerText = `☕ ${bd.length} CAFETERÍAS DISPONIBLES`;
+                        document.getElementById('status').innerText = "Sistema listo.";
                     }
+                },
+                error: function() {
+                    completados++;
                 }
             });
         }
     }
 
-    function actualizarMenuCiudades() {
+    function armarMenu() {
         const select = document.getElementById('select-ciudad');
-        select.innerHTML = `<option value="Todas">Todas las ciudades (${baseDeDatos.length})</option>`;
-        const ciudades = [...new Set(baseDeDatos.map(c => c.ciudad))].sort();
-        ciudades.forEach(ciu => {
-            const cant = baseDeDatos.filter(c => c.ciudad === ciu).length;
-            select.innerHTML += `<option value="${ciu}">${ciu} (${cant})</option>`;
+        select.innerHTML = `<option value="Todas">Todas las ciudades (${bd.length})</option>`;
+        
+        const listaCiudades = [...new Set(bd.map(c => c.ciudad))].sort();
+        listaCiudades.forEach(ciu => {
+            const cantidad = bd.filter(c => c.ciudad === ciu).length;
+            select.innerHTML += `<option value="${ciu}">${ciu} (${cantidad})</option>`;
         });
     }
 
-    function render(datos, puntoReferencia = null) {
-        const container = document.getElementById('resultados');
-        container.innerHTML = "";
-        markers.clearLayers();
-
-        if (puntoReferencia) {
-            datos = datos.map(c => {
-                const dist = calcularKm(puntoReferencia.lat, puntoReferencia.lon, c.lat, c.lon);
-                return { ...c, distKm: dist };
-            }).sort((a, b) => a.distKm - b.distKm);
-        }
-
-        datos.forEach(cafe => {
-            const card = document.createElement('div');
-            card.className = 'cafe-card';
-            const distTxt = puntoReferencia ? `<div class="distancia-mark">📍 A ${calcularCuadras(cafe.distKm, cafe.ciudad)}</div>` : "";
-            
-            card.innerHTML = `
-                <div class="cafe-info">
-                    ${cafe.esTop ? '<span class="top-mark">★ TOP 100</span>' : ''}
-                    <h3>${cafe.nombre}</h3>
-                    <p>${cafe.ubicacion} • ${cafe.ciudad}</p>
-                    ${distTxt}
-                </div>
-                <div class="actions">
-                    <a href="${cafe.instagram}" target="_blank" class="btn-action">Instagram</a>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=${cafe.lat},${cafe.lon}" target="_blank" class="btn-action">Cómo llegar</a>
-                </div>
-            `;
-            container.appendChild(card);
-
-            L.circleMarker([cafe.lat, cafe.lon], {
-                radius: cafe.esTop ? 7 : 5, color: cafe.esTop ? '#D97706' : '#6F4E37', fillOpacity: 0.8
-            }).addTo(markers).bindPopup(`<b>${cafe.nombre}</b>`);
-        });
-
-        if (puntoReferencia) mapa.setView([puntoReferencia.lat, puntoReferencia.lon], 14);
-    }
-
-    function calcularKm(lat1, lon1, lat2, lon2) {
-        const R = 6371;
+    function calcularCuadras(lat1, lon1, lat2, lon2, ciudad) {
+        const R = 6371; // km
         const dLat = (lat2 - lat1) * Math.PI / 180;
         const dLon = (lon2 - lon1) * Math.PI / 180;
         const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-        return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-    }
-
-    function calcularCuadras(km, ciudad) {
+        const km = R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+        
         const divisor = (ciudad === "Mar del Plata") ? 87 : 100;
         const cuadras = Math.floor((km * 1000) / divisor);
-        return cuadras === 0 ? "A pasos" : (cuadras === 1 ? "1 cuadra" : `${cuadras} cuadras`);
+        
+        return { km: km, texto: (cuadras === 0 ? "A pasos" : (cuadras === 1 ? "A 1 cuadra" : `A ${cuadras} cuadras`)) };
     }
 
-    async function buscarDireccion() {
-        const dir = document.getElementById('input-busqueda').value;
-        const ciudad = document.getElementById('select-ciudad').value;
-        if (!dir) return;
+    function renderizarLocales(datos, puntoOrigen = null) {
+        const contenedor = document.getElementById('resultados');
+        contenedor.innerHTML = "";
+        layerLocales.clearLayers();
 
-        const query = `${dir}, ${ciudad !== 'Todas' ? ciudad : 'Argentina'}`;
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
-        const data = await res.json();
+        if (puntoOrigen) {
+            datos = datos.map(c => {
+                const calculo = calcularCuadras(puntoOrigen.lat, puntoOrigen.lon, c.lat, c.lon, c.ciudad);
+                return { ...c, distKm: calculo.km, distTexto: calculo.texto };
+            }).sort((a, b) => a.distKm - b.distKm).slice(0, 30); // Mostrar los 30 más cercanos
+        }
 
-        if (data.length > 0) {
-            const pos = { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
-            if (refMarker) mapa.removeLayer(refMarker);
-            refMarker = L.circleMarker([pos.lat, pos.lon], { radius: 8, color: '#10B981', fillOpacity: 1 }).addTo(mapa);
-            render(baseDeDatos, pos);
-        } else {
-            alert("Dirección no encontrada. Intentá con Calle y Número.");
+        if (datos.length === 0) {
+            contenedor.innerHTML = "<p>No hay resultados.</p>";
+            return;
+        }
+
+        datos.forEach(c => {
+            const div = document.createElement('div');
+            div.className = 'cafe-card';
+            
+            const badgeTop = c.esTop ? `<span class="top-badge">★ TOP 100</span>` : "";
+            const badgeDistancia = puntoOrigen ? `<div class="distancia-badge">📍 ${c.distTexto}</div><br>` : "";
+            const linkMapa = `http://googleusercontent.com/maps.google.com/dir/?api=1&destination=${c.lat},${c.lon}`;
+
+            div.innerHTML = `
+                ${badgeDistancia}
+                <div class="cafe-header">
+                    <h3 class="cafe-title">${c.nombre}</h3>
+                    ${badgeTop}
+                </div>
+                <p class="cafe-city">${c.ubicacion} • <b>${c.ciudad}</b></p>
+                <div class="links">
+                    <a href="${c.instagram}" target="_blank">Instagram</a>
+                    <a href="${linkMapa}" target="_blank">Ruta en Mapa</a>
+                </div>
+            `;
+            contenedor.appendChild(div);
+
+            // Dibujar en mapa
+            const color = c.esTop ? "#D97706" : "#5D4037";
+            L.circleMarker([c.lat, c.lon], { radius: 6, color: color, fillColor: color, fillOpacity: 0.9 })
+             .addTo(layerLocales).bindPopup(`<b>${c.nombre}</b><br>${c.ubicacion}`);
+        });
+
+        // Ajustar cámara del mapa
+        if (puntoOrigen) {
+            mapa.setView([puntoOrigen.lat, puntoOrigen.lon], 14);
+        } else if (datos.length > 0) {
+            const group = new L.featureGroup(layerLocales.getLayers());
+            mapa.fitBounds(group.getBounds().pad(0.1));
         }
     }
 
-    function activarGPS() {
-        navigator.geolocation.getCurrentPosition(p => {
-            const pos = { lat: p.coords.latitude, lon: p.coords.longitude };
-            render(baseDeDatos, pos);
+    function filtrarPorTexto() {
+        const ciudadSel = document.getElementById('select-ciudad').value;
+        const txt = document.getElementById('input-busqueda').value.toLowerCase();
+        
+        let filtrados = bd.filter(c => {
+            const coincideCiudad = (ciudadSel === "Todas") || (c.ciudad === ciudadSel);
+            const coincideTxt = c.nombre.toLowerCase().includes(txt) || c.ubicacion.toLowerCase().includes(txt);
+            return coincideCiudad && coincideTxt;
+        });
+        
+        document.getElementById('status').innerText = `Mostrando ${filtrados.length} resultados.`;
+        if (markerUsuario) mapa.removeLayer(markerUsuario);
+        renderizarLocales(filtrados);
+    }
+
+    async function medirDesdeDireccion() {
+        const dir = document.getElementById('input-busqueda').value.trim();
+        const ciudadSel = document.getElementById('select-ciudad').value;
+        
+        if (!dir) { alert("Escribí una calle y número primero."); return; }
+        
+        document.getElementById('status').innerText = "Rastreando dirección satelitalmente...";
+        
+        const zonaBusqueda = (ciudadSel === "Todas" || ciudadSel === "Top Sudamérica") ? "Argentina" : `${ciudadSel}, Argentina`;
+        const query = `${dir}, ${zonaBusqueda}`;
+        
+        try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+            const data = await res.json();
+            
+            if (data.length > 0) {
+                const latBusqueda = parseFloat(data[0].lat);
+                const lonBusqueda = parseFloat(data[0].lon);
+                
+                document.getElementById('status').innerText = "Dirección encontrada. Calculando cuadras...";
+                
+                if (markerUsuario) mapa.removeLayer(markerUsuario);
+                markerUsuario = L.circleMarker([latBusqueda, lonBusqueda], { radius: 8, color: "#059669", fillOpacity: 1 }).addTo(mapa).bindPopup("Tu búsqueda");
+                
+                let localesAFiltrar = bd;
+                if (ciudadSel !== "Todas") {
+                    localesAFiltrar = bd.filter(c => c.ciudad === ciudadSel || c.esTop);
+                }
+                renderizarLocales(localesAFiltrar, { lat: latBusqueda, lon: lonBusqueda });
+                
+            } else {
+                document.getElementById('status').innerText = "No se encontró esa calle.";
+                alert("No pudimos encontrar la calle. Intentá ponerle el número exacto.");
+            }
+        } catch (e) {
+            document.getElementById('status').innerText = "Error de conexión satelital.";
+        }
+    }
+
+    function usarMiGPS() {
+        if (!navigator.geolocation) { alert("Tu dispositivo no tiene GPS activo."); return; }
+        
+        document.getElementById('status').innerText = "Conectando al GPS del dispositivo...";
+        navigator.geolocation.getCurrentPosition(pos => {
+            document.getElementById('status').innerText = "Ubicación fijada. Calculando distancias...";
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
+            
+            if (markerUsuario) mapa.removeLayer(markerUsuario);
+            markerUsuario = L.circleMarker([lat, lon], { radius: 8, color: "#059669", fillOpacity: 1 }).addTo(mapa).bindPopup("Estás acá");
+            
+            renderizarLocales(bd, { lat: lat, lon: lon });
+        }, err => {
+            document.getElementById('status').innerText = "Permiso de ubicación denegado.";
+            alert("Aceptá el permiso de ubicación en el navegador para usar esta función.");
         });
     }
 
-    function checkEnter(e) { if (e.key === "Enter") buscarDireccion(); }
-    function switchTab(t, b) {
-        document.getElementById('tab-lista').classList.toggle('hidden', t !== 'lista');
-        document.getElementById('tab-mapa').classList.toggle('hidden', t !== 'mapa');
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        b.classList.add('active');
-        if (t === 'mapa') setTimeout(() => mapa.invalidateSize(), 200);
+    function cambiarPestaña(tab, btnElement) {
+        document.getElementById('tab-lista').classList.toggle('hidden', tab !== 'lista');
+        document.getElementById('tab-mapa').classList.toggle('hidden', tab !== 'mapa');
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btnElement.classList.add('active');
+        if (tab === 'mapa') { setTimeout(() => { mapa.invalidateSize(); }, 300); }
     }
 
-    init();
+    // Arrancar la descarga
+    iniciarSistema();
 </script>
 </body>
 </html>
