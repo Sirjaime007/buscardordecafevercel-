@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal de Café de Especialidad</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    
+    <style>
+        /* ESTILO TERMINAL RETRO (TIPO RENDIMIENTOS.CO) */
+        body {
+            background-color: #000000;
+            color: #00ff00; /* Letras verdes clásicas */
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 2vw 5vw;
+        }
+        .container { max-width: 1200px; margin: auto; }
+        
+        h1 { 
+            font-size: 1.5rem; 
+            text-transform: uppercase; 
+            border-bottom: 1px solid #00ff00; 
+            padding-bottom: 10px; 
+            color: #ffffff;
+        }
+        
+        .estadisticas { margin-bottom: 20px; font-size: 0.9rem; }
+        
+        /* BUSCADOR ESTILO LÍNEA DE COMANDOS */
+        input {
+            width: 100%; padding: 12px; background: #0a0a0a; color: #00ff00; 
+            border: 1px solid #005500; font-family: inherit; font-size: 1rem; 
+            margin-bottom: 20px; outline: none; box-sizing: border-box;
+        }
+        input:focus { border-color: #00ff00; box-shadow: 0 0 8px rgba(0, 255, 0, 0.2); }
+        
+        /* TABLA DE DATOS */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.95rem; }
+        th, td { border-bottom: 1px dashed #004400; padding: 12px 10px; text-align: left; }
+        th { text-transform: uppercase; color: #ffffff; border-bottom: 1px solid #00ff00; }
+        tr:hover { background-color: #051505; }
+        
+        /* BOTONES DE ENLACE */
+        a { color: #00ff00; text-decoration: none; padding: 2px 5px; }
+        a:hover { background: #00ff00; color: #000000; font-weight: bold; }
+        
+        .top-badge { color: #ffd700; font-weight: bold; } /* Dorado para los Tops */
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>[ TERMINAL DE CAFETERÍAS // MONITOR GLOBAL ]</h1>
+        <div class="estadisticas" id="status">STATUS: CONECTANDO A SATÉLITES...</div>
+        
+        <input type="text" id="buscador" placeholder=">_ INGRESAR CIUDAD, LOCAL O DIRECCIÓN PARA FILTRAR...">
+        
+        <table id="tabla-cafes">
+            <thead>
+                <tr>
+                    <th>Local</th>
+                    <th>Ciudad</th>
+                    <th>Ubicación</th>
+                    <th>Comandos</th>
+                </tr>
+            </thead>
+            <tbody id="cuerpo-tabla">
+                <tr><td colspan="4">Descargando registros desde Google Sheets...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // 1. TUS VARIABLES EXACTAS DE PYTHON
+        const SHEET_ID = "10vUOhRr7IAXlRrkBphxEP4ApXYBgrnuxJq6G83GnfHI";
+        
+        // Agregué Mar del Plata, Buenos Aires y Top Sudamérica para el ejemplo inicial
+        const GIDS = {
+            "Mar del Plata": "0",
+            "Buenos Aires": "1296176686",
+            "Top Sudamérica": "35250567" 
+        };
+
+        let baseDeDatos = [];
+
+        // 2. FUNCIÓN DE EXTRACCIÓN (Reemplaza a st.cache_data y pandas)
+        async function inicializarTerminal() {
+            let descargasCompletadas = 0;
+            const totalHojas = Object.keys(GIDS).length;
+
+            for (const [ciudad, gid] of Object.entries(GIDS)) {
+                const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}`;
+                
+                Papa.parse(url, {
+                    download: true,
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        let data = results.data;
+                        
+                        data.forEach(row => {
+                            // Normalizamos los nombres de las columnas que vienen del CSV
+                            const nombre = row.CAFE || row.Cafe || row.cafe;
+                            if (nombre) {
+                                baseDeDatos.push({
+                                    nombre: nombre,
+                                    ciudad: ciudad === "Top Sudamérica" ? (row.CIUDAD || "Top") : ciudad,
+                                    ubicacion: row.UBICACION || row.Ubicacion || "No especificada",
+                                    instagram: row.INSTAGRAM || row.Instagram || "#",
+                                    lat: row.LAT || row.Lat,
+                                    lon: row.LONG || row.Long,
+                                    esTop: ciudad === "Top Sudamérica"
+                                });
+                            }
+                        });
+
+                        descargasCompletadas++;
+                        if (descargasCompletadas === totalHojas) {
+                            document.getElementById('status').innerText = `STATUS: ONLINE | REGISTROS TOTALES: ${baseDeDatos.length}`;
+                            renderizarTabla(baseDeDatos);
+                        }
+                    }
+                });
+            }
+        }
+
+        // 3. RENDERIZADO VISUAL
+        function renderizarTabla(datos) {
+            const tbody = document.getElementById('cuerpo-tabla');
+            tbody.innerHTML = "";
+            
+            if (datos.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='4'>No se encontraron coincidencias.</td></tr>";
+                return;
+            }
+
+            datos.forEach(cafe => {
+                const tr = document.createElement('tr');
+                
+                // Formateo visual del nombre
+                let nombreDisplay = cafe.esTop ? `<span class="top-badge">★ ${cafe.nombre}</span>` : cafe.nombre;
+                
+                // Enlaces de acción
+                let linkMaps = `https://www.google.com/maps/search/?api=1&query=${cafe.lat},${cafe.lon}`;
+                let textoWpp = `Vamos a tomar un cafe a ${cafe.nombre}, queda en ${cafe.ubicacion}`;
+                let linkWpp = `https://api.whatsapp.com/send?text=${encodeURIComponent(textoWpp)}`;
+
+                tr.innerHTML = `
+                    <td><strong>${nombreDisplay}</strong></td>
+                    <td>${cafe.ciudad}</td>
+                    <td>${cafe.ubicacion}</td>
+                    <td>
+                        <a href="${cafe.instagram}" target="_blank">[IG]</a> 
+                        <a href="${linkMaps}" target="_blank">[MAPS]</a>
+                        <a href="${linkWpp}" target="_blank">[WPP]</a>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 4. LÓGICA DE FILTRADO (Reemplaza los filtros de dataframe)
+        document.getElementById('buscador').addEventListener('keyup', function(e) {
+            const texto = e.target.value.toLowerCase();
+            
+            const filtrados = baseDeDatos.filter(cafe => 
+                cafe.nombre.toLowerCase().includes(texto) || 
+                cafe.ciudad.toLowerCase().includes(texto) ||
+                cafe.ubicacion.toLowerCase().includes(texto)
+            );
+            
+            renderizarTabla(filtrados);
+        });
+
+        // ARRANCAR EL SISTEMA AL CARGAR LA PÁGINA
+        inicializarTerminal();
+    </script>
+</body>
+</html>
