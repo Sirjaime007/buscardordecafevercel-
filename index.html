@@ -10,23 +10,45 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <style>
-        /* ESTILOS GENERALES */
+        /* ESTILOS BASE */
         body { background-color: #000000; color: #00ff00; font-family: 'Courier New', monospace; margin: 0; padding: 20px; }
         .container { max-width: 1200px; margin: auto; }
-        h1 { font-size: 1.4rem; border-bottom: 1px solid #00ff00; padding-bottom: 10px; color: #ffffff; }
         
-        /* EL MAPA */
-        #map { 
-            height: 350px; width: 100%; border: 1px solid #005500; 
-            margin-bottom: 20px; background: #050505;
-            filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+        /* HEADER Y MENÚ DE PESTAÑAS */
+        h1 { font-size: 1.4rem; color: #ffffff; margin-bottom: 5px; }
+        .status-bar { margin-bottom: 20px; font-size: 0.9rem; border-bottom: 1px solid #005500; padding-bottom: 15px; }
+        
+        .tab-menu { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab-btn {
+            background-color: #000000; color: #005500; border: 1px solid #005500; padding: 10px 20px;
+            font-family: inherit; font-size: 1rem; cursor: pointer; text-transform: uppercase; transition: all 0.2s;
         }
+        .tab-btn:hover { border-color: #00ff00; color: #00ff00; }
+        .tab-btn.active { background-color: #001100; color: #00ff00; border-color: #00ff00; font-weight: bold; }
 
-        /* BUSCADOR */
-        input {
-            width: 100%; padding: 15px; background: #0a0a0a; color: #00ff00; 
-            border: 1px solid #005500; font-family: inherit; font-size: 1rem; 
-            margin-bottom: 20px; outline: none; box-sizing: border-box;
+        /* CONTENEDORES DE PESTAÑAS */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* RADAR GPS */
+        .panel-radar {
+            border: 1px solid #004400; background: #000a00; padding: 15px; margin-bottom: 20px;
+            display: flex; gap: 15px; align-items: center; flex-wrap: wrap;
+        }
+        .btn-gps {
+            background-color: #002200; color: #00ff00; border: 1px solid #00ff00; padding: 10px 15px;
+            font-family: inherit; cursor: pointer; font-weight: bold; text-transform: uppercase;
+        }
+        .btn-gps:hover { background-color: #00ff00; color: #000000; }
+        .slider-container { display: flex; align-items: center; gap: 10px; flex-grow: 1; }
+        input[type="range"] { flex-grow: 1; cursor: pointer; accent-color: #00ff00; }
+
+        /* COMPONENTES INTERNOS */
+        #map { height: 500px; width: 100%; border: 1px solid #005500; background: #050505; filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%); }
+        input[type="text"] {
+            width: 100%; padding: 15px; background: #0a0a0a; color: #00ff00; border: 1px solid #005500; 
+            font-family: inherit; font-size: 1rem; margin-bottom: 20px; outline: none; box-sizing: border-box;
         }
 
         /* TABLA */
@@ -35,59 +57,72 @@
         th { color: #ffffff; border-bottom: 1px solid #00ff00; text-transform: uppercase; }
         tr:hover { background-color: #051505; }
         .top-badge { color: #ffd700; font-weight: bold; }
+        .distancia-badge { color: #00aaaa; font-size: 0.8rem; display: block; margin-top: 4px; }
         
-        /* NUEVOS BOTONES DE COMANDO */
         .btn-comando {
-            display: inline-block;
-            border: 1px solid #005500;
-            color: #00ff00;
-            background-color: #001100;
-            padding: 6px 12px;
-            margin-right: 5px;
-            margin-bottom: 5px;
-            font-size: 0.75rem;
-            text-decoration: none;
-            text-transform: uppercase;
-            border-radius: 3px;
-            transition: all 0.2s ease-in-out;
-            white-space: nowrap;
+            display: inline-block; border: 1px solid #005500; color: #00ff00; background-color: #001100;
+            padding: 6px 12px; margin-right: 5px; margin-bottom: 5px; font-size: 0.75rem;
+            text-decoration: none; text-transform: uppercase; border-radius: 3px; transition: all 0.2s; white-space: nowrap;
         }
-        
-        .btn-comando:hover {
-            background-color: #00ff00;
-            color: #000000;
-            border-color: #00ff00;
-            font-weight: bold;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.4);
-        }
+        .btn-comando:hover { background-color: #00ff00; color: #000000; border-color: #00ff00; font-weight: bold; box-shadow: 0 0 10px rgba(0,255,0,0.4); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>[ MONITOR FEDERAL DE CAFÉ // MAPA Y TERMINAL ]</h1>
-    <div id="status" style="margin-bottom: 15px;">STATUS: INICIALIZANDO SATÉLITES...</div>
+    <h1>[ MONITOR DE CAFÉ DE ESPECIALIDAD ]</h1>
+    <div class="status-bar" id="status">STATUS: INICIALIZANDO PROTOCOLOS...</div>
     
-    <div id="map"></div>
+    <div class="tab-menu">
+        <button class="tab-btn active" onclick="cambiarPestaña('directorio', this)">[ 01_DIRECTORIO ]</button>
+        <button class="tab-btn" onclick="cambiarPestaña('mapa', this)">[ 02_MAPA_FEDERAL ]</button>
+    </div>
 
-    <input type="text" id="buscador" placeholder=">_ FILTRAR POR CIUDAD, LOCAL, TOSTADOR O DIRECCIÓN...">
+    <div id="tab-directorio" class="tab-content active">
+        
+        <div class="panel-radar">
+            <button class="btn-gps" onclick="activarGPS()">[ 📍 ACTIVAR RADAR GPS ]</button>
+            <div class="slider-container">
+                <label for="radio-km">RADIO:</label>
+                <input type="range" id="radio-km" min="0.5" max="10" step="0.5" value="2" onchange="actualizarValorRadio()">
+                <span id="valor-radio">2.0 KM</span>
+            </div>
+        </div>
 
-    <table id="tabla-cafes">
-        <thead>
-            <tr>
-                <th>Local / Tostador</th>
-                <th>Ciudad</th>
-                <th>Ubicación</th>
-                <th>Comandos</th>
-            </tr>
-        </thead>
-        <tbody id="cuerpo-tabla">
-            <tr><td colspan="4">Descargando base de datos federal...</td></tr>
-        </tbody>
-    </table>
+        <input type="text" id="buscador" placeholder=">_ FILTRAR POR CIUDAD, LOCAL, TOSTADOR O DIRECCIÓN...">
+        
+        <table id="tabla-cafes">
+            <thead>
+                <tr>
+                    <th>Local / Tostador</th>
+                    <th>Ciudad</th>
+                    <th>Ubicación</th>
+                    <th>Comandos</th>
+                </tr>
+            </thead>
+            <tbody id="cuerpo-tabla">
+                <tr><td colspan="4">Descargando base de datos federal...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="tab-mapa" class="tab-content">
+        <div id="map"></div>
+    </div>
+
 </div>
 
 <script>
+    // CONTROLADOR DE PESTAÑAS
+    function cambiarPestaña(idTab, elementoBoton) {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('tab-' + idTab).classList.add('active');
+        elementoBoton.classList.add('active');
+        if (idTab === 'mapa' && mapa) { setTimeout(() => { mapa.invalidateSize(); }, 100); }
+    }
+
+    // BASE DE DATOS Y GIDS
     const SHEET_ID = "10vUOhRr7IAXlRrkBphxEP4ApXYBgrnuxJq6G83GnfHI";
     const GIDS = {
         "Mar del Plata": "0", "Buenos Aires": "1296176686", "La Plata": "208452991",
@@ -96,10 +131,80 @@
     };
 
     let baseDeDatos = [];
+    let latUsuario = null;
+    let lonUsuario = null;
+    
+    // INICIALIZACIÓN DEL MAPA
     let mapa = L.map('map').setView([-38.41, -63.61], 5);
     let capaMarcadores = L.layerGroup().addTo(mapa);
+    let marcadorUsuario = null;
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapa);
 
+    // CÁLCULO DE DISTANCIA (Fórmula Haversine)
+    function calcularDistancia(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Radio de la Tierra en km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
+
+    // ACTUALIZAR TEXTO DEL SLIDER
+    function actualizarValorRadio() {
+        const km = document.getElementById('radio-km').value;
+        document.getElementById('valor-radio').innerText = km + " KM";
+        if (latUsuario && lonUsuario) {
+            filtrarPorGPS(latUsuario, lonUsuario, parseFloat(km));
+        }
+    }
+
+    // ACTIVAR GPS
+    function activarGPS() {
+        const statusEl = document.getElementById('status');
+        statusEl.innerText = "STATUS: BUSCANDO SEÑAL DE SATÉLITE GPS...";
+        
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => {
+                latUsuario = position.coords.latitude;
+                lonUsuario = position.coords.longitude;
+                statusEl.innerText = `STATUS: GPS FIJADO EN [ ${latUsuario.toFixed(4)} , ${lonUsuario.toFixed(4)} ]`;
+                
+                // Dibujar al usuario en el mapa
+                if(marcadorUsuario) mapa.removeLayer(marcadorUsuario);
+                marcadorUsuario = L.circleMarker([latUsuario, lonUsuario], {
+                    radius: 8, color: "#00aaff", fillColor: "#00aaff", fillOpacity: 1
+                }).addTo(mapa).bindPopup("<b>TU UBICACIÓN ACTUAL</b>");
+                
+                const radioKm = parseFloat(document.getElementById('radio-km').value);
+                filtrarPorGPS(latUsuario, lonUsuario, radioKm);
+            }, error => {
+                statusEl.innerText = "STATUS: ERROR DE GPS (PERMISO DENEGADO O SEÑAL DÉBIL)";
+                alert("Por favor, permití el acceso a la ubicación en tu navegador.");
+            }, { enableHighAccuracy: true });
+        } else {
+            alert("Tu dispositivo no soporta geolocalización.");
+        }
+    }
+
+    // FILTRAR POR CERCANÍA
+    function filtrarPorGPS(lat, lon, radioKm) {
+        // Limpiamos el buscador de texto
+        document.getElementById('buscador').value = "";
+        
+        let filtrados = baseDeDatos.map(cafe => {
+            cafe.distancia = calcularDistancia(lat, lon, cafe.lat, cafe.lon);
+            return cafe;
+        }).filter(cafe => cafe.distancia <= radioKm);
+        
+        // Ordenar de más cerca a más lejos
+        filtrados.sort((a, b) => a.distancia - b.distancia);
+        actualizarInterfaz(filtrados, true);
+    }
+
+    // CARGA DE DATOS
     async function cargarTodo() {
         let cargados = 0;
         const total = Object.keys(GIDS).length;
@@ -119,7 +224,8 @@
                                 instagram: row.INSTAGRAM || "#",
                                 lat: parseFloat(row.LAT.replace(',', '.')),
                                 lon: parseFloat(row.LONG.replace(',', '.')) || 0,
-                                esTop: ciudad === "Top Sudamérica"
+                                esTop: ciudad === "Top Sudamérica",
+                                distancia: null // Se llena al usar GPS
                             });
                         }
                     });
@@ -133,23 +239,31 @@
         }
     }
 
-    function actualizarInterfaz(datos) {
+    // RENDERIZADO VISUAL
+    function actualizarInterfaz(datos, modoGPS = false) {
         const tbody = document.getElementById('cuerpo-tabla');
         tbody.innerHTML = "";
         capaMarcadores.clearLayers();
+        if(marcadorUsuario) marcadorUsuario.addTo(mapa); // Mantener el punto azul del usuario
+
+        if (datos.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='4'>NO SE DETECTARON SEÑALES EN EL RADAR.</td></tr>";
+            return;
+        }
 
         datos.forEach(cafe => {
             const tr = document.createElement('tr');
             let nombreLimpio = cafe.esTop ? `<span class="top-badge">★ ${cafe.nombre}</span>` : cafe.nombre;
             
-            // Creación de links dinámicos
-            let linkMaps = `https://www.google.com/maps/search/?api=1&query=$${cafe.lat},${cafe.lon}`;
+            // Si estamos en modo GPS, mostrar los kilómetros
+            let textoDistancia = modoGPS ? `<span class="distancia-badge">A ${cafe.distancia.toFixed(2)} KM DE DISTANCIA</span>` : "";
+
+            let linkMaps = `http://googleusercontent.com/maps.google.com/5${cafe.lat},${cafe.lon}`;
             let textoWpp = `Vamos a tomar un cafe a ${cafe.nombre}, queda en ${cafe.ubicacion}: ${linkMaps}`;
             let linkWpp = `https://api.whatsapp.com/send?text=${encodeURIComponent(textoWpp)}`;
 
-            // Botones estilizados en la columna de comandos
             tr.innerHTML = `
-                <td><strong>${nombreLimpio}</strong></td>
+                <td><strong>${nombreLimpio}</strong>${textoDistancia}</td>
                 <td>${cafe.ciudad}</td>
                 <td>${cafe.ubicacion}</td>
                 <td>
@@ -166,12 +280,16 @@
             }).addTo(capaMarcadores).bindPopup(`<b>${cafe.nombre}</b><br>${cafe.ubicacion}`);
         });
 
-        if(datos.length > 0 && datos.length < 50) {
+        if(datos.length > 0 && datos.length < 50 && !modoGPS) {
             const group = new L.featureGroup(capaMarcadores.getLayers());
             mapa.fitBounds(group.getBounds().pad(0.1));
+        } else if (modoGPS && latUsuario) {
+            // Si es por GPS, centrar la cámara en el usuario
+            mapa.setView([latUsuario, lonUsuario], 14);
         }
     }
 
+    // LISTENER DEL BUSCADOR NORMAL
     document.getElementById('buscador').addEventListener('keyup', (e) => {
         const t = e.target.value.toLowerCase();
         const filtrados = baseDeDatos.filter(c => 
@@ -184,4 +302,5 @@
 </script>
 </body>
 </html>
+
 
