@@ -11,7 +11,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <style>
-        :root { --primary: #5D4037; --bg: #F8FAFC; --card: #FFFFFF; --text: #1E293B; --border: #E2E8F0; --accent: #059669; }
+        :root { --primary: #5D4037; --bg: #F8FAFC; --card: #FFFFFF; --text: #1E293B; --border: #E2E8F0; --accent: #059669; --top: #D97706; }
         body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
         .container { max-width: 900px; margin: auto; }
         
@@ -25,32 +25,37 @@
         .tab-btn.active { background: var(--primary); color: white; }
 
         .panel-busqueda { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        select, input[type="text"] { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 1rem; box-sizing: border-box; outline: none; transition: border 0.2s; }
+        select, input[type="text"] { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 1rem; box-sizing: border-box; outline: none; }
         select:focus, input[type="text"]:focus { border-color: var(--primary); }
         
         .botones-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .btn-accion { padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; color: white; font-size: 0.95rem; transition: opacity 0.2s; }
-        .btn-accion:hover { opacity: 0.9; }
         .btn-filtro { background: #475569; }
         .btn-distancia { background: #D97706; }
         .btn-gps { grid-column: span 2; background: var(--accent); width: 100%; }
 
         #status { font-size: 0.85rem; color: var(--accent); font-weight: 600; text-align: center; margin-top: 5px; min-height: 20px; }
 
-        .cafe-card { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+        /* ESTILOS DE LOS MAPAS */
+        #map { height: 500px; width: 100%; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        
+        /* EL NUEVO MINI MAPA (RADAR) */
+        #mapa-radar { height: 350px; width: 100%; border-radius: 12px; border: 2px solid var(--accent); margin-bottom: 20px; display: none; }
+        #mapa-radar.activo { display: block; }
+
+        .cafe-card { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
         .cafe-info { flex-grow: 1; }
         .cafe-header { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
-        .cafe-title { margin: 0; font-size: 1.25rem; color: var(--text); }
+        .cafe-title { margin: 0; font-size: 1.25rem; color: var(--text); font-weight: 700; }
         .cafe-city { color: #64748B; font-size: 0.95rem; margin: 0; }
         
-        .top-badge { background: #FEF3C7; color: #D97706; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+        .top-badge { background: #FEF3C7; color: var(--top); padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
         .distancia-badge { display: inline-block; background: #DEF7EC; color: #0369A1; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; margin-bottom: 10px; border: 1px solid #BAE6FD; }
         
         .links { display: flex; flex-direction: column; gap: 8px; min-width: 130px; }
         .links a { background: #F8FAFC; color: var(--text); text-decoration: none; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-align: center; border: 1px solid #E2E8F0; transition: all 0.2s; }
         .links a:hover { background: var(--primary); color: white; border-color: var(--primary); }
         
-        #map { height: 500px; width: 100%; border-radius: 12px; border: 1px solid var(--border); }
         .hidden { display: none !important; }
 
         @media (max-width: 600px) {
@@ -67,7 +72,7 @@
 <div class="container">
     <header>
         <h1>Buscador <span>de Café</span></h1>
-        <p id="contador-total">Sincronizando con los servidores...</p>
+        <p id="contador-total">Sincronizando base de datos federal...</p>
     </header>
 
     <div class="tabs">
@@ -92,6 +97,8 @@
             <div id="status"></div>
         </div>
 
+        <div id="mapa-radar"></div>
+
         <div id="resultados"></div>
     </div>
 
@@ -109,10 +116,16 @@
     };
 
     let bd = [];
-    let mapa = L.map('map').setView([-38.41, -63.61], 5);
-    let layerLocales = L.layerGroup().addTo(mapa);
-    let markerUsuario = null;
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapa);
+    
+    // MAPA FEDERAL (Pestaña 2)
+    let mapaFederal = L.map('map').setView([-38.41, -63.61], 5);
+    let layerFederal = L.layerGroup().addTo(mapaFederal);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaFederal);
+
+    // MINI MAPA RADAR (Pestaña 1)
+    let mapaRadar = L.map('mapa-radar').setView([-38.41, -63.61], 14);
+    let layerRadar = L.layerGroup().addTo(mapaRadar);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaRadar);
 
     async function iniciarSistema() {
         let completados = 0;
@@ -142,7 +155,8 @@
                     completados++;
                     if (completados === totalHojas) {
                         armarMenu();
-                        renderizarLocales(bd);
+                        dibujarMapaFederal();
+                        renderizarLista(bd);
                         document.getElementById('contador-total').innerText = `Explorando ${bd.length} cafeterías de especialidad`;
                     }
                 },
@@ -154,11 +168,21 @@
     function armarMenu() {
         const select = document.getElementById('select-ciudad');
         select.innerHTML = `<option value="Todas">Todas las ciudades (${bd.length})</option>`;
-        
         const listaCiudades = [...new Set(bd.map(c => c.ciudad))].sort();
         listaCiudades.forEach(ciu => {
             const cantidad = bd.filter(c => c.ciudad === ciu).length;
             select.innerHTML += `<option value="${ciu}">${ciu} (${cantidad})</option>`;
+        });
+    }
+
+    // EL MAPA FEDERAL SE DIBUJA UNA VEZ Y NUNCA MÁS SE TOCA
+    function dibujarMapaFederal() {
+        layerFederal.clearLayers();
+        bd.forEach(c => {
+            const color = c.esTop ? "#D97706" : "#5D4037";
+            const radio = c.esTop ? 8 : 5;
+            L.circleMarker([c.lat, c.lon], { radius: radio, color: color, fillColor: color, fillOpacity: 0.9, weight: 2 })
+             .addTo(layerFederal).bindPopup(`<b>${c.nombre}</b><br>${c.ubicacion}`);
         });
     }
 
@@ -171,20 +195,33 @@
         
         const divisor = (ciudad === "Mar del Plata") ? 87 : 100;
         const cuadras = Math.floor((km * 1000) / divisor);
-        
         return { km: km, texto: (cuadras === 0 ? "A pasos" : (cuadras === 1 ? "A 1 cuadra" : `A ${cuadras} cuadras`)) };
     }
 
-    function renderizarLocales(datos, puntoOrigen = null) {
+    // LOGICA PRINCIPAL DE LISTA Y RADAR
+    function renderizarLista(datos, puntoOrigen = null) {
         const contenedor = document.getElementById('resultados');
+        const mapRadarDiv = document.getElementById('mapa-radar');
         contenedor.innerHTML = "";
-        layerLocales.clearLayers();
+        layerRadar.clearLayers();
 
         if (puntoOrigen) {
+            // SOLO LOS 10 MÁS CERCANOS
             datos = datos.map(c => {
                 const calculo = calcularCuadras(puntoOrigen.lat, puntoOrigen.lon, c.lat, c.lon, c.ciudad);
                 return { ...c, distKm: calculo.km, distTexto: calculo.texto };
-            }).sort((a, b) => a.distKm - b.distKm).slice(0, 30); 
+            }).sort((a, b) => a.distKm - b.distKm).slice(0, 10); 
+            
+            // MOSTRAR EL RADAR
+            mapRadarDiv.classList.add('activo');
+            setTimeout(() => { mapaRadar.invalidateSize(); }, 100);
+
+            // DIBUJAR PUNTO DE USUARIO EN EL RADAR
+            L.circleMarker([puntoOrigen.lat, puntoOrigen.lon], { radius: 10, color: "#059669", fillColor: "#ffffff", fillOpacity: 1, weight: 3 })
+             .addTo(layerRadar).bindPopup("<b>Tu ubicación de búsqueda</b>").openPopup();
+        } else {
+            // OCULTAR EL RADAR SI ES BÚSQUEDA NORMAL
+            mapRadarDiv.classList.remove('activo');
         }
 
         if (datos.length === 0) {
@@ -192,21 +229,20 @@
             return;
         }
 
-        datos.forEach(c => {
+        datos.forEach((c, index) => {
+            // 1. DIBUJAR EN LA LISTA
             const div = document.createElement('div');
             div.className = 'cafe-card';
             
             const badgeTop = c.esTop ? `<span class="top-badge">★ Top 100</span>` : "";
             const badgeDistancia = puntoOrigen ? `<div class="distancia-badge">📍 ${c.distTexto}</div>` : "";
-            
-            // ---> ACÁ ESTÁ LA CORRECCIÓN DEL ENLACE DE MAPS <---
             const linkMapa = `https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lon}`;
 
             div.innerHTML = `
                 <div class="cafe-info">
                     ${badgeDistancia}
                     <div class="cafe-header">
-                        <h3 class="cafe-title">${c.nombre}</h3>
+                        <h3 class="cafe-title">${index + 1}. ${c.nombre}</h3>
                         ${badgeTop}
                     </div>
                     <p class="cafe-city">${c.ubicacion} • <b>${c.ciudad}</b></p>
@@ -218,86 +254,65 @@
             `;
             contenedor.appendChild(div);
 
-            const color = c.esTop ? "#D97706" : "#5D4037";
-            L.circleMarker([c.lat, c.lon], { radius: 6, color: color, fillColor: color, fillOpacity: 0.9 })
-             .addTo(layerLocales).bindPopup(`<b>${c.nombre}</b><br>${c.ubicacion}`);
+            // 2. DIBUJAR EN EL RADAR (Si está activo)
+            if (puntoOrigen) {
+                const color = c.esTop ? "#D97706" : "#5D4037";
+                L.circleMarker([c.lat, c.lon], { radius: 7, color: color, fillColor: color, fillOpacity: 0.9, weight: 2 })
+                 .addTo(layerRadar).bindPopup(`<b>${index + 1}. ${c.nombre}</b><br>${c.distTexto}`);
+            }
         });
 
-        if (puntoOrigen) {
-            mapa.setView([puntoOrigen.lat, puntoOrigen.lon], 14);
-        } else if (datos.length > 0) {
-            const group = new L.featureGroup(layerLocales.getLayers());
-            mapa.fitBounds(group.getBounds().pad(0.1));
+        // ENCUADRAR EL RADAR PARA QUE SE VEAN LOS 10 Y EL USUARIO
+        if (puntoOrigen && datos.length > 0) {
+            const group = new L.featureGroup(layerRadar.getLayers());
+            mapaRadar.fitBounds(group.getBounds().pad(0.1));
         }
     }
 
     function filtrarPorTexto() {
         const ciudadSel = document.getElementById('select-ciudad').value;
         const txt = document.getElementById('input-busqueda').value.toLowerCase();
-        
         let filtrados = bd.filter(c => {
             const coincideCiudad = (ciudadSel === "Todas") || (c.ciudad === ciudadSel);
             const coincideTxt = c.nombre.toLowerCase().includes(txt) || c.ubicacion.toLowerCase().includes(txt);
             return coincideCiudad && coincideTxt;
         });
-        
         document.getElementById('status').innerText = `Mostrando ${filtrados.length} resultados.`;
-        if (markerUsuario) mapa.removeLayer(markerUsuario);
-        renderizarLocales(filtrados);
+        renderizarLista(filtrados); // Al no pasar puntoOrigen, el radar se oculta
     }
 
     async function medirDesdeDireccion() {
         const dir = document.getElementById('input-busqueda').value.trim();
         const ciudadSel = document.getElementById('select-ciudad').value;
-        
         if (!dir) { alert("Escribí una calle y número primero."); return; }
-        
         document.getElementById('status').innerText = "Rastreando dirección satelitalmente...";
-        
         const zonaBusqueda = (ciudadSel === "Todas" || ciudadSel === "Top Sudamérica") ? "Argentina" : `${ciudadSel}, Argentina`;
         const query = `${dir}, ${zonaBusqueda}`;
-        
         try {
             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
             const data = await res.json();
-            
             if (data.length > 0) {
                 const latBusqueda = parseFloat(data[0].lat);
                 const lonBusqueda = parseFloat(data[0].lon);
-                
-                document.getElementById('status').innerText = "Dirección encontrada. Mostrando los más cercanos.";
-                
-                if (markerUsuario) mapa.removeLayer(markerUsuario);
-                markerUsuario = L.circleMarker([latBusqueda, lonBusqueda], { radius: 8, color: "#059669", fillOpacity: 1 }).addTo(mapa).bindPopup("Tu búsqueda");
+                document.getElementById('status').innerText = "Dirección encontrada. Mostrando el Top 10 más cercano.";
                 
                 let localesAFiltrar = bd;
-                if (ciudadSel !== "Todas") {
-                    localesAFiltrar = bd.filter(c => c.ciudad === ciudadSel || c.esTop);
-                }
-                renderizarLocales(localesAFiltrar, { lat: latBusqueda, lon: lonBusqueda });
+                if (ciudadSel !== "Todas") { localesAFiltrar = bd.filter(c => c.ciudad === ciudadSel || c.esTop); }
+                renderizarLista(localesAFiltrar, { lat: latBusqueda, lon: lonBusqueda });
                 
             } else {
                 document.getElementById('status').innerText = "No se encontró esa calle.";
                 alert("No pudimos encontrar la calle. Intentá ponerle el número exacto.");
             }
-        } catch (e) {
-            document.getElementById('status').innerText = "Error de conexión satelital.";
-        }
+        } catch (e) { document.getElementById('status').innerText = "Error de conexión satelital."; }
     }
 
     function usarMiGPS() {
         if (!navigator.geolocation) { alert("Tu dispositivo no tiene GPS activo."); return; }
-        
         document.getElementById('status').innerText = "Conectando al GPS del dispositivo...";
         navigator.geolocation.getCurrentPosition(pos => {
-            document.getElementById('status').innerText = "Ubicación fijada. Mostrando los más cercanos.";
-            const lat = pos.coords.latitude;
-            const lon = pos.coords.longitude;
-            
-            if (markerUsuario) mapa.removeLayer(markerUsuario);
-            markerUsuario = L.circleMarker([lat, lon], { radius: 8, color: "#059669", fillOpacity: 1 }).addTo(mapa).bindPopup("Estás acá");
-            
-            renderizarLocales(bd, { lat: lat, lon: lon });
+            document.getElementById('status').innerText = "Ubicación fijada. Mostrando el Top 10 a tu alrededor.";
+            renderizarLista(bd, { lat: pos.coords.latitude, lon: pos.coords.longitude });
         }, err => {
             document.getElementById('status').innerText = "Permiso de ubicación denegado.";
             alert("Aceptá el permiso de ubicación en el navegador para usar esta función.");
@@ -309,12 +324,11 @@
         document.getElementById('tab-mapa').classList.toggle('hidden', tab !== 'mapa');
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         btnElement.classList.add('active');
-        if (tab === 'mapa') { setTimeout(() => { mapa.invalidateSize(); }, 300); }
+        if (tab === 'mapa') { setTimeout(() => { mapaFederal.invalidateSize(); }, 300); }
     }
 
     iniciarSistema();
 </script>
 </body>
 </html>
-
 
