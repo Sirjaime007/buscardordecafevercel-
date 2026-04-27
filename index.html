@@ -124,8 +124,20 @@
         let completados = 0;
         const totalHojas = Object.keys(GIDS).length;
 
+        // Función centralizada para saber cuándo terminó
+        const procesarFinal = () => {
+            bd.sort((a, b) => {
+                if(a.ciudad === b.ciudad) return a.nombre.localeCompare(b.nombre);
+                return a.ciudad.localeCompare(b.ciudad);
+            });
+            armarMenu();
+            dibujarMapaFederal();
+            renderizarLista(bd);
+            document.getElementById('contador-total').innerText = `Explorando ${bd.length} cafeterías de especialidad`;
+        };
+
         for (const [ciudad, gid] of Object.entries(GIDS)) {
-            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}&nocache=${new Date().getTime()}`;
+            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}&v=${new Date().getTime()}`;
             
             Papa.parse(url, {
                 download: true, header: true, skipEmptyLines: true,
@@ -146,24 +158,169 @@
                     });
                     
                     completados++;
-                    if (completados === totalHojas) {
-                        // ORDENAR ALFABÉTICAMENTE POR CIUDAD Y LUEGO POR NOMBRE
-                        bd.sort((a, b) => {
-                            if(a.ciudad === b.ciudad) return a.nombre.localeCompare(b.nombre);
-                            return a.ciudad.localeCompare(b.ciudad);
-                        });
-
-                        armarMenu();
-                        dibujarMapaFederal();
-                        renderizarLista(bd);
-                        document.getElementById('contador-total').innerText = `Explorando ${bd.length} cafeterías de especialidad`;
-                    }
+                    if (completados === totalHojas) procesarFinal();
+                },
+                error: function(err) {
+                    // SEGURO ANTI-CUELGUES: Si falla una, sigue igual.
+                    console.error("Error al cargar datos de: ", ciudad);
+                    completados++;
+                    if (completados === totalHojas) procesarFinal();
                 }
             });
+
+            // FRENO ABS: Pausa de 150ms entre descargas para no bloquear Google Sheets
+            await new Promise(resolve => setTimeout(resolve, 150));
         }
     }
 
     function armarMenu() {
         const select = document.getElementById('select-ciudad');
         select.innerHTML = `<option value="Todas">Todas las ciudades (${bd.length})</option>`;
-        const listaCiudades = [...new Set(bd.map(c => c.ciudad))].sort
+        const listaCiudades = [...new Set(bd.map(c => c.ciudad))].sort();
+        listaCiudades.forEach(ciu => {
+            const cantidad = bd.filter(c => c.ciudad === ciu).length;
+            select.innerHTML += `<option value="${ciu}">${ciu} (${cantidad})</option>`;
+        });
+    }
+
+    function dibujarMapaFederal() {
+        layerFederal.clearLayers();
+        bd.forEach(c => {
+            const color = c.esTop ? "#D97706" : "#5D4037";
+            const radio = c.esTop ? 8 : 5;
+            L.circleMarker([c.lat, c.lon], { radius: radio, color: color, fillColor: color, fillOpacity: 0.9, weight: 2 })
+             .addTo(layerFederal).bindPopup(`<b>${c.nombre}</b><br>${c.ubicacion}`);
+        });
+    }
+
+    function calcularCuadras(lat1, lon1, lat2, lon2, ciudad) {
+        const R = 6371; 
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+        const km = R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+        const divisor = (ciudad === "Mar del Plata") ? 87 : 100;
+        const cuadras = Math.floor((km * 1000) / divisor);
+        return { km: km, texto: (cuadras === 0 ? "A pasos" : (cuadras === 1 ? "A 1 cuadra" : `A ${cuadras} cuadras`)) };
+    }
+
+    function renderizarLista(datos, puntoOrigen = null) {
+        const contenedor = document.getElementById('resultados');
+        const radarDiv = document.getElementById('mapa-radar');
+        contenedor.innerHTML = "";
+        layerRadar.clearLayers();
+
+        if (puntoOrigen) {
+            datos = datos.map(c => {
+                const calculo = calcularCuadras(puntoOrigen.lat, puntoOrigen.lon, c.lat, c.lon, c.ciudad);
+                return { ...c, distKm: calculo.km, distTexto: calculo.texto };
+            }).sort((a, b) => a.distKm - b.distKm).slice(0, 10); 
+            
+            radarDiv.classList.add('activo');
+            setTimeout(() => { mapaRadar.invalidateSize(); }, 100);
+            L.circleMarker([puntoOrigen.lat, puntoOrigen.lon], { radius: 10, color: "#059669", fillColor: "#ffffff", fillOpacity: 1, weight: 3 }).addTo(layerRadar);
+        } else {
+            radarDiv.classList.remove('activo');
+        }
+
+        if (datos.length === 0) {
+            contenedor.innerHTML = "<p style='text-align:center; color:#64748B;'>No hay resultados para esta búsqueda.</p>";
+            return;
+        }
+
+        datos.forEach((c, index) => {
+            const div = document.createElement('div');
+            div.className = 'cafe-card';
+            const badgeTop = c.esTop ? `<span class="top-badge">★ Top 100</span>` : "";
+            const badgeDistancia = puntoOrigen ? `<div class="distancia-badge">📍 ${c.distTexto}</div>` : "";
+            const linkMapa = `http://googleusercontent.com/maps.google.com/dir/?api=1&destination=${c.lat},${c.lon}`;
+
+            div.innerHTML = `
+                <div class="cafe-info">
+                    ${badgeDistancia}
+                    <div class="cafe-header">
+                        <h3 class="cafe-title">${puntoOrigen ? (index + 1) + '. ' : ''}${c.nombre}</h3>
+                        ${badgeTop}
+                    </div>
+                    <p class="cafe-city">${c.ubicacion} • <b>${c.ciudad}</b></p>
+                </div>
+                <div class="links">
+                    <a href="${c.instagram}" target="_blank">📱 IG</a>
+                    <a href="${linkMapa}" target="_blank">📍 MAPA</a>
+                </div>
+            `;
+            contenedor.appendChild(div);
+            
+            if (puntoOrigen) {
+                L.circleMarker([c.lat, c.lon], { radius: 7, color: c.esTop ? "#D97706" : "#5D4037", fillOpacity: 0.9 }).addTo(layerRadar).bindPopup(`<b>${c.nombre}</b>`);
+            }
+        });
+
+        if (puntoOrigen && datos.length > 0) {
+            const group = new L.featureGroup(layerRadar.getLayers());
+            mapaRadar.fitBounds(group.getBounds().pad(0.1));
+        }
+    }
+
+    function filtrarPorTexto() {
+        const ciudadSel = document.getElementById('select-ciudad').value;
+        const txt = document.getElementById('input-busqueda').value.toLowerCase();
+        
+        let filtrados = bd.filter(c => {
+            const coincideCiudad = (ciudadSel === "Todas") || (c.ciudad === ciudadSel);
+            const coincideTxt = c.nombre.toLowerCase().includes(txt) || c.ubicacion.toLowerCase().includes(txt);
+            return coincideCiudad && coincideTxt;
+        });
+        
+        if (ciudadSel !== "Todas" && txt === "") {
+            document.getElementById('status').innerText = `Mostrando cafeterías en ${ciudadSel}`;
+        } else {
+            document.getElementById('status').innerText = "";
+        }
+
+        renderizarLista(filtrados);
+    }
+
+    async function medirDesdeDireccion() {
+        const dir = document.getElementById('input-busqueda').value.trim();
+        const ciudadSel = document.getElementById('select-ciudad').value;
+        if (!dir) return;
+        document.getElementById('status').innerText = "Rastreando ubicación...";
+        const query = `${dir}, ${ciudadSel !== 'Todas' ? ciudadSel : 'Argentina'}`;
+        try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+            const data = await res.json();
+            if (data.length > 0) {
+                document.getElementById('status').innerText = "";
+                renderizarLista(bd, { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) });
+            } else {
+                document.getElementById('status').innerText = "No se encontró la dirección exacta.";
+            }
+        } catch (e) { 
+            document.getElementById('status').innerText = "Error satelital.";
+        }
+    }
+
+    function usarMiGPS() {
+        document.getElementById('status').innerText = "Rastreando ubicación...";
+        navigator.geolocation.getCurrentPosition(pos => {
+            document.getElementById('status').innerText = "";
+            renderizarLista(bd, { lat: pos.coords.latitude, lon: pos.coords.longitude });
+        }, err => {
+            document.getElementById('status').innerText = "Error de GPS. Verifica los permisos de tu navegador.";
+        });
+    }
+
+    function cambiarPestaña(tab, btnElement) {
+        document.getElementById('tab-lista').classList.toggle('hidden', tab !== 'lista');
+        document.getElementById('tab-mapa').classList.toggle('hidden', tab !== 'mapa');
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btnElement.classList.add('active');
+        if (tab === 'mapa') { setTimeout(() => { mapaFederal.invalidateSize(); }, 300); }
+    }
+
+    iniciarSistema();
+</script>
+</body>
+</html>
+
