@@ -124,7 +124,6 @@
         let completados = 0;
         const totalHojas = Object.keys(GIDS).length;
 
-        // Función centralizada para saber cuándo terminó
         const procesarFinal = () => {
             bd.sort((a, b) => {
                 if(a.ciudad === b.ciudad) return a.nombre.localeCompare(b.nombre);
@@ -161,14 +160,12 @@
                     if (completados === totalHojas) procesarFinal();
                 },
                 error: function(err) {
-                    // SEGURO ANTI-CUELGUES: Si falla una, sigue igual.
                     console.error("Error al cargar datos de: ", ciudad);
                     completados++;
                     if (completados === totalHojas) procesarFinal();
                 }
             });
 
-            // FRENO ABS: Pausa de 150ms entre descargas para no bloquear Google Sheets
             await new Promise(resolve => setTimeout(resolve, 150));
         }
     }
@@ -217,8 +214,14 @@
             }).sort((a, b) => a.distKm - b.distKm).slice(0, 10); 
             
             radarDiv.classList.add('activo');
-            setTimeout(() => { mapaRadar.invalidateSize(); }, 100);
-            L.circleMarker([puntoOrigen.lat, puntoOrigen.lon], { radius: 10, color: "#059669", fillColor: "#ffffff", fillOpacity: 1, weight: 3 }).addTo(layerRadar);
+            
+            // LA MAGIA ESTÁ ACÁ: Fija la cámara en el origen con Zoom nivel 15 después de que el contenedor se hace visible
+            setTimeout(() => { 
+                mapaRadar.invalidateSize(); 
+                mapaRadar.setView([puntoOrigen.lat, puntoOrigen.lon], 15);
+            }, 250);
+
+            L.circleMarker([puntoOrigen.lat, puntoOrigen.lon], { radius: 10, color: "#059669", fillColor: "#ffffff", fillOpacity: 1, weight: 3 }).addTo(layerRadar).bindPopup("<b>Tu búsqueda</b>").openPopup();
         } else {
             radarDiv.classList.remove('activo');
         }
@@ -255,11 +258,6 @@
                 L.circleMarker([c.lat, c.lon], { radius: 7, color: c.esTop ? "#D97706" : "#5D4037", fillOpacity: 0.9 }).addTo(layerRadar).bindPopup(`<b>${c.nombre}</b>`);
             }
         });
-
-        if (puntoOrigen && datos.length > 0) {
-            const group = new L.featureGroup(layerRadar.getLayers());
-            mapaRadar.fitBounds(group.getBounds().pad(0.1));
-        }
     }
 
     function filtrarPorTexto() {
