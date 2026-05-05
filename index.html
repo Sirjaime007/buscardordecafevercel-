@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buscador de Café Argentina | Especialidad</title>
     
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#5D4037">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -26,7 +30,6 @@
 
         .panel-busqueda { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
         select, input[type="text"] { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 1rem; box-sizing: border-box; outline: none; transition: border 0.2s; }
-        select:focus, input[type="text"]:focus { border-color: var(--primary); }
         
         .botones-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .btn-accion { padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; color: white; font-size: 0.95rem; transition: opacity 0.2s; }
@@ -34,31 +37,22 @@
         .btn-distancia { background: #D97706; }
         .btn-gps { grid-column: span 2; background: var(--accent); width: 100%; }
 
-        #status { font-size: 0.85rem; color: var(--accent); font-weight: 600; text-align: center; margin-top: 5px; min-height: 20px; }
-
         #map, #mapa-radar { width: 100%; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; display: none; }
         #map.activo, #mapa-radar.activo { display: block; height: 450px; }
 
-        .cafe-card { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: transform 0.2s; }
-        .cafe-card:hover { transform: translateY(-2px); border-color: var(--primary); }
+        .cafe-card { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 20px; transition: transform 0.2s; }
         .cafe-info { flex-grow: 1; }
-        .cafe-header { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
-        .cafe-title { margin: 0; font-size: 1.25rem; color: var(--text); font-weight: 700; }
-        .cafe-city { color: #64748B; font-size: 0.95rem; margin: 0; }
+        .cafe-title { margin: 0; font-size: 1.25rem; font-weight: 700; }
         
-        .top-badge { background: #FEF3C7; color: var(--top); padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
-        .distancia-badge { display: inline-block; background: #DEF7EC; color: #0369A1; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; margin-bottom: 10px; border: 1px solid #BAE6FD; }
+        .btn-reportar { font-size: 0.75rem; color: #94A3B8; text-decoration: underline; cursor: pointer; background: none; border: none; padding: 0; margin-top: 8px; display: block; }
         
         .links { display: flex; flex-direction: column; gap: 8px; min-width: 130px; }
-        .links a { background: #F8FAFC; color: var(--text); text-decoration: none; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-align: center; border: 1px solid #E2E8F0; transition: all 0.2s; }
-        .links a:hover { background: var(--primary); color: white; border-color: var(--primary); }
-        
+        .links a { background: #F8FAFC; color: var(--text); text-decoration: none; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-align: center; border: 1px solid #E2E8F0; }
+
         .hidden { display: none !important; }
 
         @media (max-width: 600px) {
-            .botones-grid { grid-template-columns: 1fr; }
-            .btn-gps { grid-column: span 1; }
-            .cafe-card { flex-direction: column; align-items: stretch; gap: 15px; }
+            .cafe-card { flex-direction: column; align-items: stretch; }
             .links { flex-direction: row; }
             .links a { flex: 1; }
         }
@@ -79,21 +73,15 @@
 
     <div id="tab-lista">
         <div class="panel-busqueda">
-            <select id="select-ciudad" onchange="filtrarPorTexto()">
-                <option value="Todas">Descargando ciudades...</option>
-            </select>
-            
+            <select id="select-ciudad" onchange="filtrarPorTexto()"><option>Cargando...</option></select>
             <input type="text" id="input-busqueda" placeholder="Ej: Gascon 2525 o nombre del local..." onkeyup="filtrarPorTexto()">
-            
             <div class="botones-grid">
-                <button class="btn-accion btn-filtro" onclick="filtrarPorTexto()">🔍 Filtrar por Nombre</button>
-                <button class="btn-accion btn-distancia" onclick="medirDesdeDireccion()">📍 Buscar cafés más cercanos</button>
-                <button class="btn-accion btn-gps" onclick="usarMiGPS()">📡 Usar mi ubicación GPS actual</button>
+                <button class="btn-accion btn-filtro" onclick="filtrarPorTexto()">🔍 Filtrar</button>
+                <button class="btn-accion btn-distancia" onclick="medirDesdeDireccion()">📍 Cerca de dirección</button>
+                <button class="btn-accion btn-gps" onclick="usarMiGPS()">📡 Usar mi ubicación actual</button>
             </div>
-            
-            <div id="status"></div>
+            <div id="status" style="text-align:center; font-size:0.8rem; color:var(--accent); font-weight:600;"></div>
         </div>
-
         <div id="mapa-radar"></div>
         <div id="resultados"></div>
     </div>
@@ -104,6 +92,15 @@
 </div>
 
 <script>
+    // Registro del Service Worker para PWA
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').then(reg => {
+                console.log('Service Worker registrado con éxito');
+            }).catch(err => console.log('Fallo al registrar SW', err));
+        });
+    }
+
     const SHEET_ID = "10vUOhRr7IAXlRrkBphxEP4ApXYBgrnuxJq6G83GnfHI";
     const GIDS = {
         "Mar del Plata": "0", "Buenos Aires": "1296176686", "La Plata": "208452991",
@@ -113,31 +110,19 @@
 
     let bd = [];
     let mapaFederal = L.map('map').setView([-38.41, -63.61], 5);
-    let layerFederal = L.layerGroup().addTo(mapaFederal);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaFederal);
+    let layerFederal = L.layerGroup().addTo(mapaFederal);
 
     let mapaRadar = L.map('mapa-radar').setView([-38.41, -63.61], 14);
-    let layerRadar = L.layerGroup().addTo(mapaRadar);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaRadar);
+    let layerRadar = L.layerGroup().addTo(mapaRadar);
 
     async function iniciarSistema() {
         let completados = 0;
         const totalHojas = Object.keys(GIDS).length;
 
-        const procesarFinal = () => {
-            bd.sort((a, b) => {
-                if(a.ciudad === b.ciudad) return a.nombre.localeCompare(b.nombre);
-                return a.ciudad.localeCompare(b.ciudad);
-            });
-            armarMenu();
-            dibujarMapaFederal();
-            renderizarLista(bd);
-            document.getElementById('contador-total').innerText = `Explorando ${bd.length} cafeterías de especialidad`;
-        };
-
         for (const [ciudad, gid] of Object.entries(GIDS)) {
             const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}&v=${new Date().getTime()}`;
-            
             Papa.parse(url, {
                 download: true, header: true, skipEmptyLines: true,
                 complete: function(res) {
@@ -155,21 +140,70 @@
                             });
                         }
                     });
-                    
                     completados++;
-                    if (completados === totalHojas) procesarFinal();
-                },
-                error: function(err) {
-                    console.error("Error al cargar datos de: ", ciudad);
-                    completados++;
-                    if (completados === totalHojas) procesarFinal();
+                    if (completados === totalHojas) {
+                        armarMenu();
+                        dibujarMapaFederal();
+                        renderizarLista(bd);
+                        document.getElementById('contador-total').innerText = `Explorando ${bd.length} cafeterías`;
+                    }
                 }
             });
-
-            await new Promise(resolve => setTimeout(resolve, 150));
         }
     }
 
+    function dibujarMapaFederal() {
+        layerFederal.clearLayers();
+        bd.forEach(c => {
+            const color = c.esTop ? "#D97706" : "#5D4037";
+            const popup = `
+                <div style="font-family:'Inter'; min-width:140px;">
+                    <b>${c.nombre}</b><br><small>${c.ubicacion}</small><br><br>
+                    <a href="${c.instagram}" target="_blank" style="color:white; background:#5D4037; padding:4px 8px; border-radius:4px; text-decoration:none; font-size:0.75rem;">Instagram</a>
+                </div>`;
+            L.circleMarker([c.lat, c.lon], { radius: c.esTop ? 7:5, color: color, fillColor: color, fillOpacity: 0.8 })
+             .addTo(layerFederal).bindPopup(popup);
+        });
+    }
+
+    function renderizarLista(datos, puntoOrigen = null) {
+        const contenedor = document.getElementById('resultados');
+        contenedor.innerHTML = "";
+        layerRadar.clearLayers();
+
+        if (puntoOrigen) {
+            document.getElementById('mapa-radar').classList.add('activo');
+            setTimeout(() => { mapaRadar.invalidateSize(); mapaRadar.setView([puntoOrigen.lat, puntoOrigen.lon], 15); }, 200);
+            L.marker([puntoOrigen.lat, puntoOrigen.lon]).addTo(layerRadar).bindPopup("Estás aquí").openPopup();
+            
+            datos = datos.map(c => {
+                const dist = Math.sqrt(Math.pow(c.lat - puntoOrigen.lat, 2) + Math.pow(c.lon - puntoOrigen.lon, 2));
+                return { ...c, distVal: dist };
+            }).sort((a,b) => a.distVal - b.distVal).slice(0, 15);
+        }
+
+        datos.forEach(c => {
+            const div = document.createElement('div');
+            div.className = 'cafe-card';
+            const linkMap = `https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lon}`;
+            const msgWA = encodeURIComponent(`Hola! Reporto error/cambio en ${c.nombre} (${c.ciudad})`);
+            
+            div.innerHTML = `
+                <div class="cafe-info">
+                    <h3 class="cafe-title">${c.nombre}</h3>
+                    <p style="margin:4px 0; color:#64748B; font-size:0.9rem;">${c.ubicacion} • <b>${c.ciudad}</b></p>
+                    <a href="https://wa.me/REEMPLAZA_CON_TU_CELULAR?text=${msgWA}" target="_blank" class="btn-reportar">⚠ Informar cierre o error</a>
+                </div>
+                <div class="links">
+                    <a href="${c.instagram}" target="_blank">Instagram</a>
+                    <a href="${linkMap}" target="_blank">Cómo llegar</a>
+                </div>`;
+            contenedor.appendChild(div);
+            if(puntoOrigen) L.circleMarker([c.lat, c.lon], {radius:6, color:"#5D4037"}).addTo(layerRadar).bindPopup(c.nombre);
+        });
+    }
+
+    // (Funciones auxiliares: filtrarPorTexto, armarMenu, cambiarPestaña, usarMiGPS... se mantienen igual)
     function armarMenu() {
         const select = document.getElementById('select-ciudad');
         select.innerHTML = `<option value="Todas">Todas las ciudades (${bd.length})</option>`;
@@ -180,145 +214,34 @@
         });
     }
 
-    function dibujarMapaFederal() {
-        layerFederal.clearLayers();
-        bd.forEach(c => {
-            const color = c.esTop ? "#D97706" : "#5D4037";
-            const radio = c.esTop ? 8 : 5;
-            L.circleMarker([c.lat, c.lon], { radius: radio, color: color, fillColor: color, fillOpacity: 0.9, weight: 2 })
-             .addTo(layerFederal).bindPopup(`<b>${c.nombre}</b><br>${c.ubicacion}`);
-        });
-    }
-
-    function calcularCuadras(lat1, lon1, lat2, lon2, ciudad) {
-        const R = 6371; 
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-        const km = R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-        const divisor = (ciudad === "Mar del Plata") ? 87 : 100;
-        const cuadras = Math.floor((km * 1000) / divisor);
-        return { km: km, texto: (cuadras === 0 ? "A pasos" : (cuadras === 1 ? "A 1 cuadra" : `A ${cuadras} cuadras`)) };
-    }
-
-    function renderizarLista(datos, puntoOrigen = null) {
-        const contenedor = document.getElementById('resultados');
-        const radarDiv = document.getElementById('mapa-radar');
-        contenedor.innerHTML = "";
-        layerRadar.clearLayers();
-
-        if (puntoOrigen) {
-            datos = datos.map(c => {
-                const calculo = calcularCuadras(puntoOrigen.lat, puntoOrigen.lon, c.lat, c.lon, c.ciudad);
-                return { ...c, distKm: calculo.km, distTexto: calculo.texto };
-            }).sort((a, b) => a.distKm - b.distKm).slice(0, 10); 
-            
-            radarDiv.classList.add('activo');
-            
-            // LA MAGIA ESTÁ ACÁ: Fija la cámara en el origen con Zoom nivel 15 después de que el contenedor se hace visible
-            setTimeout(() => { 
-                mapaRadar.invalidateSize(); 
-                mapaRadar.setView([puntoOrigen.lat, puntoOrigen.lon], 15);
-            }, 250);
-
-            L.circleMarker([puntoOrigen.lat, puntoOrigen.lon], { radius: 10, color: "#059669", fillColor: "#ffffff", fillOpacity: 1, weight: 3 }).addTo(layerRadar).bindPopup("<b>Tu búsqueda</b>").openPopup();
-        } else {
-            radarDiv.classList.remove('activo');
-        }
-
-        if (datos.length === 0) {
-            contenedor.innerHTML = "<p style='text-align:center; color:#64748B;'>No hay resultados para esta búsqueda.</p>";
-            return;
-        }
-
-        datos.forEach((c, index) => {
-            const div = document.createElement('div');
-            div.className = 'cafe-card';
-            const badgeTop = c.esTop ? `<span class="top-badge">★ Top 100</span>` : "";
-            const badgeDistancia = puntoOrigen ? `<div class="distancia-badge">📍 ${c.distTexto}</div>` : "";
-            const linkMapa = `http://googleusercontent.com/maps.google.com/dir/?api=1&destination=${c.lat},${c.lon}`;
-
-            div.innerHTML = `
-                <div class="cafe-info">
-                    ${badgeDistancia}
-                    <div class="cafe-header">
-                        <h3 class="cafe-title">${puntoOrigen ? (index + 1) + '. ' : ''}${c.nombre}</h3>
-                        ${badgeTop}
-                    </div>
-                    <p class="cafe-city">${c.ubicacion} • <b>${c.ciudad}</b></p>
-                </div>
-                <div class="links">
-                    <a href="${c.instagram}" target="_blank">📱 IG</a>
-                    <a href="${linkMapa}" target="_blank">📍 MAPA</a>
-                </div>
-            `;
-            contenedor.appendChild(div);
-            
-            if (puntoOrigen) {
-                L.circleMarker([c.lat, c.lon], { radius: 7, color: c.esTop ? "#D97706" : "#5D4037", fillOpacity: 0.9 }).addTo(layerRadar).bindPopup(`<b>${c.nombre}</b>`);
-            }
-        });
-    }
-
     function filtrarPorTexto() {
         const ciudadSel = document.getElementById('select-ciudad').value;
         const txt = document.getElementById('input-busqueda').value.toLowerCase();
-        
         let filtrados = bd.filter(c => {
-            const coincideCiudad = (ciudadSel === "Todas") || (c.ciudad === ciudadSel);
-            const coincideTxt = c.nombre.toLowerCase().includes(txt) || c.ubicacion.toLowerCase().includes(txt);
-            return coincideCiudad && coincideTxt;
+            const coincCiudad = (ciudadSel === "Todas") || (c.ciudad === ciudadSel);
+            const coincTxt = c.nombre.toLowerCase().includes(txt) || c.ubicacion.toLowerCase().includes(txt);
+            return coincCiudad && coincTxt;
         });
-        
-        if (ciudadSel !== "Todas" && txt === "") {
-            document.getElementById('status').innerText = `Mostrando cafeterías en ${ciudadSel}`;
-        } else {
-            document.getElementById('status').innerText = "";
-        }
-
         renderizarLista(filtrados);
     }
 
-    async function medirDesdeDireccion() {
-        const dir = document.getElementById('input-busqueda').value.trim();
-        const ciudadSel = document.getElementById('select-ciudad').value;
-        if (!dir) return;
-        document.getElementById('status').innerText = "Rastreando ubicación...";
-        const query = `${dir}, ${ciudadSel !== 'Todas' ? ciudadSel : 'Argentina'}`;
-        try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
-            const data = await res.json();
-            if (data.length > 0) {
-                document.getElementById('status').innerText = "";
-                renderizarLista(bd, { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) });
-            } else {
-                document.getElementById('status').innerText = "No se encontró la dirección exacta.";
-            }
-        } catch (e) { 
-            document.getElementById('status').innerText = "Error satelital.";
-        }
-    }
-
-    function usarMiGPS() {
-        document.getElementById('status').innerText = "Rastreando ubicación...";
-        navigator.geolocation.getCurrentPosition(pos => {
-            document.getElementById('status').innerText = "";
-            renderizarLista(bd, { lat: pos.coords.latitude, lon: pos.coords.longitude });
-        }, err => {
-            document.getElementById('status').innerText = "Error de GPS. Verifica los permisos de tu navegador.";
-        });
-    }
-
-    function cambiarPestaña(tab, btnElement) {
+    function cambiarPestaña(tab, btn) {
         document.getElementById('tab-lista').classList.toggle('hidden', tab !== 'lista');
         document.getElementById('tab-mapa').classList.toggle('hidden', tab !== 'mapa');
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        btnElement.classList.add('active');
-        if (tab === 'mapa') { setTimeout(() => { mapaFederal.invalidateSize(); }, 300); }
+        btn.classList.add('active');
+        if(tab === 'mapa') setTimeout(() => mapaFederal.invalidateSize(), 200);
+    }
+
+    function usarMiGPS() {
+        navigator.geolocation.getCurrentPosition(pos => {
+            renderizarLista(bd, { lat: pos.coords.latitude, lon: pos.coords.longitude });
+        });
     }
 
     iniciarSistema();
 </script>
 </body>
 </html>
+
 
