@@ -7,7 +7,7 @@
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#5D4037">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/924/924514.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
@@ -30,6 +30,7 @@
 
         .panel-busqueda { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
         select, input[type="text"] { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 1rem; box-sizing: border-box; outline: none; transition: border 0.2s; }
+        select:focus, input[type="text"]:focus { border-color: var(--primary); }
         
         .botones-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .btn-accion { padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; color: white; font-size: 0.95rem; transition: opacity 0.2s; }
@@ -40,19 +41,30 @@
         #map, #mapa-radar { width: 100%; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; display: none; }
         #map.activo, #mapa-radar.activo { display: block; height: 450px; }
 
-        .cafe-card { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 20px; transition: transform 0.2s; }
+        .cafe-card { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: transform 0.2s; }
+        .cafe-card:hover { transform: translateY(-2px); border-color: var(--primary); }
         .cafe-info { flex-grow: 1; }
-        .cafe-title { margin: 0; font-size: 1.25rem; font-weight: 700; }
+        .cafe-header { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+        .cafe-title { margin: 0; font-size: 1.25rem; color: var(--text); font-weight: 700; }
+        .cafe-city { color: #64748B; font-size: 0.95rem; margin: 0; }
         
+        .top-badge { background: #FEF3C7; color: var(--top); padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
         .btn-reportar { font-size: 0.75rem; color: #94A3B8; text-decoration: underline; cursor: pointer; background: none; border: none; padding: 0; margin-top: 8px; display: block; }
-        
-        .links { display: flex; flex-direction: column; gap: 8px; min-width: 130px; }
-        .links a { background: #F8FAFC; color: var(--text); text-decoration: none; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-align: center; border: 1px solid #E2E8F0; }
+        .btn-reportar:hover { color: #EF4444; }
 
+        .links { display: flex; flex-direction: column; gap: 8px; min-width: 130px; }
+        .links a { background: #F8FAFC; color: var(--text); text-decoration: none; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-align: center; border: 1px solid #E2E8F0; transition: all 0.2s; }
+        .links a:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        
+        footer { margin-top: 50px; padding: 40px 0; text-align: center; border-top: 1px solid var(--border); color: #64748B; line-height: 1.6; }
+        footer a { color: var(--primary); text-decoration: none; font-weight: 700; }
+        
         .hidden { display: none !important; }
 
         @media (max-width: 600px) {
-            .cafe-card { flex-direction: column; align-items: stretch; }
+            .botones-grid { grid-template-columns: 1fr; }
+            .btn-gps { grid-column: span 1; }
+            .cafe-card { flex-direction: column; align-items: stretch; gap: 15px; }
             .links { flex-direction: row; }
             .links a { flex: 1; }
         }
@@ -73,14 +85,14 @@
 
     <div id="tab-lista">
         <div class="panel-busqueda">
-            <select id="select-ciudad" onchange="filtrarPorTexto()"><option>Cargando...</option></select>
+            <select id="select-ciudad" onchange="filtrarPorTexto()"><option value="Todas">Descargando ciudades...</option></select>
             <input type="text" id="input-busqueda" placeholder="Ej: Gascon 2525 o nombre del local..." onkeyup="filtrarPorTexto()">
             <div class="botones-grid">
                 <button class="btn-accion btn-filtro" onclick="filtrarPorTexto()">🔍 Filtrar</button>
                 <button class="btn-accion btn-distancia" onclick="medirDesdeDireccion()">📍 Cerca de dirección</button>
                 <button class="btn-accion btn-gps" onclick="usarMiGPS()">📡 Usar mi ubicación actual</button>
             </div>
-            <div id="status" style="text-align:center; font-size:0.8rem; color:var(--accent); font-weight:600;"></div>
+            <div id="status" style="text-align:center; font-size:0.85rem; color:var(--accent); font-weight:600; min-height:20px;"></div>
         </div>
         <div id="mapa-radar"></div>
         <div id="resultados"></div>
@@ -89,15 +101,18 @@
     <div id="tab-mapa" class="hidden">
         <div id="map" class="activo"></div>
     </div>
+
+    <footer>
+        <p><strong>© 2026 Buscador de Café Argentina</strong><br>Curaduría de café de especialidad y trazabilidad.</p>
+        <p>¿Tu cafetería no está o hay un error? <br> Escribinos a: <a href="mailto:buscadordecafe@gmail.com">buscadordecafe@gmail.com</a></p>
+    </footer>
 </div>
 
 <script>
-    // Registro del Service Worker para PWA
+    // Registro de PWA
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js').then(reg => {
-                console.log('Service Worker registrado con éxito');
-            }).catch(err => console.log('Fallo al registrar SW', err));
+            navigator.serviceWorker.register('sw.js').catch(err => console.log('Error SW:', err));
         });
     }
 
@@ -142,6 +157,7 @@
                     });
                     completados++;
                     if (completados === totalHojas) {
+                        bd.sort((a,b) => a.nombre.localeCompare(b.nombre));
                         armarMenu();
                         dibujarMapaFederal();
                         renderizarLista(bd);
@@ -158,10 +174,10 @@
             const color = c.esTop ? "#D97706" : "#5D4037";
             const popup = `
                 <div style="font-family:'Inter'; min-width:140px;">
-                    <b>${c.nombre}</b><br><small>${c.ubicacion}</small><br><br>
-                    <a href="${c.instagram}" target="_blank" style="color:white; background:#5D4037; padding:4px 8px; border-radius:4px; text-decoration:none; font-size:0.75rem;">Instagram</a>
+                    <b style="font-size:1rem;">${c.nombre}</b><br><small>${c.ubicacion}</small><br><br>
+                    <a href="${c.instagram}" target="_blank" style="color:white; background:#5D4037; padding:5px 10px; border-radius:6px; text-decoration:none; display:block; text-align:center; font-size:0.8rem;">Ver Instagram</a>
                 </div>`;
-            L.circleMarker([c.lat, c.lon], { radius: c.esTop ? 7:5, color: color, fillColor: color, fillOpacity: 0.8 })
+            L.circleMarker([c.lat, c.lon], { radius: c.esTop ? 8:5, color: color, fillColor: color, fillOpacity: 0.85, weight: 2 })
              .addTo(layerFederal).bindPopup(popup);
         });
     }
@@ -173,37 +189,44 @@
 
         if (puntoOrigen) {
             document.getElementById('mapa-radar').classList.add('activo');
-            setTimeout(() => { mapaRadar.invalidateSize(); mapaRadar.setView([puntoOrigen.lat, puntoOrigen.lon], 15); }, 200);
-            L.marker([puntoOrigen.lat, puntoOrigen.lon]).addTo(layerRadar).bindPopup("Estás aquí").openPopup();
+            setTimeout(() => { mapaRadar.invalidateSize(); mapaRadar.setView([puntoOrigen.lat, puntoOrigen.lon], 15); }, 250);
+            L.circleMarker([puntoOrigen.lat, puntoOrigen.lon], { radius: 10, color: "#059669", fillColor: "#fff", weight: 3, fillOpacity: 1 }).addTo(layerRadar).bindPopup("Tu búsqueda").openPopup();
             
             datos = datos.map(c => {
-                const dist = Math.sqrt(Math.pow(c.lat - puntoOrigen.lat, 2) + Math.pow(c.lon - puntoOrigen.lon, 2));
-                return { ...c, distVal: dist };
-            }).sort((a,b) => a.distVal - b.distVal).slice(0, 15);
+                const dLat = (c.lat - puntoOrigen.lat) * Math.PI / 180;
+                const dLon = (c.lon - puntoOrigen.lon) * Math.PI / 180;
+                const dist = 6371 * 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(dLat/2), 2) + Math.cos(puntoOrigen.lat * Math.PI / 180) * Math.cos(c.lat * Math.PI / 180) * Math.pow(Math.sin(dLon/2), 2)));
+                return { ...c, distKm: dist };
+            }).sort((a,b) => a.distKm - b.distKm).slice(0, 15);
         }
 
         datos.forEach(c => {
             const div = document.createElement('div');
             div.className = 'cafe-card';
             const linkMap = `https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lon}`;
-            const msgWA = encodeURIComponent(`Hola! Reporto error/cambio en ${c.nombre} (${c.ciudad})`);
+            const emailDestino = "buscadordecafe@gmail.com";
+            const asunto = encodeURIComponent(`Reporte de error: ${c.nombre} (${c.ciudad})`);
+            const cuerpo = encodeURIComponent(`Hola,\n\nQuería reportar un detalle en ${c.nombre}:\n\n[Escribí aquí el error o si el lugar cerró]\n\nSaludos.`);
+            const linkMail = `mailto:${emailDestino}?subject=${asunto}&body=${cuerpo}`;
             
             div.innerHTML = `
                 <div class="cafe-info">
-                    <h3 class="cafe-title">${c.nombre}</h3>
-                    <p style="margin:4px 0; color:#64748B; font-size:0.9rem;">${c.ubicacion} • <b>${c.ciudad}</b></p>
-                    <a href="https://wa.me/REEMPLAZA_CON_TU_CELULAR?text=${msgWA}" target="_blank" class="btn-reportar">⚠ Informar cierre o error</a>
+                    <div class="cafe-header">
+                        <h3 class="cafe-title">${c.nombre}</h3>
+                        ${c.esTop ? '<span class="top-badge">★ Top 100</span>' : ''}
+                    </div>
+                    <p class="cafe-city">${c.ubicacion} • <b>${c.ciudad}</b></p>
+                    <a href="${linkMail}" class="btn-reportar">⚠ Reportar error o cierre</a>
                 </div>
                 <div class="links">
                     <a href="${c.instagram}" target="_blank">Instagram</a>
                     <a href="${linkMap}" target="_blank">Cómo llegar</a>
                 </div>`;
             contenedor.appendChild(div);
-            if(puntoOrigen) L.circleMarker([c.lat, c.lon], {radius:6, color:"#5D4037"}).addTo(layerRadar).bindPopup(c.nombre);
+            if(puntoOrigen) L.circleMarker([c.lat, c.lon], {radius:7, color:"#5D4037", fillOpacity: 0.9}).addTo(layerRadar).bindPopup(c.nombre);
         });
     }
 
-    // (Funciones auxiliares: filtrarPorTexto, armarMenu, cambiarPestaña, usarMiGPS... se mantienen igual)
     function armarMenu() {
         const select = document.getElementById('select-ciudad');
         select.innerHTML = `<option value="Todas">Todas las ciudades (${bd.length})</option>`;
@@ -225,23 +248,42 @@
         renderizarLista(filtrados);
     }
 
+    async function medirDesdeDireccion() {
+        const dir = document.getElementById('input-busqueda').value.trim();
+        const ciudadSel = document.getElementById('select-ciudad').value;
+        if (!dir) return;
+        document.getElementById('status').innerText = "Buscando dirección...";
+        const query = `${dir}, ${ciudadSel !== 'Todas' ? ciudadSel : 'Argentina'}`;
+        try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+            const data = await res.json();
+            if (data.length > 0) {
+                document.getElementById('status').innerText = "";
+                renderizarLista(bd, { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) });
+            } else { document.getElementById('status').innerText = "Dirección no encontrada."; }
+        } catch (e) { document.getElementById('status').innerText = "Error de red."; }
+    }
+
+    function usarMiGPS() {
+        document.getElementById('status').innerText = "Localizando...";
+        navigator.geolocation.getCurrentPosition(pos => {
+            document.getElementById('status').innerText = "";
+            renderizarLista(bd, { lat: pos.coords.latitude, lon: pos.coords.longitude });
+        }, () => { document.getElementById('status').innerText = "Error de GPS."; });
+    }
+
     function cambiarPestaña(tab, btn) {
         document.getElementById('tab-lista').classList.toggle('hidden', tab !== 'lista');
         document.getElementById('tab-mapa').classList.toggle('hidden', tab !== 'mapa');
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        if(tab === 'mapa') setTimeout(() => mapaFederal.invalidateSize(), 200);
-    }
-
-    function usarMiGPS() {
-        navigator.geolocation.getCurrentPosition(pos => {
-            renderizarLista(bd, { lat: pos.coords.latitude, lon: pos.coords.longitude });
-        });
+        if(tab === 'mapa') setTimeout(() => mapaFederal.invalidateSize(), 300);
     }
 
     iniciarSistema();
 </script>
 </body>
 </html>
+
 
 
