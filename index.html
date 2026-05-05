@@ -39,13 +39,19 @@
         .panel { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
         select, input { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; box-sizing: border-box; outline: none; }
         
-        .btn-accion { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; color: white; margin-top: 5px; }
-        .btn-run { background: var(--running); font-size: 1rem; }
+        /* RESTAURACIÓN DE LA GRILLA DE BOTONES */
+        .botones-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .btn-accion { padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; color: white; font-size: 0.9rem; transition: opacity 0.2s; }
+        .btn-filtro { background: #475569; }
+        .btn-distancia { background: #D97706; }
+        .btn-gps { grid-column: span 2; background: var(--accent); width: 100%; }
+        .btn-run { background: var(--running); font-size: 1rem; width: 100%; margin-top: 10px; }
 
         #map, #mapa-radar, #mapa-running { width: 100%; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; display: none; height: 400px; }
         .activo { display: block !important; }
 
         .cafe-card { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+        .cafe-info { flex-grow: 1; }
         .puntuacion-box { color: var(--top); font-weight: 800; font-size: 0.9rem; margin: 5px 0; }
         .estrellas-voto { display: flex; gap: 5px; margin-top: 10px; }
         .estrellas-voto span { cursor: pointer; font-size: 1.3rem; filter: grayscale(1); transition: transform 0.2s; }
@@ -56,11 +62,9 @@
 
         .hidden { display: none !important; }
         footer { margin-top: 50px; text-align: center; color: #64748B; border-top: 1px solid var(--border); padding-top: 20px; font-size: 0.85rem; }
-        
-        /* Ocultar panel de instrucciones de ruta */
         .leaflet-routing-container { display: none !important; }
 
-        @media (max-width: 600px) { .cafe-card { flex-direction: column; align-items: stretch; } .links { flex-direction: row; } .links a { flex: 1; } }
+        @media (max-width: 600px) { .cafe-card { flex-direction: column; align-items: stretch; } .links { flex-direction: row; } .links a { flex: 1; } .botones-grid { grid-template-columns: 1fr; } .btn-gps { grid-column: span 1; } }
     </style>
 </head>
 <body>
@@ -68,7 +72,7 @@
 <div class="container">
     <header>
         <h1>Buscador de Café <span>Argentina</span></h1>
-        <p id="contador-total">Cargando comunidad...</p>
+        <p id="contador-total">Sincronizando cafeterías...</p>
     </header>
 
     <div class="tabs">
@@ -80,8 +84,15 @@
     <div id="tab-lista">
         <div class="panel">
             <select id="select-ciudad" onchange="filtrarPorTexto()"></select>
-            <input type="text" id="input-busqueda" placeholder="Nombre o dirección..." onkeyup="filtrarPorTexto()">
-            <button class="btn-accion" style="background:var(--accent)" onclick="usarMiGPS()">📡 Cafés a mi alrededor</button>
+            <input type="text" id="input-busqueda" placeholder="Ej: Gascon 2525 o nombre del local..." onkeyup="filtrarPorTexto()">
+            
+            <div class="botones-grid">
+                <button class="btn-accion btn-filtro" onclick="filtrarPorTexto()">🔍 Filtrar por Nombre</button>
+                <button class="btn-accion btn-distancia" onclick="medirDesdeDireccion()">📍 Dirección exacta</button>
+                <button class="btn-accion btn-gps" onclick="usarMiGPS()">📡 Usar mi GPS</button>
+            </div>
+            
+            <div id="status" style="text-align:center; font-weight:600; color:var(--accent); min-height:20px;"></div>
         </div>
         <div id="mapa-radar"></div>
         <div id="resultados"></div>
@@ -91,7 +102,7 @@
 
     <div id="tab-running" class="hidden">
         <div class="panel">
-            <h3 style="margin-top:0">Tu meta de hoy:</h3>
+            <h3 style="margin:0 0 15px 0">Objetivo del entrenamiento:</h3>
             <select id="run-ciudad"><option value="">Seleccioná ciudad...</option></select>
             <input type="text" id="run-partida" placeholder="¿Dónde arrancás? (Ej: Plaza Colon)">
             <select id="run-distancia">
@@ -107,7 +118,7 @@
     </div>
 
     <footer>
-        <p><strong>© 2026 Buscador de Café Argentina</strong><br>Curaduría de especialidad y trazabilidad.<br>Contacto: <a href="mailto:buscadordecafe@gmail.com" style="color:var(--primary)">buscadordecafe@gmail.com</a></p>
+        <p><strong>© 2026 Buscador de Café Argentina</strong><br>Contacto: <a href="mailto:buscadordecafe@gmail.com" style="color:var(--primary)">buscadordecafe@gmail.com</a></p>
     </footer>
 </div>
 
@@ -195,80 +206,31 @@
         });
     }
 
-    // --- RUNNING LOGIC ---
-    async function generarRutaRunning() {
-        const ciudad = document.getElementById('run-ciudad').value;
-        const partida = document.getElementById('run-partida').value;
-        const distDeseada = parseFloat(document.getElementById('run-distancia').value);
-
-        if (!ciudad || !partida) return Swal.fire('Completá ciudad y punto de partida');
-        Swal.fire({ title: 'Buscando ruta ideal...', didOpen: () => Swal.showLoading() });
-
-        try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(partida + ", " + ciudad)}`);
-            const data = await res.json();
-            if (data.length === 0) throw new Error("Dirección no encontrada");
-            const origen = { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
-            
-            const candidatos = bd.filter(c => {
-                if (c.ciudad !== ciudad) return false;
-                const d = calcularD(origen.lat, origen.lon, c.lat, c.lon);
-                return d >= (distDeseada - 0.7) && d <= (distDeseada + 0.7);
-            });
-
-            if (candidatos.length === 0) return Swal.fire('¡Uy!', 'Probá con otra distancia o punto de partida.', 'info');
-            const elegido = candidatos[Math.floor(Math.random() * candidatos.length)];
-            
-            dibujarRecorrido(origen, elegido);
-            Swal.close();
-        } catch (e) { Swal.fire('Error', e.message, 'error'); }
-    }
-
-    function calcularD(lat1, lon1, lat2, lon2) {
-        const R = 6371;
-        const dLat = (lat2-lat1)*Math.PI/180; const dLon = (lon2-lon1)*Math.PI/180;
-        const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    }
-
-    function dibujarRecorrido(origen, cafe) {
-        document.getElementById('mapa-running').classList.add('activo');
-        if (!mapaRunning) {
-            mapaRunning = L.map('mapa-running');
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaRunning);
-        }
-        if (controlRuta) mapaRunning.removeControl(controlRuta);
-
-        controlRuta = L.Routing.control({
-            waypoints: [L.latLng(origen.lat, origen.lon), L.latLng(cafe.lat, cafe.lon)],
-            router: L.Routing.osrmv1({ serviceUrl: `https://router.project-osrm.org/route/v1`, profile: 'foot' }),
-            lineOptions: { styles: [{ color: '#ef4444', opacity: 0.7, weight: 6 }] },
-            createMarker: (i, wp) => i === 0 ? L.marker(wp.latLng).bindPopup("Salida") : L.circleMarker(wp.latLng, {color: 'red', radius: 10}).bindPopup(cafe.nombre),
-            addWaypoints: false, show: false
-        }).addTo(mapaRunning);
-
-        const dist = calcularD(origen.lat, origen.lon, cafe.lat, cafe.lon).toFixed(1);
-        document.getElementById('resultado-running').innerHTML = `
-            <div class="cafe-card" style="border: 2px solid var(--running); margin-top:15px">
-                <div class="cafe-info">
-                    <h3 class="cafe-title">🏃‍♂️ Objetivo: ${cafe.nombre}</h3>
-                    <p style="color:var(--running); font-weight:800">${dist} km por avenidas y parques</p>
-                    <p>${cafe.ubicacion}</p>
-                </div>
-                <div class="links">
-                    <a href="https://www.google.com/maps/dir/?api=1&origin=${origen.lat},${origen.lon}&destination=${cafe.lat},${cafe.lon}&travelmode=walking" target="_blank" style="background:var(--running); color:white">GPS</a>
-                </div>
-            </div>`;
-    }
-
+    // --- BUSCADOR LOGIC: ARREGLO DE MAPA Y DIRECCIÓN ---
     function renderizarLista(datos, origen = null) {
         const contenedor = document.getElementById('resultados'); contenedor.innerHTML = "";
         layerRadar.clearLayers();
+        
         if (origen) {
             document.getElementById('mapa-radar').classList.add('activo');
-            setTimeout(() => { mapaRadar.invalidateSize(); mapaRadar.setView([origen.lat, origen.lon], 15); }, 250);
+            setTimeout(() => { 
+                mapaRadar.invalidateSize(); 
+                mapaRadar.setView([origen.lat, origen.lon], 15); 
+            }, 250);
+            
+            // Marker de tu ubicación
+            L.circleMarker([origen.lat, origen.lon], { radius: 10, color: "#059669", fillColor: "#fff", weight: 3, fillOpacity: 1 }).addTo(layerRadar).bindPopup("Tu ubicación");
+            
             datos = datos.map(c => ({...c, dist: calcularD(origen.lat, origen.lon, c.lat, c.lon)})).sort((a,b) => a.dist - b.dist).slice(0, 15);
+            
+            // Dibujar cafés cercanos en el radar
+            datos.forEach(c => {
+                L.circleMarker([c.lat, c.lon], {radius:7, color:"#5D4037", fillOpacity:0.9}).addTo(layerRadar).bindPopup(c.nombre);
+            });
+        } else {
+            document.getElementById('mapa-radar').classList.remove('activo');
         }
+
         datos.forEach(c => {
             const stats = promedios[c.nombre] ? `⭐ ${promedios[c.nombre].avg} (${promedios[c.nombre].total} votos)` : "Sin votos aún";
             const div = document.createElement('div'); div.className = 'cafe-card';
@@ -281,9 +243,92 @@
                         <span onclick="enviarVoto('${c.nombre}', 1)">⭐</span><span onclick="enviarVoto('${c.nombre}', 2)">⭐</span><span onclick="enviarVoto('${c.nombre}', 3)">⭐</span><span onclick="enviarVoto('${c.nombre}', 4)">⭐</span><span onclick="enviarVoto('${c.nombre}', 5)">⭐</span>
                     </div>
                 </div>
-                <div class="links"><a href="${c.instagram}" target="_blank">IG</a><a href="http://googleusercontent.com/maps.google.com/2{c.lat},${c.lon}" target="_blank">Ir</a></div>`;
+                <div class="links"><a href="${c.instagram}" target="_blank">IG</a><a href="https://www.google.com/maps/dir/?api=1&destination=$${c.lat},${c.lon}" target="_blank">Ir</a></div>`;
             contenedor.appendChild(div);
         });
+    }
+
+    async function medirDesdeDireccion() {
+        const dir = document.getElementById('input-busqueda').value.trim();
+        const ciu = document.getElementById('select-ciudad').value;
+        if (!dir) return Swal.fire("Escribí una dirección para buscar.");
+        
+        document.getElementById('status').innerText = "Buscando dirección...";
+        try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dir + ", " + (ciu !== 'Todas' ? ciu : 'Argentina'))}`);
+            const data = await res.json();
+            if (data.length > 0) { 
+                document.getElementById('status').innerText = ""; 
+                renderizarLista(bd, { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) }); 
+            } else { 
+                document.getElementById('status').innerText = "No se encontró la ubicación."; 
+                Swal.fire("No se encontró la dirección. Probá siendo más específico.");
+            }
+        } catch (e) { document.getElementById('status').innerText = "Error de conexión."; }
+    }
+
+    function usarMiGPS() { 
+        document.getElementById('status').innerText = "Obteniendo GPS...";
+        navigator.geolocation.getCurrentPosition(p => {
+            document.getElementById('status').innerText = "";
+            renderizarLista(bd, { lat: p.coords.latitude, lon: p.coords.longitude });
+        }, () => {
+            document.getElementById('status').innerText = "";
+            Swal.fire("Error al obtener GPS. Asegurate de dar permisos de ubicación.");
+        }); 
+    }
+
+    // --- RUNNING LOGIC ---
+    async function generarRutaRunning() {
+        const ciudad = document.getElementById('run-ciudad').value;
+        const partida = document.getElementById('run-partida').value;
+        const distDeseada = parseFloat(document.getElementById('run-distancia').value);
+        if (!ciudad || !partida) return Swal.fire('Completá ciudad y punto de partida');
+        Swal.fire({ title: 'Buscando ruta ideal...', didOpen: () => Swal.showLoading() });
+        try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(partida + ", " + ciudad)}`);
+            const data = await res.json();
+            if (data.length === 0) throw new Error("Dirección no encontrada");
+            const origen = { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+            const candidatos = bd.filter(c => {
+                if (c.ciudad !== ciudad) return false;
+                const d = calcularD(origen.lat, origen.lon, c.lat, c.lon);
+                return d >= (distDeseada - 0.7) && d <= (distDeseada + 0.7);
+            });
+            if (candidatos.length === 0) return Swal.fire('¡Uy!', 'No encontré cafés a esa distancia exacta.', 'info');
+            const elegido = candidatos[Math.floor(Math.random() * candidatos.length)];
+            dibujarRecorrido(origen, elegido);
+            Swal.close();
+        } catch (e) { Swal.fire('Error', e.message, 'error'); }
+    }
+
+    function dibujarRecorrido(origen, cafe) {
+        document.getElementById('mapa-running').classList.add('activo');
+        if (!mapaRunning) {
+            mapaRunning = L.map('mapa-running');
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaRunning);
+        }
+        if (controlRuta) mapaRunning.removeControl(controlRuta);
+        controlRuta = L.Routing.control({
+            waypoints: [L.latLng(origen.lat, origen.lon), L.latLng(cafe.lat, cafe.lon)],
+            router: L.Routing.osrmv1({ serviceUrl: `https://router.project-osrm.org/route/v1`, profile: 'foot' }),
+            lineOptions: { styles: [{ color: '#ef4444', opacity: 0.7, weight: 6 }] },
+            createMarker: (i, wp) => i === 0 ? L.marker(wp.latLng).bindPopup("Salida") : L.circleMarker(wp.latLng, {color: 'red', radius: 10}).bindPopup(cafe.nombre),
+            addWaypoints: false, show: false
+        }).addTo(mapaRunning);
+        const dist = calcularD(origen.lat, origen.lon, cafe.lat, cafe.lon).toFixed(1);
+        document.getElementById('resultado-running').innerHTML = `
+            <div class="cafe-card" style="border: 2px solid var(--running); margin-top:15px">
+                <div class="cafe-info"><h3>🏃‍♂️ Objetivo: ${cafe.nombre}</h3><p style="color:var(--running); font-weight:800">${dist} km</p></div>
+                <div class="links"><a href="https://www.google.com/maps/dir/?api=1&origin=${origen.lat},${origen.lon}&destination=${cafe.lat},${cafe.lon}&travelmode=walking" target="_blank" style="background:var(--running); color:white">GPS</a></div>
+            </div>`;
+    }
+
+    function calcularD(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = (lat2-lat1)*Math.PI/180; const dLon = (lon2-lon1)*Math.PI/180;
+        const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
 
     function cambiarPestaña(tab, btn) {
@@ -298,11 +343,14 @@
     function filtrarPorTexto() {
         const ciu = document.getElementById('select-ciudad').value;
         const txt = document.getElementById('input-busqueda').value.toLowerCase();
-        renderizarLista(bd.filter(c => (ciu === "Todas" || c.ciudad === ciu) && (c.nombre.toLowerCase().includes(txt) || c.ubicacion.toLowerCase().includes(txt))));
+        // Si hay texto o ciudad, reseteamos el mapa radar para que no confunda
+        if (txt !== "" || ciu !== "Todas") {
+            renderizarLista(bd.filter(c => (ciu === "Todas" || c.ciudad === ciu) && (c.nombre.toLowerCase().includes(txt) || c.ubicacion.toLowerCase().includes(txt))), null);
+        } else {
+            renderizarLista(bd, null);
+        }
     }
 
-    function usarMiGPS() { navigator.geolocation.getCurrentPosition(p => renderizarLista(bd, { lat: p.coords.latitude, lon: p.coords.longitude })); }
-    
     function dibujarMapaFederal() {
         bd.forEach(c => L.circleMarker([c.lat, c.lon], { radius: 5, color: "#5D4037", fillOpacity: 0.8 }).addTo(layerFederal).bindPopup(c.nombre));
     }
@@ -311,3 +359,4 @@
 </script>
 </body>
 </html>
+
