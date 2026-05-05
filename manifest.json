@@ -1,6 +1,7 @@
 {
-  "name": "Buscador de Café Especialidad",
-  "short_name": "CafeArg",
+  "name": "Buscador de Café Argentina",
+  "short_name": "BuscadorCafé",
+  "description": "Encontrá las mejores cafeterías de especialidad de Argentina.",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#F8FAFC",
@@ -9,7 +10,8 @@
     {
       "src": "https://cdn-icons-png.flaticon.com/512/924/924514.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
