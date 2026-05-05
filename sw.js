@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cafe-v2';
+const CACHE_NAME = 'cafe-v4';
 const assets = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
