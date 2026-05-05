@@ -1,0 +1,15 @@
+{
+  "name": "Buscador de Café Especialidad",
+  "short_name": "CafeArg",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#F8FAFC",
+  "theme_color": "#5D4037",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/924/924514.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
