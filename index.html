@@ -11,62 +11,56 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
-        :root { --primary: #5D4037; --bg: #F8FAFC; --card: #FFFFFF; --text: #1E293B; --border: #E2E8F0; --accent: #059669; --top: #D97706; }
+        :root { --primary: #5D4037; --bg: #F8FAFC; --card: #FFFFFF; --text: #1E293B; --border: #E2E8F0; --accent: #059669; --top: #D97706; --running: #ef4444; }
         body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
         .container { max-width: 900px; margin: auto; }
         
-        header { text-align: center; margin-bottom: 25px; padding-top: 10px; }
-        h1 { font-size: 2.4rem; color: var(--text); margin: 0 0 5px 0; letter-spacing: -0.5px; font-weight: 800; }
+        header { text-align: center; margin-bottom: 25px; }
+        h1 { font-size: 2.2rem; margin: 0; font-weight: 800; }
         h1 span { color: var(--primary); }
-        #contador-total { font-size: 1rem; color: #64748B; font-weight: 500; margin: 0; }
+        #contador-total { font-size: 0.95rem; color: #64748B; font-weight: 500; margin-top: 5px; }
 
-        .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
-        .tab-btn { background: #E2E8F0; border: none; padding: 12px 20px; font-weight: 600; border-radius: 8px; cursor: pointer; color: #475569; transition: all 0.2s; }
+        .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab-btn { background: #E2E8F0; border: none; padding: 10px 15px; font-weight: 600; border-radius: 8px; cursor: pointer; color: #475569; font-size: 0.85rem; }
         .tab-btn.active { background: var(--primary); color: white; }
+        .tab-btn.special { background: #fee2e2; color: var(--running); border: 1px solid #fecaca; }
+        .tab-btn.special.active { background: var(--running); color: white; }
 
-        .panel-busqueda { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        select, input[type="text"] { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 1rem; box-sizing: border-box; outline: none; }
+        .panel { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        select, input { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; box-sizing: border-box; outline: none; }
         
-        .botones-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .btn-accion { padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; color: white; font-size: 0.95rem; }
-        .btn-filtro { background: #475569; }
-        .btn-distancia { background: #D97706; }
-        .btn-gps { grid-column: span 2; background: var(--accent); width: 100%; }
+        .btn-accion { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; color: white; margin-top: 5px; }
+        .btn-run { background: var(--running); font-size: 1rem; }
 
-        #map, #mapa-radar { width: 100%; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; display: none; }
-        #map.activo, #mapa-radar.activo { display: block; height: 450px; }
+        #map, #mapa-radar, #mapa-running { width: 100%; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; display: none; height: 400px; }
+        .activo { display: block !important; }
 
-        .cafe-card { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 20px; transition: transform 0.2s; }
-        .cafe-info { flex-grow: 1; }
-        .cafe-title { margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--text); }
-        
-        .puntuacion-box { color: var(--top); font-weight: 800; font-size: 0.9rem; margin: 5px 0; display: flex; align-items: center; gap: 5px; }
-        .estrellas-voto { display: flex; gap: 5px; margin-top: 12px; }
+        .cafe-card { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+        .puntuacion-box { color: var(--top); font-weight: 800; font-size: 0.9rem; margin: 5px 0; }
+        .estrellas-voto { display: flex; gap: 5px; margin-top: 10px; }
         .estrellas-voto span { cursor: pointer; font-size: 1.3rem; filter: grayscale(1); transition: transform 0.2s; }
         .estrellas-voto span:hover { filter: grayscale(0); transform: scale(1.2); }
 
-        .btn-reportar { font-size: 0.75rem; color: #94A3B8; text-decoration: underline; background: none; border: none; cursor: pointer; margin-top: 15px; padding: 0; display: block; }
-
-        .links { display: flex; flex-direction: column; gap: 8px; min-width: 130px; }
-        .links a { background: #F8FAFC; color: var(--text); text-decoration: none; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-align: center; border: 1px solid #E2E8F0; }
-        
-        footer { margin-top: 50px; padding: 40px 0; text-align: center; border-top: 1px solid var(--border); color: #64748B; font-size: 0.9rem; }
-        footer a { color: var(--primary); font-weight: 700; text-decoration: none; }
+        .links { display: flex; flex-direction: column; gap: 8px; min-width: 120px; }
+        .links a { background: #F8FAFC; color: var(--text); text-decoration: none; padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-align: center; border: 1px solid #E2E8F0; }
 
         .hidden { display: none !important; }
+        footer { margin-top: 50px; text-align: center; color: #64748B; border-top: 1px solid var(--border); padding-top: 20px; font-size: 0.85rem; }
+        
+        /* Ocultar panel de instrucciones de ruta */
+        .leaflet-routing-container { display: none !important; }
 
-        @media (max-width: 600px) {
-            .cafe-card { flex-direction: column; align-items: stretch; }
-            .links { flex-direction: row; }
-            .links a { flex: 1; }
-        }
+        @media (max-width: 600px) { .cafe-card { flex-direction: column; align-items: stretch; } .links { flex-direction: row; } .links a { flex: 1; } }
     </style>
 </head>
 <body>
@@ -74,24 +68,20 @@
 <div class="container">
     <header>
         <h1>Buscador de Café <span>Argentina</span></h1>
-        <p id="contador-total">Sincronizando cafeterías...</p>
+        <p id="contador-total">Cargando comunidad...</p>
     </header>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="cambiarPestaña('lista', this)">Cafés al alcance</button>
+        <button class="tab-btn active" onclick="cambiarPestaña('lista', this)">Buscador</button>
         <button class="tab-btn" onclick="cambiarPestaña('mapa', this)">Mapa Federal</button>
+        <button class="tab-btn special" onclick="cambiarPestaña('running', this)">🏃‍♂️ Running y Cafecito</button>
     </div>
 
     <div id="tab-lista">
-        <div class="panel-busqueda">
-            <select id="select-ciudad" onchange="filtrarPorTexto()"><option value="Todas">Cargando ciudades...</option></select>
-            <input type="text" id="input-busqueda" placeholder="Ej: Gascon 2525 o nombre del local..." onkeyup="filtrarPorTexto()">
-            <div class="botones-grid">
-                <button class="btn-accion btn-filtro" onclick="filtrarPorTexto()">🔍 Filtrar por Nombre</button>
-                <button class="btn-accion btn-distancia" onclick="medirDesdeDireccion()">📍 Cerca de dirección</button>
-                <button class="btn-accion btn-gps" onclick="usarMiGPS()">📡 Usar mi GPS actual</button>
-            </div>
-            <div id="status" style="text-align:center; font-weight:600; color:var(--accent); min-height:20px;"></div>
+        <div class="panel">
+            <select id="select-ciudad" onchange="filtrarPorTexto()"></select>
+            <input type="text" id="input-busqueda" placeholder="Nombre o dirección..." onkeyup="filtrarPorTexto()">
+            <button class="btn-accion" style="background:var(--accent)" onclick="usarMiGPS()">📡 Cafés a mi alrededor</button>
         </div>
         <div id="mapa-radar"></div>
         <div id="resultados"></div>
@@ -99,14 +89,29 @@
 
     <div id="tab-mapa" class="hidden"><div id="map" class="activo"></div></div>
 
+    <div id="tab-running" class="hidden">
+        <div class="panel">
+            <h3 style="margin-top:0">Tu meta de hoy:</h3>
+            <select id="run-ciudad"><option value="">Seleccioná ciudad...</option></select>
+            <input type="text" id="run-partida" placeholder="¿Dónde arrancás? (Ej: Plaza Colon)">
+            <select id="run-distancia">
+                <option value="2">A unos 2 km</option>
+                <option value="3">A unos 3 km</option>
+                <option value="5">A unos 5 km</option>
+                <option value="8">A unos 8 km</option>
+            </select>
+            <button class="btn-accion btn-run" onclick="generarRutaRunning()">🎯 ¡Tirame un Café al azar!</button>
+        </div>
+        <div id="mapa-running"></div>
+        <div id="resultado-running"></div>
+    </div>
+
     <footer>
-        <p><strong>© 2026 Buscador de Café Argentina</strong><br>Curaduría de café de especialidad.</p>
-        <p>Contacto y sugerencias: <br> <a href="mailto:buscadordecafe@gmail.com">buscadordecafe@gmail.com</a></p>
+        <p><strong>© 2026 Buscador de Café Argentina</strong><br>Curaduría de especialidad y trazabilidad.<br>Contacto: <a href="mailto:buscadordecafe@gmail.com" style="color:var(--primary)">buscadordecafe@gmail.com</a></p>
     </footer>
 </div>
 
 <script>
-    // Configuración Supabase
     const SUPABASE_URL = 'https://acvjodjnjjwujrkriztc.supabase.co';
     const SUPABASE_KEY = 'sb_publishable__wLe7LUdE85jiO7UY8zQuA_tWCa76-l';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -116,7 +121,7 @@
 
     let bd = [];
     let promedios = {}; 
-    let ultimoOrigen = null; // Guardamos la ubicación para refrescar sin perder el contexto
+    let mapaRunning, layerRunning, controlRuta;
 
     let mapaFederal = L.map('map').setView([-38.41, -63.61], 5);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaFederal);
@@ -127,45 +132,31 @@
     let layerRadar = L.layerGroup().addTo(mapaRadar);
 
     async function cargarPromedios() {
-        const { data, error } = await _supabase.from('resenas').select('cafe_nombre, estrellas');
+        const { data } = await _supabase.from('resenas').select('cafe_nombre, estrellas');
         if (data) {
-            const sumas = {}; const conts = {};
+            const sumas = {}, conts = {};
             data.forEach(r => {
                 sumas[r.cafe_nombre] = (sumas[r.cafe_nombre] || 0) + r.estrellas;
                 conts[r.cafe_nombre] = (conts[r.cafe_nombre] || 0) + 1;
             });
-            Object.keys(sumas).forEach(n => {
-                promedios[n] = { avg: (sumas[n] / conts[n]).toFixed(1), total: conts[n] };
-            });
+            Object.keys(sumas).forEach(n => promedios[n] = { avg: (sumas[n] / conts[n]).toFixed(1), total: conts[n] });
         }
     }
 
     async function enviarVoto(nombre, puntos) {
         const { error } = await _supabase.from('resenas').insert([{ cafe_nombre: nombre, estrellas: puntos }]);
         if (error) {
-            Swal.fire('Error', 'No se pudo registrar el voto', 'error');
+            Swal.fire('Error', 'No se pudo guardar', 'error');
         } else {
-            // Mensaje profesional sin URL
-            Swal.fire({
-                title: '¡Gracias!',
-                text: `Voto registrado para ${nombre}`,
-                icon: 'success',
-                timer: 2000,
-                showConfirmButton: false,
-                toast: true,
-                position: 'top-end'
-            });
-            // Actualizamos datos internamente sin recargar la página
-            await cargarPromedios(); 
-            filtrarPorTexto(); 
+            Swal.fire({ title: '¡Gracias!', text: `Voto para ${nombre}`, icon: 'success', timer: 1500, showConfirmButton: false, toast: true, position: 'top-end' });
+            await cargarPromedios();
+            filtrarPorTexto();
         }
     }
 
     async function iniciarSistema() {
         await cargarPromedios();
         let completados = 0;
-        const totalCiudades = Object.keys(GIDS).length;
-
         for (const [ciu, gid] of Object.entries(GIDS)) {
             const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}&v=${new Date().getTime()}`;
             Papa.parse(url, {
@@ -182,116 +173,141 @@
                             });
                         }
                     });
-                    if (++completados === totalCiudades) {
+                    if (++completados === Object.keys(GIDS).length) {
                         bd.sort((a,b) => a.nombre.localeCompare(b.nombre));
-                        armarMenu(); 
-                        dibujarMapaFederal(); 
-                        renderizarLista(bd);
-                        // Restauramos el contador total del encabezado
-                        document.getElementById('contador-total').innerText = `Explorando ${bd.length} cafeterías de especialidad`;
+                        armarMenus(); dibujarMapaFederal(); renderizarLista(bd);
+                        document.getElementById('contador-total').innerText = `Explorando ${bd.length} cafeterías`;
                     }
                 }
             });
         }
     }
 
+    function armarMenus() {
+        const s1 = document.getElementById('select-ciudad');
+        const s2 = document.getElementById('run-ciudad');
+        const ciudades = [...new Set(bd.map(c => c.ciudad))].sort();
+        s1.innerHTML = `<option value="Todas">Todas las ciudades (${bd.length})</option>`;
+        ciudades.forEach(c => {
+            const cant = bd.filter(x => x.ciudad === c).length;
+            s1.innerHTML += `<option value="${c}">${c} (${cant})</option>`;
+            s2.innerHTML += `<option value="${c}">${c}</option>`;
+        });
+    }
+
+    // --- RUNNING LOGIC ---
+    async function generarRutaRunning() {
+        const ciudad = document.getElementById('run-ciudad').value;
+        const partida = document.getElementById('run-partida').value;
+        const distDeseada = parseFloat(document.getElementById('run-distancia').value);
+
+        if (!ciudad || !partida) return Swal.fire('Completá ciudad y punto de partida');
+        Swal.fire({ title: 'Buscando ruta ideal...', didOpen: () => Swal.showLoading() });
+
+        try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(partida + ", " + ciudad)}`);
+            const data = await res.json();
+            if (data.length === 0) throw new Error("Dirección no encontrada");
+            const origen = { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+            
+            const candidatos = bd.filter(c => {
+                if (c.ciudad !== ciudad) return false;
+                const d = calcularD(origen.lat, origen.lon, c.lat, c.lon);
+                return d >= (distDeseada - 0.7) && d <= (distDeseada + 0.7);
+            });
+
+            if (candidatos.length === 0) return Swal.fire('¡Uy!', 'Probá con otra distancia o punto de partida.', 'info');
+            const elegido = candidatos[Math.floor(Math.random() * candidatos.length)];
+            
+            dibujarRecorrido(origen, elegido);
+            Swal.close();
+        } catch (e) { Swal.fire('Error', e.message, 'error'); }
+    }
+
+    function calcularD(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = (lat2-lat1)*Math.PI/180; const dLon = (lon2-lon1)*Math.PI/180;
+        const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
+    function dibujarRecorrido(origen, cafe) {
+        document.getElementById('mapa-running').classList.add('activo');
+        if (!mapaRunning) {
+            mapaRunning = L.map('mapa-running');
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaRunning);
+        }
+        if (controlRuta) mapaRunning.removeControl(controlRuta);
+
+        controlRuta = L.Routing.control({
+            waypoints: [L.latLng(origen.lat, origen.lon), L.latLng(cafe.lat, cafe.lon)],
+            router: L.Routing.osrmv1({ serviceUrl: `https://router.project-osrm.org/route/v1`, profile: 'foot' }),
+            lineOptions: { styles: [{ color: '#ef4444', opacity: 0.7, weight: 6 }] },
+            createMarker: (i, wp) => i === 0 ? L.marker(wp.latLng).bindPopup("Salida") : L.circleMarker(wp.latLng, {color: 'red', radius: 10}).bindPopup(cafe.nombre),
+            addWaypoints: false, show: false
+        }).addTo(mapaRunning);
+
+        const dist = calcularD(origen.lat, origen.lon, cafe.lat, cafe.lon).toFixed(1);
+        document.getElementById('resultado-running').innerHTML = `
+            <div class="cafe-card" style="border: 2px solid var(--running); margin-top:15px">
+                <div class="cafe-info">
+                    <h3 class="cafe-title">🏃‍♂️ Objetivo: ${cafe.nombre}</h3>
+                    <p style="color:var(--running); font-weight:800">${dist} km por avenidas y parques</p>
+                    <p>${cafe.ubicacion}</p>
+                </div>
+                <div class="links">
+                    <a href="https://www.google.com/maps/dir/?api=1&origin=${origen.lat},${origen.lon}&destination=${cafe.lat},${cafe.lon}&travelmode=walking" target="_blank" style="background:var(--running); color:white">GPS</a>
+                </div>
+            </div>`;
+    }
+
     function renderizarLista(datos, origen = null) {
-        if (origen) ultimoOrigen = origen;
         const contenedor = document.getElementById('resultados'); contenedor.innerHTML = "";
         layerRadar.clearLayers();
-        
-        if (ultimoOrigen) {
+        if (origen) {
             document.getElementById('mapa-radar').classList.add('activo');
-            setTimeout(() => { mapaRadar.invalidateSize(); mapaRadar.setView([ultimoOrigen.lat, ultimoOrigen.lon], 15); }, 250);
-            L.circleMarker([ultimoOrigen.lat, ultimoOrigen.lon], { radius: 10, color: "#059669", fillColor: "#fff", weight: 3, fillOpacity: 1 }).addTo(layerRadar);
-            datos = datos.map(c => {
-                const d = Math.sqrt(Math.pow(c.lat - ultimoOrigen.lat, 2) + Math.pow(c.lon - ultimoOrigen.lon, 2));
-                return { ...c, distVal: d };
-            }).sort((a,b) => a.distVal - b.distVal).slice(0, 15);
+            setTimeout(() => { mapaRadar.invalidateSize(); mapaRadar.setView([origen.lat, origen.lon], 15); }, 250);
+            datos = datos.map(c => ({...c, dist: calcularD(origen.lat, origen.lon, c.lat, c.lon)})).sort((a,b) => a.dist - b.dist).slice(0, 15);
         }
-
         datos.forEach(c => {
             const stats = promedios[c.nombre] ? `⭐ ${promedios[c.nombre].avg} (${promedios[c.nombre].total} votos)` : "Sin votos aún";
-            const linkMap = `https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lon}`;
             const div = document.createElement('div'); div.className = 'cafe-card';
             div.innerHTML = `
                 <div class="cafe-info">
                     <h3 class="cafe-title">${c.nombre} ${c.esTop ? '★' : ''}</h3>
                     <p class="puntuacion-box">${stats}</p>
-                    <p style="font-size:0.85rem; color:#64748B; margin:4px 0;">${c.ubicacion} • <b>${c.ciudad}</b></p>
+                    <p style="font-size:0.85rem; color:#64748B;">${c.ubicacion} • <b>${c.ciudad}</b></p>
                     <div class="estrellas-voto">
                         <span onclick="enviarVoto('${c.nombre}', 1)">⭐</span><span onclick="enviarVoto('${c.nombre}', 2)">⭐</span><span onclick="enviarVoto('${c.nombre}', 3)">⭐</span><span onclick="enviarVoto('${c.nombre}', 4)">⭐</span><span onclick="enviarVoto('${c.nombre}', 5)">⭐</span>
                     </div>
                 </div>
-                <div class="links"><a href="${c.instagram}" target="_blank">Instagram</a><a href="${linkMap}" target="_blank">Llegar</a></div>`;
+                <div class="links"><a href="${c.instagram}" target="_blank">IG</a><a href="http://googleusercontent.com/maps.google.com/2{c.lat},${c.lon}" target="_blank">Ir</a></div>`;
             contenedor.appendChild(div);
-            if(ultimoOrigen) L.circleMarker([c.lat, c.lon], {radius:7, color:"#5D4037", fillOpacity:0.9}).addTo(layerRadar).bindPopup(c.nombre);
         });
-    }
-
-    function armarMenu() {
-        const s = document.getElementById('select-ciudad');
-        s.innerHTML = `<option value="Todas">Todas las ciudades (${bd.length})</option>`;
-        const listaCiudades = [...new Set(bd.map(c => c.ciudad))].sort();
-        listaCiudades.forEach(ciu => {
-            const cantidad = bd.filter(c => c.ciudad === ciu).length;
-            s.innerHTML += `<option value="${ciu}">${ciu} (${cantidad})</option>`;
-        });
-    }
-
-    function filtrarPorTexto() {
-        const ciu = document.getElementById('select-ciudad').value;
-        const txt = document.getElementById('input-busqueda').value.toLowerCase();
-        let filtrados = bd.filter(c => (ciu === "Todas" || c.ciudad === ciu) && (c.nombre.toLowerCase().includes(txt) || c.ubicacion.toLowerCase().includes(txt)));
-        
-        // Si no hay búsqueda activa por GPS/Dirección, reseteamos el origen para la lista general
-        if (txt === "" && ciu === "Todas") {
-            ultimoOrigen = null;
-            document.getElementById('mapa-radar').classList.remove('activo');
-        }
-        
-        renderizarLista(filtrados);
-    }
-
-    async function medirDesdeDireccion() {
-        const dir = document.getElementById('input-busqueda').value.trim();
-        const ciu = document.getElementById('select-ciudad').value;
-        if (!dir) return;
-        document.getElementById('status').innerText = "Buscando...";
-        try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dir + ", " + (ciu !== 'Todas' ? ciu : 'Argentina'))}`);
-            const data = await res.json();
-            if (data.length > 0) { 
-                document.getElementById('status').innerText = ""; 
-                renderizarLista(bd, { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) }); 
-            } else { document.getElementById('status').innerText = "No encontrado."; }
-        } catch (e) { document.getElementById('status').innerText = "Error."; }
-    }
-
-    function usarMiGPS() { 
-        navigator.geolocation.getCurrentPosition(p => {
-            renderizarLista(bd, { lat: p.coords.latitude, lon: p.coords.longitude });
-        }); 
     }
 
     function cambiarPestaña(tab, btn) {
         document.getElementById('tab-lista').classList.toggle('hidden', tab !== 'lista');
         document.getElementById('tab-mapa').classList.toggle('hidden', tab !== 'mapa');
+        document.getElementById('tab-running').classList.toggle('hidden', tab !== 'running');
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
         if(tab === 'mapa') setTimeout(() => mapaFederal.invalidateSize(), 300);
+        if(tab === 'running' && mapaRunning) setTimeout(() => mapaRunning.invalidateSize(), 300);
     }
 
+    function filtrarPorTexto() {
+        const ciu = document.getElementById('select-ciudad').value;
+        const txt = document.getElementById('input-busqueda').value.toLowerCase();
+        renderizarLista(bd.filter(c => (ciu === "Todas" || c.ciudad === ciu) && (c.nombre.toLowerCase().includes(txt) || c.ubicacion.toLowerCase().includes(txt))));
+    }
+
+    function usarMiGPS() { navigator.geolocation.getCurrentPosition(p => renderizarLista(bd, { lat: p.coords.latitude, lon: p.coords.longitude })); }
+    
     function dibujarMapaFederal() {
-        layerFederal.clearLayers();
-        bd.forEach(c => {
-            const popup = `<div style="font-family:'Inter'; min-width:140px;"><b>${c.nombre}</b><br><small>${c.ubicacion}</small><br><br><a href="${c.instagram}" target="_blank" style="color:white; background:#5D4037; padding:5px 10px; border-radius:6px; text-decoration:none; display:block; text-align:center; font-size:0.8rem;">Instagram</a></div>`;
-            L.circleMarker([c.lat, c.lon], { radius: 5, color: "#5D4037", fillColor: "#5D4037", fillOpacity: 0.8 }).addTo(layerFederal).bindPopup(popup);
-        });
+        bd.forEach(c => L.circleMarker([c.lat, c.lon], { radius: 5, color: "#5D4037", fillOpacity: 0.8 }).addTo(layerFederal).bindPopup(c.nombre));
     }
 
     iniciarSistema();
 </script>
 </body>
 </html>
-
-
