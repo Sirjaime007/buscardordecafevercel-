@@ -69,11 +69,16 @@
         .event-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; flex-direction: column; }
         .event-img { width: 100%; height: 160px; object-fit: cover; background-color: #e2e8f0; }
         .event-content { padding: 18px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
-        .event-date { color: var(--top); font-weight: 700; font-size: 0.85rem; margin-bottom: 6px; text-transform: uppercase; display: flex; align-items: center; gap: 4px; }
+        .event-date { color: var(--top); font-weight: 700; font-size: 0.85rem; margin-bottom: 4px; text-transform: uppercase; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
         .event-title { margin: 0 0 8px 0; font-size: 1.2rem; font-weight: 800; color: var(--text); }
         .event-desc { font-size: 0.88rem; color: #64748B; margin: 0 0 15px 0; line-height: 1.4; }
         .event-link { display: block; text-align: center; background: var(--primary); color: white; text-decoration: none; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 0.9rem; transition: background 0.2s; }
         .event-link:hover { background: #452f28; }
+
+        /* Estilos para los contadores de días */
+        .event-badge { background: #fee2e2; color: var(--running); padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; display: inline-block; }
+        .event-badge.today { background: #d1fae5; color: var(--accent); }
+        .event-badge.passed { background: #e2e8f0; color: #64748B; }
 
         /* Estilos específicos para popups del mapa */
         .popup-custom { font-family: 'Inter', sans-serif; text-align: center; }
@@ -232,13 +237,50 @@
                 eventos = res.data.map(f => ({
                     titulo: f.TITULO || f.Titulo,
                     fecha: f.FECHA || f.Fecha,
+                    fechaOrden: f.FECHA_ORDEN || f.Fecha_Orden || "9999-12-31",
+                    ciudad: f.CIUDAD || f.Ciudad || "Varios",
                     desc: f.DESCRIPCION || f.Descripcion,
                     foto: f.FOTO || f.Foto,
                     link: f.LINK || f.Link
                 })).filter(e => e.titulo);
+                
+                ordenarEventos();
                 renderizarEventos();
             }
         });
+    }
+
+    function ordenarEventos() {
+        eventos.sort((a, b) => {
+            if (a.fechaOrden !== b.fechaOrden) {
+                return a.fechaOrden.localeCompare(b.fechaOrden);
+            }
+            return a.ciudad.localeCompare(b.ciudad);
+        });
+    }
+
+    // Calcula los días restantes de forma precisa evitando errores de zona horaria
+    function calcularDiasRestantes(fechaOrdenStr) {
+        if (!fechaOrdenStr || fechaOrdenStr === "9999-12-31") return "";
+        
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+        
+        const partes = fechaOrdenStr.split('-');
+        const fechaEv = new Date(partes[0], partes[1] - 1, partes[2]);
+        
+        const diffTiempo = fechaEv - hoy;
+        const diffDias = Math.floor(diffTiempo / (1000 * 60 * 60 * 24));
+        
+        if (diffDias > 1) {
+            return `<span class="event-badge">Faltan ${diffDias} días</span>`;
+        } else if (diffDias === 1) {
+            return `<span class="event-badge">¡Falta 1 día!</span>`;
+        } else if (diffDias === 0) {
+            return `<span class="event-badge today">¡Es hoy! 🎉</span>`;
+        } else {
+            return `<span class="event-badge passed">Finalizado</span>`;
+        }
     }
 
     function renderizarEventos() {
@@ -252,13 +294,18 @@
 
         eventos.forEach(e => {
             const imgUrl = e.foto ? e.foto : 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600';
+            const badgeCountdown = calcularDiasRestantes(e.fechaOrden);
+            
             const div = document.createElement('div');
             div.className = 'event-card';
             div.innerHTML = `
                 <img src="${imgUrl}" class="event-img" alt="${e.titulo}" onerror="this.src='https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600'">
                 <div class="event-content">
                     <div>
-                        <div class="event-date">📅 ${e.fecha}</div>
+                        <div class="event-date">
+                            <span>📅 ${e.fecha} • 📍 ${e.ciudad}</span>
+                            ${badgeCountdown}
+                        </div>
                         <h3 class="event-title">${e.titulo}</h3>
                         <p class="event-desc">${e.desc}</p>
                     </div>
