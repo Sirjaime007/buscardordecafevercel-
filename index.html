@@ -169,16 +169,15 @@
     let eventos = [];
     let mapaRunning, layerRunning, controlRuta;
 
-    // Inicialización de mapas
+    // Inicialización de mapas con MarkerCluster optimizado
     let mapaFederal = L.map('map').setView([-38.41, -63.61], 5);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaFederal);
     
-    // MODIFICADO: Se agregó 'showCoverageOnHover: false' para eliminar las áreas azules
     let layerFederal = L.markerClusterGroup({
         maxClusterRadius: 40,        
         disableClusteringAtZoom: 14, 
         spiderfyOnMaxZoom: true,
-        showCoverageOnHover: false   // <-- ¡Acá se apagan las áreas azules!
+        showCoverageOnHover: false   
     }).addTo(mapaFederal);
 
     let mapaRadar = L.map('mapa-radar').setView([-38.41, -63.61], 14);
@@ -365,13 +364,26 @@
 
         datos.forEach(c => {
             const stats = promedios[c.nombre] ? `⭐ ${promedios[c.nombre].avg} (${promedios[c.nombre].total} votos)` : "Sin votos aún";
+            
             const linkMap = `https://www.google.com/maps?q=${c.lat},${c.lon}`;
+            
+            // Renderizado de cuadras de distancia si hay origen
+            let textoDistancia = "";
+            if (origen && c.dist !== undefined) {
+                const cuadras = Math.round(c.dist * 10); 
+                if (cuadras === 0) {
+                    textoDistancia = ` • <span style="color:var(--accent); font-weight:800;">¡A menos de 1 cuadra! 📍</span>`;
+                } else {
+                    textoDistancia = ` • <span style="color:var(--accent); font-weight:800;">A ${cuadras} ${cuadras === 1 ? 'cuadra' : 'cuadras'} 📍</span>`;
+                }
+            }
+
             const div = document.createElement('div'); div.className = 'cafe-card';
             div.innerHTML = `
                 <div class="cafe-info">
                     <h3 class="cafe-title">${c.nombre} ${c.esTop ? '★' : ''}</h3>
                     <p class="puntuacion-box">${stats}</p>
-                    <p style="font-size:0.85rem; color:#64748B;">${c.ubicacion} • <b>${c.ciudad}</b></p>
+                    <p style="font-size:0.85rem; color:#64748B;">${c.ubicacion} • <b>${c.ciudad}</b>${textoDistancia}</p>
                     <div class="estrellas-voto">
                         <span onclick="enviarVoto('${c.nombre}', 1)">⭐</span><span onclick="enviarVoto('${c.nombre}', 2)">⭐</span><span onclick="enviarVoto('${c.nombre}', 3)">⭐</span><span onclick="enviarVoto('${c.nombre}', 4)">⭐</span><span onclick="enviarVoto('${c.nombre}', 5)">⭐</span>
                     </div>
@@ -399,10 +411,39 @@
         } catch (e) { document.getElementById('status').innerText = ""; }
     }
 
+    // NUEVA MODIFICACIÓN: Función blindada para iPhone / iOS con control de errores y precisión extendida
     function usarMiGPS() { 
-        navigator.geolocation.getCurrentPosition(p => {
-            renderizarLista(bd, { lat: p.coords.latitude, lon: p.coords.longitude });
-        }, () => Swal.fire("No pudimos obtener tu GPS.")); 
+        if (!navigator.geolocation) {
+            return Swal.fire("Error", "Tu navegador o dispositivo no soporta GPS.", "error");
+        }
+
+        document.getElementById('status').innerText = "Conectando con satélites GPS...";
+
+        navigator.geolocation.getCurrentPosition(
+            p => {
+                document.getElementById('status').innerText = "";
+                renderizarLista(bd, { lat: p.coords.latitude, lon: p.coords.longitude });
+            }, 
+            error => {
+                document.getElementById('status').innerText = "";
+                let mensajeError = "No pudimos obtener tu GPS.";
+                
+                if (error.code === error.PERMISSION_DENIED) {
+                    mensajeError = "Permiso de ubicación denegado. Tenés que habilitar los permisos de localización para el navegador en los Ajustes de tu iPhone.";
+                } else if (error.code === error.TIMEOUT) {
+                    mensajeError = "Se agotó el tiempo de espera. Probá de nuevo en un espacio más abierto.";
+                } else if (error.code === error.POSITION_UNAVAILABLE) {
+                    mensajeError = "La ubicación no está disponible en este momento.";
+                }
+                
+                Swal.fire("Aviso", mensajeError, "warning");
+            },
+            {
+                enableHighAccuracy: true, 
+                timeout: 10000,           
+                maximumAge: 0             
+            }
+        ); 
     }
 
     // --- RUNNING LOGIC ---
@@ -455,6 +496,8 @@
         const distReal = calcularD(origen.lat, origen.lon, cafe.lat, cafe.lon).toFixed(1);
         const mensajeExtra = esFondo ? `<br><small style="color:#64748B">Corré hasta el café y volvé para completar los <b>${distTotal} km</b>.</small>` : "";
 
+        const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origen.lat},${origen.lon}&destination=${cafe.lat},${cafe.lon}&travelmode=walking`;
+
         document.getElementById('resultado-running').innerHTML = `
             <div class="cafe-card" style="border: 2px solid var(--running); margin-top:15px">
                 <div class="cafe-info">
@@ -463,7 +506,7 @@
                     ${mensajeExtra}
                 </div>
                 <div class="links">
-                    <a href="https://www.google.com/maps/dir/?api=1&origin=${origen.lat},${origen.lon}&destination=${cafe.lat},${cafe.lon}&travelmode=walking" target="_blank" style="background:var(--running); color:white; border-color:var(--running)">Abrir Ruta</a>
+                    <a href="${mapsUrl}" target="_blank" style="background:var(--running); color:white; border-color:var(--running)">Abrir Ruta</a>
                 </div>
             </div>`;
     }
