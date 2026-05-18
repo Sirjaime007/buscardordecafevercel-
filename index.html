@@ -173,11 +173,12 @@
     let mapaFederal = L.map('map').setView([-38.41, -63.61], 5);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaFederal);
     
+    // MODIFICADO: Se agregó 'showCoverageOnHover: false' para eliminar las áreas azules
     let layerFederal = L.markerClusterGroup({
         maxClusterRadius: 40,        
         disableClusteringAtZoom: 14, 
         spiderfyOnMaxZoom: true,
-        showCoverageOnHover: false   
+        showCoverageOnHover: false   // <-- ¡Acá se apagan las áreas azules!
     }).addTo(mapaFederal);
 
     let mapaRadar = L.map('mapa-radar').setView([-38.41, -63.61], 14);
@@ -363,28 +364,14 @@
         }
 
         datos.forEach(c => {
-            const stats = proredios[c.nombre] ? `⭐ ${promedios[c.nombre].avg} (${promedios[c.nombre].total} votos)` : "Sin votos aún";
-            
-            // Corrección de sintaxis del link de mapa
-            const linkMap = `https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lon}`;
-            
-            // MODIFICADO: Lógica de cálculo y renderizado de cuadras de distancia
-            let textoDistancia = "";
-            if (origen && c.dist !== undefined) {
-                const cuadras = Math.round(c.dist * 10); // 1 km = 10 cuadras
-                if (cuadras === 0) {
-                    textoDistancia = ` • <span style="color:var(--accent); font-weight:800;">¡A menos de 1 cuadra! 📍</span>`;
-                } else {
-                    textoDistancia = ` • <span style="color:var(--accent); font-weight:800;">A ${cuadras} ${cuadras === 1 ? 'cuadra' : 'cuadras'} 📍</span>`;
-                }
-            }
-
+            const stats = promedios[c.nombre] ? `⭐ ${promedios[c.nombre].avg} (${promedios[c.nombre].total} votos)` : "Sin votos aún";
+            const linkMap = `https://www.google.com/maps?q=${c.lat},${c.lon}`;
             const div = document.createElement('div'); div.className = 'cafe-card';
             div.innerHTML = `
                 <div class="cafe-info">
                     <h3 class="cafe-title">${c.nombre} ${c.esTop ? '★' : ''}</h3>
                     <p class="puntuacion-box">${stats}</p>
-                    <p style="font-size:0.85rem; color:#64748B;">${c.ubicacion} • <b>${c.ciudad}</b>${textoDistancia}</p>
+                    <p style="font-size:0.85rem; color:#64748B;">${c.ubicacion} • <b>${c.ciudad}</b></p>
                     <div class="estrellas-voto">
                         <span onclick="enviarVoto('${c.nombre}', 1)">⭐</span><span onclick="enviarVoto('${c.nombre}', 2)">⭐</span><span onclick="enviarVoto('${c.nombre}', 3)">⭐</span><span onclick="enviarVoto('${c.nombre}', 4)">⭐</span><span onclick="enviarVoto('${c.nombre}', 5)">⭐</span>
                     </div>
@@ -468,9 +455,6 @@
         const distReal = calcularD(origen.lat, origen.lon, cafe.lat, cafe.lon).toFixed(1);
         const mensajeExtra = esFondo ? `<br><small style="color:#64748B">Corré hasta el café y volvé para completar los <b>${distTotal} km</b>.</small>` : "";
 
-        // Corrección del link de navegación running en Maps
-        const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origen.lat},${origen.lon}&destination=${cafe.lat},${cafe.lon}&travelmode=walking`;
-
         document.getElementById('resultado-running').innerHTML = `
             <div class="cafe-card" style="border: 2px solid var(--running); margin-top:15px">
                 <div class="cafe-info">
@@ -479,7 +463,7 @@
                     ${mensajeExtra}
                 </div>
                 <div class="links">
-                    <a href="${mapsUrl}" target="_blank" style="background:var(--running); color:white; border-color:var(--running)">Abrir Ruta</a>
+                    <a href="https://www.google.com/maps/dir/?api=1&origin=${origen.lat},${origen.lon}&destination=${cafe.lat},${cafe.lon}&travelmode=walking" target="_blank" style="background:var(--running); color:white; border-color:var(--running)">Abrir Ruta</a>
                 </div>
             </div>`;
     }
