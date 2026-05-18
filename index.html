@@ -169,10 +169,16 @@
     let eventos = [];
     let mapaRunning, layerRunning, controlRuta;
 
-    // Inicialización de mapas (Configuramos layerFederal como un grupo de MarkerCluster)
+    // Inicialización de mapas con suavizado de agrupamiento personalizado
     let mapaFederal = L.map('map').setView([-38.41, -63.61], 5);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaFederal);
-    let layerFederal = L.markerClusterGroup().addTo(mapaFederal);
+    
+    // MODIFICADO: Ajustes finos del Cluster para no perder perspectiva
+    let layerFederal = L.markerClusterGroup({
+        maxClusterRadius: 40,        // Grupos más chicos para que se disuelvan rápido
+        disableClusteringAtZoom: 14, // A partir de este zoom se muestran TODOS los puntos libres
+        spiderfyOnMaxZoom: true      // Si están encimados en el mismo lugar, se abren en abanico
+    }).addTo(mapaFederal);
 
     let mapaRadar = L.map('mapa-radar').setView([-38.41, -63.61], 14);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaRadar);
@@ -201,7 +207,6 @@
         }
     }
 
-    // Sistema de carga blindado tolerante a variaciones de mayúsculas/minúsculas de columnas
     async function iniciarSistema() {
         await cargarPromedios();
         await cargarEventos(); 
@@ -486,7 +491,6 @@
         renderizarLista(bd.filter(c => (ciu === "Todas" || c.ciudad === ciu) && (c.nombre.toLowerCase().includes(txt) || c.ubicacion.toLowerCase().includes(txt))));
     }
 
-    // Dibujado masivo optimizado mediante Leaflet.markercluster (Agrupa y previene superposiciones)
     function dibujarMapaFederal() {
         layerFederal.clearLayers(); 
         bd.forEach(c => {
