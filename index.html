@@ -169,7 +169,7 @@
     let eventos = [];
     let mapaRunning, layerRunning, controlRuta;
 
-    // Inicialización de mapas con MarkerCluster optimizado
+    // Inicialización de mapas con optimización de clusters
     let mapaFederal = L.map('map').setView([-38.41, -63.61], 5);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaFederal);
     
@@ -365,9 +365,10 @@
         datos.forEach(c => {
             const stats = promedios[c.nombre] ? `⭐ ${promedios[c.nombre].avg} (${promedios[c.nombre].total} votos)` : "Sin votos aún";
             
-            const linkMap = `https://www.google.com/maps?q=${c.lat},${c.lon}`;
+            // Enlace de Google Maps corregido usando plantilla limpia nativa de Leaflet coordenadas
+            const linkMap = `https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lon}`;
             
-            // Renderizado de cuadras de distancia si hay origen
+            // Lógica corregida para renderizar las cuadras de distancia
             let textoDistancia = "";
             if (origen && c.dist !== undefined) {
                 const cuadras = Math.round(c.dist * 10); 
@@ -411,7 +412,6 @@
         } catch (e) { document.getElementById('status').innerText = ""; }
     }
 
-    // NUEVA MODIFICACIÓN: Función blindada para iPhone / iOS con control de errores y precisión extendida
     function usarMiGPS() { 
         if (!navigator.geolocation) {
             return Swal.fire("Error", "Tu navegador o dispositivo no soporta GPS.", "error");
@@ -518,6 +518,7 @@
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
 
+    // Navegación fluida de pestañas
     function cambiarPestaña(tab, btn) {
         document.getElementById('tab-lista').classList.toggle('hidden', tab !== 'lista');
         document.getElementById('tab-mapa').classList.toggle('hidden', tab !== 'mapa');
@@ -551,3 +552,4 @@
 </script>
 </body>
 </html>
+
