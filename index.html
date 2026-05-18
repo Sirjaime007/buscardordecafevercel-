@@ -17,6 +17,10 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
     <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
     
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
@@ -75,7 +79,6 @@
         .event-link { display: block; text-align: center; background: var(--primary); color: white; text-decoration: none; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 0.9rem; transition: background 0.2s; }
         .event-link:hover { background: #452f28; }
 
-        /* Estilos para los contadores de días */
         .event-badge { background: #fee2e2; color: var(--running); padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; display: inline-block; }
         .event-badge.today { background: #d1fae5; color: var(--accent); }
         .event-badge.passed { background: #e2e8f0; color: #64748B; }
@@ -159,7 +162,6 @@
     const SHEET_ID = "10vUOhRr7IAXlRrkBphxEP4ApXYBgrnuxJq6G83GnfHI";
     const GIDS = { "Mar del Plata": "0", "Buenos Aires": "1296176686", "La Plata": "208452991", "Córdoba": "1250014567", "Rosario": "1691979590", "Mendoza": "2031963266", "Bahía Blanca": "1634818534", "Top Sudamérica": "35250567" };
     
-    // GID de eventos asignado correctamente
     const EVENTOS_GID = "1650811704"; 
 
     let bd = [];
@@ -167,10 +169,10 @@
     let eventos = [];
     let mapaRunning, layerRunning, controlRuta;
 
-    // Inicialización de mapas
+    // Inicialización de mapas (Configuramos layerFederal como un grupo de MarkerCluster)
     let mapaFederal = L.map('map').setView([-38.41, -63.61], 5);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaFederal);
-    let layerFederal = L.layerGroup().addTo(mapaFederal);
+    let layerFederal = L.markerClusterGroup().addTo(mapaFederal);
 
     let mapaRadar = L.map('mapa-radar').setView([-38.41, -63.61], 14);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaRadar);
@@ -199,6 +201,7 @@
         }
     }
 
+    // Sistema de carga blindado tolerante a variaciones de mayúsculas/minúsculas de columnas
     async function iniciarSistema() {
         await cargarPromedios();
         await cargarEventos(); 
@@ -209,14 +212,22 @@
                 download: true, header: true, skipEmptyLines: true,
                 complete: function(res) {
                     res.data.forEach(f => {
-                        const n = f.CAFE || f.Cafe;
-                        if (n && f.LAT) {
-                            bd.push({
-                                nombre: n.trim(), ciudad: ciu === "Top Sudamérica" ? (f.CIUDAD || "Top") : ciu,
-                                ubicacion: f.UBICACION || "-", instagram: f.INSTAGRAM || "#",
-                                lat: parseFloat(f.LAT.replace(',', '.')), lon: parseFloat(f.LONG.replace(',', '.')),
-                                esTop: ciu === "Top Sudamérica"
-                            });
+                        const n = f.CAFE || f.Cafe || f.cafe;
+                        const latRaw = f.LAT || f.Lat || f.lat || f.LATITUD || f.latitud;
+                        const lonRaw = f.LONG || f.Long || f.long || f.LNG || f.Lng || f.lng || f.LONGITUD || f.longitud;
+                        
+                        if (n && latRaw && lonRaw) {
+                            const latClean = parseFloat(latRaw.toString().replace(',', '.'));
+                            const lonClean = parseFloat(lonRaw.toString().replace(',', '.'));
+                            
+                            if (!isNaN(latClean) && !isNaN(lonClean)) {
+                                bd.push({
+                                    nombre: n.trim(), ciudad: ciu === "Top Sudamérica" ? (f.CIUDAD || "Top") : ciu,
+                                    ubicacion: f.UBICACION || f.Ubicacion || "-", instagram: f.INSTAGRAM || f.Instagram || "#",
+                                    lat: latClean, lon: lonClean,
+                                    esTop: ciu === "Top Sudamérica"
+                                });
+                            }
                         }
                     });
                     if (++completados === Object.keys(GIDS).length) {
@@ -259,7 +270,6 @@
         });
     }
 
-    // Calcula los días restantes de forma precisa evitando errores de zona horaria
     function calcularDiasRestantes(fechaOrdenStr) {
         if (!fechaOrdenStr || fechaOrdenStr === "9999-12-31") return "";
         
@@ -349,7 +359,7 @@
 
         datos.forEach(c => {
             const stats = promedios[c.nombre] ? `⭐ ${promedios[c.nombre].avg} (${promedios[c.nombre].total} votos)` : "Sin votos aún";
-            const linkMap = `https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lon}`;
+            const linkMap = `https://www.google.com/maps?q=${c.lat},${c.lon}`;
             const div = document.createElement('div'); div.className = 'cafe-card';
             div.innerHTML = `
                 <div class="cafe-info">
@@ -476,11 +486,16 @@
         renderizarLista(bd.filter(c => (ciu === "Todas" || c.ciudad === ciu) && (c.nombre.toLowerCase().includes(txt) || c.ubicacion.toLowerCase().includes(txt))));
     }
 
+    // Dibujado masivo optimizado mediante Leaflet.markercluster (Agrupa y previene superposiciones)
     function dibujarMapaFederal() {
+        layerFederal.clearLayers(); 
         bd.forEach(c => {
             const color = c.esTop ? '#D97706' : '#5D4037';
             const popHTML = `<div class="popup-custom"><b>${c.nombre}</b><br><small>${c.ubicacion}</small><br><a href="${c.instagram}" target="_blank" class="popup-btn">Instagram</a></div>`;
-            L.circleMarker([c.lat, c.lon], { radius: c.esTop ? 8:5, color: color, fillColor: color, fillOpacity: 0.8 }).addTo(layerFederal).bindPopup(popHTML);
+            
+            const marker = L.circleMarker([c.lat, c.lon], { radius: c.esTop ? 8:5, color: color, fillColor: color, fillOpacity: 0.8 }).bindPopup(popHTML);
+            
+            layerFederal.addLayer(marker); 
         });
     }
 
