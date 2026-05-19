@@ -7,7 +7,9 @@
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#5D4037">
-    <link class="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/924/924514.png">
+    
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/FzYvpzqW/1779197111449.png">
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/FzYvpzqW/1779197111449.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
@@ -365,10 +367,9 @@
         datos.forEach(c => {
             const stats = promedios[c.nombre] ? `⭐ ${promedios[c.nombre].avg} (${promedios[c.nombre].total} votos)` : "Sin votos aún";
             
-            // Enlace de Google Maps corregido usando plantilla limpia nativa de Leaflet coordenadas
             const linkMap = `https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lon}`;
             
-            // Lógica corregida para renderizar las cuadras de distancia
+            // Lógica de cálculo de cuadras
             let textoDistancia = "";
             if (origen && c.dist !== undefined) {
                 const cuadras = Math.round(c.dist * 10); 
@@ -518,7 +519,6 @@
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
 
-    // Navegación fluida de pestañas
     function cambiarPestaña(tab, btn) {
         document.getElementById('tab-lista').classList.toggle('hidden', tab !== 'lista');
         document.getElementById('tab-mapa').classList.toggle('hidden', tab !== 'mapa');
