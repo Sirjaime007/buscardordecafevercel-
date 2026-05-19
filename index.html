@@ -154,6 +154,9 @@
 
     <div id="tab-cursos" class="hidden">
         <h2 style="margin: 0 0 15px 0; font-weight: 800;">Cursos y Formación Barista</h2>
+        <div class="panel" style="margin-bottom: 20px;">
+            <select id="select-ciudad-cursos" onchange="renderizarCursos()"></select>
+        </div>
         <div id="lista-cursos" class="eventos-grid"></div>
     </div>
 
@@ -248,7 +251,9 @@
                     });
                     if (++completados === Object.keys(GIDS).length) {
                         bd.sort((a,b) => a.nombre.localeCompare(b.nombre));
-                        armarMenus(); dibujarMapaFederal(); renderizarLista(bd);
+                        armarMenus(); 
+                        dibujarMapaFederal(); 
+                        renderizarLista(bd);
                         document.getElementById('contador-total').innerText = `Encontramos ${bd.length} cafeterías de especialidad`;
                     }
                 }
@@ -289,32 +294,66 @@
     async function cargarCursos() {
         const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${CURSOS_GID}&v=${new Date().getTime()}`;
         Papa.parse(url, {
-            download: true, header: true, skipEmptyLines: true,
+            download: true, 
+            header: true, 
+            skipEmptyLines: true,
+            transformHeader: function(header) {
+                return header.trim().toUpperCase(); 
+            },
             complete: function(res) {
-                cursos = res.data.map(f => ({
-                    titulo: f.TITULO || f.Titulo,
-                    ciudad: f.CIUDAD || f.Ciudad || "Varios",
-                    desc: f.DESCRIPCION || f.Descripcion,
-                    foto: f.FOTO || f.Foto,
-                    link: f.LINK || f.Link
-                })).filter(c => c.titulo);
+                cursos = res.data.map(f => {
+                    const n = f.TITULO || f['TÍTULO'];
+                    const c = f.CIUDAD || f.CUIDAD; 
+                    const d = f.DESCRIPCION || f['DESCRIPCIÓN'];
+                    const p = f.FOTO || f.IMAGEN;
+                    const l = f.LINK || f.ENLACE;
+                    
+                    return {
+                        titulo: n,
+                        ciudad: c ? c.trim() : "Varias/Online", 
+                        desc: d || "",
+                        foto: p,
+                        link: l
+                    };
+                }).filter(c => c.titulo);
                 
-                renderizarCursos();
+                armarMenuCursos(); // Llenamos el desplegable con las ciudades encontradas
+                renderizarCursos(); // Mostramos los cursos
             }
         });
     }
 
+    // NUEVO: Función para armar el menú desplegable de cursos dinámicamente
+    function armarMenuCursos() {
+        const selectCursos = document.getElementById('select-ciudad-cursos');
+        const ciudadesCursos = [...new Set(cursos.map(c => c.ciudad))].sort();
+        
+        selectCursos.innerHTML = `<option value="Todas">Todas las ciudades (${cursos.length} cursos)</option>`;
+        
+        ciudadesCursos.forEach(c => {
+            const cant = cursos.filter(x => x.ciudad === c).length;
+            selectCursos.innerHTML += `<option value="${c}">${c} (${cant})</option>`;
+        });
+    }
+
+    // MODIFICADO: Ahora renderizarCursos filtra según lo que diga el menú desplegable
     function renderizarCursos() {
         const contenedor = document.getElementById('lista-cursos');
         contenedor.innerHTML = "";
         
-        if (cursos.length === 0) {
+        const selectCursos = document.getElementById('select-ciudad-cursos');
+        const ciudadElegida = selectCursos ? selectCursos.value : "Todas";
+
+        // Filtramos la lista principal según la ciudad elegida
+        const cursosFiltrados = cursos.filter(c => ciudadElegida === "Todas" || c.ciudad === ciudadElegida);
+
+        if (cursosFiltrados.length === 0) {
             contenedor.innerHTML = `<p style="color:#64748B; font-weight:500;">No hay cursos disponibles programados en este momento.</p>`;
             return;
         }
 
         const gruposPorCiudad = {};
-        cursos.forEach(c => {
+        cursosFiltrados.forEach(c => {
             if (!gruposPorCiudad[c.ciudad]) {
                 gruposPorCiudad[c.ciudad] = [];
             }
@@ -357,52 +396,34 @@
 
     function calcularDiasRestantes(fechaOrdenStr) {
         if (!fechaOrdenStr || fechaOrdenStr === "9999-12-31") return "";
-        
-        const hoy = new Date();
-        hoy.setHours(0, 0, 0, 0);
-        
+        const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
         const partes = fechaOrdenStr.split('-');
         const fechaEv = new Date(partes[0], partes[1] - 1, partes[2]);
-        
         const diffTiempo = fechaEv - hoy;
         const diffDias = Math.floor(diffTiempo / (1000 * 60 * 60 * 24));
         
-        if (diffDias > 1) {
-            return `<span class="event-badge">Faltan ${diffDias} días</span>`;
-        } else if (diffDias === 1) {
-            return `<span class="event-badge">¡Falta 1 día!</span>`;
-        } else if (diffDias === 0) {
-            return `<span class="event-badge today">¡Es hoy! 🎉</span>`;
-        } else {
-            return `<span class="event-badge passed">Finalizado</span>`;
-        }
+        if (diffDias > 1) return `<span class="event-badge">Faltan ${diffDias} días</span>`;
+        if (diffDias === 1) return `<span class="event-badge">¡Falta 1 día!</span>`;
+        if (diffDias === 0) return `<span class="event-badge today">¡Es hoy! 🎉</span>`;
+        return `<span class="event-badge passed">Finalizado</span>`;
     }
 
     function renderizarEventos() {
         const contenedor = document.getElementById('lista-eventos');
         contenedor.innerHTML = "";
-        
-        if (eventos.length === 0) {
-            contenedor.innerHTML = `<p style="color:#64748B; font-weight:500;">No hay eventos agendados próximamente.</p>`;
-            return;
-        }
+        if (eventos.length === 0) { contenedor.innerHTML = `<p style="color:#64748B; font-weight:500;">No hay eventos agendados próximamente.</p>`; return; }
 
         eventos.forEach(e => {
             const imgUrl = e.foto ? e.foto : 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600';
             const badgeCountdown = calcularDiasRestantes(e.fechaOrden);
-            
             const div = document.createElement('div');
             div.className = 'event-card';
             div.innerHTML = `
                 <img src="${imgUrl}" class="event-img" alt="${e.titulo}" onerror="this.src='https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600'">
                 <div class="event-content">
                     <div>
-                        <div class="event-date">
-                            <span>📅 ${e.fecha} • 📍 ${e.ciudad}</span>
-                            ${badgeCountdown}
-                        </div>
-                        <h3 class="event-title">${e.titulo}</h3>
-                        <p class="event-desc">${e.desc}</p>
+                        <div class="event-date"><span>📅 ${e.fecha} • 📍 ${e.ciudad}</span>${badgeCountdown}</div>
+                        <h3 class="event-title">${e.titulo}</h3><p class="event-desc">${e.desc}</p>
                     </div>
                     <a href="${e.link}" target="_blank" class="event-link">Más Información</a>
                 </div>
@@ -444,8 +465,7 @@
 
         datos.forEach(c => {
             const stats = promedios[c.nombre] ? `⭐ ${promedios[c.nombre].avg} (${promedios[c.nombre].total} votos)` : "Sin votos aún";
-            
-            const linkMap = `https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lon}`;
+            const linkMap = `https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lon}`;
             
             let textoDistancia = "";
             if (origen && c.dist !== undefined) {
@@ -491,12 +511,8 @@
     }
 
     function usarMiGPS() { 
-        if (!navigator.geolocation) {
-            return Swal.fire("Error", "Tu navegador o dispositivo no soporta GPS.", "error");
-        }
-
+        if (!navigator.geolocation) return Swal.fire("Error", "Tu navegador o dispositivo no soporta GPS.", "error");
         document.getElementById('status').innerText = "Conectando con satélites GPS...";
-
         navigator.geolocation.getCurrentPosition(
             p => {
                 document.getElementById('status').innerText = "";
@@ -505,33 +521,20 @@
             error => {
                 document.getElementById('status').innerText = "";
                 let mensajeError = "No pudimos obtener tu GPS.";
-                
-                if (error.code === error.PERMISSION_DENIED) {
-                    mensajeError = "Permiso de ubicación denegado. Tenés que habilitar los permisos de localización para el navegador en los Ajustes de tu iPhone.";
-                } else if (error.code === error.TIMEOUT) {
-                    mensajeError = "Se agotó el tiempo de espera. Probá de nuevo en un espacio más abierto.";
-                } else if (error.code === error.POSITION_UNAVAILABLE) {
-                    mensajeError = "La ubicación no está disponible en este momento.";
-                }
-                
+                if (error.code === error.PERMISSION_DENIED) mensajeError = "Permiso de ubicación denegado. Tenés que habilitar los permisos de localización para el navegador en los Ajustes de tu iPhone.";
+                else if (error.code === error.TIMEOUT) mensajeError = "Se agotó el tiempo de espera. Probá de nuevo en un espacio más abierto.";
+                else if (error.code === error.POSITION_UNAVAILABLE) mensajeError = "La ubicación no está disponible en este momento.";
                 Swal.fire("Aviso", mensajeError, "warning");
             },
-            {
-                enableHighAccuracy: true, 
-                timeout: 10000,           
-                maximumAge: 0             
-            }
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         ); 
     }
 
-    // --- RUNNING LOGIC ---
     async function generarRutaRunning() {
         const ciudad = document.getElementById('run-ciudad').value;
         const partida = document.getElementById('run-partida').value;
         let distDeseada = parseFloat(document.getElementById('run-distancia').value);
-        
         if (!ciudad || !partida) return Swal.fire('Completá ciudad y partida');
-        
         let esFondo = distDeseada >= 10;
         let distBusqueda = esFondo ? distDeseada / 2 : distDeseada;
 
@@ -541,13 +544,11 @@
             const data = await res.json();
             if (data.length === 0) throw new Error("Dirección no encontrada");
             const origen = { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
-            
             const candidatos = bd.filter(c => {
                 if (c.ciudad !== ciudad) return false;
                 const d = calcularD(origen.lat, origen.lon, c.lat, c.lon);
                 return d >= (distBusqueda - 0.7) && d <= (distBusqueda + 0.7);
             });
-
             if (candidatos.length === 0) return Swal.fire('Sin resultados', 'Probá con otra distancia.', 'info');
             const elegido = candidatos[Math.floor(Math.random() * candidatos.length)];
             dibujarRecorrido(origen, elegido, esFondo, distDeseada);
@@ -562,7 +563,6 @@
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaRunning);
         }
         if (controlRuta) mapaRunning.removeControl(controlRuta);
-        
         controlRuta = L.Routing.control({
             waypoints: [L.latLng(origen.lat, origen.lon), L.latLng(cafe.lat, cafe.lon)],
             router: L.Routing.osrmv1({ serviceUrl: `https://router.project-osrm.org/route/v1`, profile: 'foot' }),
@@ -573,7 +573,6 @@
 
         const distReal = calcularD(origen.lat, origen.lon, cafe.lat, cafe.lon).toFixed(1);
         const mensajeExtra = esFondo ? `<br><small style="color:#64748B">Corré hasta el café y volvé para completar los <b>${distTotal} km</b>.</small>` : "";
-
         const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origen.lat},${origen.lon}&destination=${cafe.lat},${cafe.lon}&travelmode=walking`;
 
         document.getElementById('resultado-running').innerHTML = `
@@ -619,9 +618,7 @@
         bd.forEach(c => {
             const color = c.esTop ? '#D97706' : '#5D4037';
             const popHTML = `<div class="popup-custom"><b>${c.nombre}</b><br><small>${c.ubicacion}</small><br><a href="${c.instagram}" target="_blank" class="popup-btn">Instagram</a></div>`;
-            
             const marker = L.circleMarker([c.lat, c.lon], { radius: c.esTop ? 8:5, color: color, fillColor: color, fillOpacity: 0.8 }).bindPopup(popHTML);
-            
             layerFederal.addLayer(marker); 
         });
     }
@@ -630,3 +627,4 @@
 </script>
 </body>
 </html>
+
