@@ -70,6 +70,7 @@
         .links a { background: white; color: var(--text); text-decoration: none; padding: 12px; border-radius: 10px; font-size: 0.9rem; font-weight: 700; text-align: center; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s; }
         .links a:hover { background: var(--primary); color: white; border-color: var(--primary); }
         
+        /* Estilos para las pestañas de Tarjetas (Eventos y Cursos) */
         .eventos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 10px; }
         .event-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; flex-direction: column; }
         .event-img { width: 100%; height: 160px; object-fit: cover; background-color: #e2e8f0; }
@@ -84,9 +85,17 @@
         .event-badge.today { background: #d1fae5; color: var(--accent); }
         .event-badge.passed { background: #e2e8f0; color: #64748B; }
 
-        .popup-custom { font-family: 'Inter', sans-serif; text-align: center; }
-        .popup-btn { background: var(--primary); color: white !important; padding: 8px 12px; border-radius: 6px; text-decoration: none; display: inline-block; margin-top: 10px; font-weight: 700; font-size: 0.8rem; }
+        /* Estilos personalizados para el Modal de Reportes */
+        .swal-custom-popup { border-radius: 24px !important; padding: 25px !important; border: 1px solid var(--border); }
+        .swal-custom-title { font-weight: 800 !important; color: var(--text) !important; font-size: 1.6rem !important; margin-bottom: 15px !important;}
+        .swal-custom-input, .swal-custom-textarea { width: 100%; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 0.95rem; box-sizing: border-box; background: var(--bg); transition: border-color 0.2s; outline: none; color: var(--text); margin-bottom: 5px; }
+        .swal-custom-input:focus, .swal-custom-textarea:focus { border-color: var(--primary); background: white; }
+        .swal-custom-textarea { height: 100px; resize: none; margin-bottom: 10px; }
+        .swal-custom-label { font-weight: 700; font-size: 0.85rem; color: #64748B; display: block; text-align: left; margin: 15px 0 6px 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .swal-custom-btn { font-weight: 700 !important; border-radius: 12px !important; padding: 14px 28px !important; font-size: 1rem !important; transition: transform 0.1s !important; }
+        .swal-custom-btn:active { transform: scale(0.96) !important; }
 
+        /* Botón flotante para reportes */
         .btn-flotante-reporte { position: fixed; bottom: 20px; right: 20px; background: #1E293B; color: white; border: none; padding: 14px 20px; border-radius: 30px; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9999; transition: transform 0.2s, background 0.2s; display: flex; align-items: center; gap: 8px; }
         .btn-flotante-reporte:hover { transform: scale(1.05); background: var(--primary); }
 
@@ -625,36 +634,58 @@
         });
     }
 
-    // MODIFICADO: Sistema seguro para enviar datos de reporte al servidor interno en Vercel
+    // Funciones del Modal de Reporte actualizadas con nueva estética y Logo
     async function abrirReporte() {
         const { value: formValues } = await Swal.fire({
             title: 'Reportar Novedad',
-            html:
-                '<select id="swal-tipo" class="swal2-input">' +
-                '<option value="Nuevo Local">☕ Sugerir nuevo local</option>' +
-                '<option value="Local Cerrado">🚪 Local cerrado</option>' +
-                '<option value="Dato Incorrecto">✏️ Dato incorrecto (Ej: IG, dirección)</option>' +
-                '<option value="Otro">❓ Otro problema</option>' +
-                '</select>' +
-                '<input id="swal-local" class="swal2-input" placeholder="Nombre del local y Ciudad">' +
-                '<textarea id="swal-detalle" class="swal2-textarea" placeholder="Detalles extra (link de IG, calle correcta...)" style="height: 100px; resize: none;"></textarea>',
+            imageUrl: 'https://i.postimg.cc/FzYvpzqW/1779197111449.png', // Tu logo minimalista
+            imageWidth: 60,
+            imageHeight: 60,
+            imageAlt: 'Logo Buscador de Café',
+            customClass: {
+                popup: 'swal-custom-popup',
+                title: 'swal-custom-title',
+                confirmButton: 'swal-custom-btn',
+                cancelButton: 'swal-custom-btn'
+            },
+            confirmButtonColor: '#5D4037', // Tu marrón cafetero
+            cancelButtonColor: '#94A3B8',  // Gris neutro
+            html: `
+                <div style="text-align: left;">
+                    <label class="swal-custom-label">¿Qué nos querés contar?</label>
+                    <select id="swal-tipo" class="swal-custom-input">
+                        <option value="Nuevo Local">☕ Sugerir nuevo local</option>
+                        <option value="Local Cerrado">🚪 Local cerrado</option>
+                        <option value="Dato Incorrecto">✏️ Dato incorrecto (Ej: IG, dirección)</option>
+                        <option value="Otro">❓ Otro problema</option>
+                    </select>
+
+                    <label class="swal-custom-label">Nombre del local y ciudad</label>
+                    <input id="swal-local" class="swal-custom-input" placeholder="Ej: Café Gascón, Mar del Plata">
+
+                    <label class="swal-custom-label">Detalles extras</label>
+                    <textarea id="swal-detalle" class="swal-custom-textarea" placeholder="Dejanos el link de Instagram, la calle correcta o la info que nos falte..."></textarea>
+                </div>
+            `,
             focusConfirm: false,
             showCancelButton: true,
             confirmButtonText: 'Enviar Reporte',
             cancelButtonText: 'Cancelar',
             preConfirm: () => {
+                const localStr = document.getElementById('swal-local').value.trim();
+                if (!localStr) {
+                    Swal.showValidationMessage('Por favor escribí el nombre del local o la ciudad para ubicarlo.');
+                    return false;
+                }
                 return {
                     tipo: document.getElementById('swal-tipo').value,
-                    local: document.getElementById('swal-local').value,
-                    detalle: document.getElementById('swal-detalle').value
+                    local: localStr,
+                    detalle: document.getElementById('swal-detalle').value.trim()
                 }
             }
         });
 
         if (formValues) {
-            if (!formValues.local) {
-                return Swal.fire('Error', 'Por favor escribí el nombre del local o la ciudad para poder ubicarlo.', 'error');
-            }
             enviarTelegram(formValues);
         }
     }
@@ -667,12 +698,27 @@
             body: JSON.stringify(datos)
         }).then(response => {
             if (response.ok) {
-                Swal.fire('¡Enviado!', 'Gracias por ayudar a mejorar la comunidad cafetera.', 'success');
+                Swal.fire({
+                    title: '¡Enviado!',
+                    text: 'Gracias por ayudar a mejorar la comunidad cafetera.',
+                    icon: 'success',
+                    confirmButtonColor: '#5D4037'
+                });
             } else {
-                Swal.fire('Atención', 'Hubo un error enviando el reporte.', 'warning');
+                Swal.fire({
+                    title: 'Atención',
+                    text: 'Hubo un error enviando el reporte.',
+                    icon: 'warning',
+                    confirmButtonColor: '#5D4037'
+                });
             }
         }).catch(error => {
-            Swal.fire('Error', 'No hay conexión a internet para enviar el reporte.', 'error');
+            Swal.fire({
+                title: 'Error',
+                text: 'No hay conexión a internet para enviar el reporte.',
+                icon: 'error',
+                confirmButtonColor: '#5D4037'
+            });
         });
     }
 
