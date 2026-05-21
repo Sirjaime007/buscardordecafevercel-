@@ -85,15 +85,21 @@
         .event-badge.today { background: #d1fae5; color: var(--accent); }
         .event-badge.passed { background: #e2e8f0; color: #64748B; }
 
-        /* Estilos específicos para popups del mapa */
         .popup-custom { font-family: 'Inter', sans-serif; text-align: center; }
         .popup-btn { background: var(--primary); color: white !important; padding: 8px 12px; border-radius: 6px; text-decoration: none; display: inline-block; margin-top: 10px; font-weight: 700; font-size: 0.8rem; }
 
+        /* Botón flotante para reportes a Telegram */
+        .btn-flotante-reporte { position: fixed; bottom: 20px; right: 20px; background: #1E293B; color: white; border: none; padding: 14px 20px; border-radius: 30px; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9999; transition: transform 0.2s, background 0.2s; display: flex; align-items: center; gap: 8px; }
+        .btn-flotante-reporte:hover { transform: scale(1.05); background: var(--primary); }
+
         .hidden { display: none !important; }
-        footer { margin-top: 50px; text-align: center; color: #64748B; border-top: 1px solid var(--border); padding: 30px 0; font-size: 0.85rem; }
+        footer { margin-top: 50px; text-align: center; color: #64748B; border-top: 1px solid var(--border); padding: 30px 0 80px 0; font-size: 0.85rem; }
         .leaflet-routing-container { display: none !important; }
 
-        @media (max-width: 600px) { .cafe-card { flex-direction: column; align-items: stretch; } .links { flex-direction: row; } .links a { flex: 1; } .botones-grid { grid-template-columns: 1fr; } .btn-gps { grid-column: span 1; } }
+        @media (max-width: 600px) { 
+            .cafe-card { flex-direction: column; align-items: stretch; } .links { flex-direction: row; } .links a { flex: 1; } .botones-grid { grid-template-columns: 1fr; } .btn-gps { grid-column: span 1; }
+            .btn-flotante-reporte { bottom: 15px; right: 15px; font-size: 0.85rem; padding: 12px 16px; } 
+        }
     </style>
 </head>
 <body>
@@ -163,6 +169,8 @@
     <footer>
         <p><strong>© 2026 Buscador de Café Argentina</strong><br>Contacto: <a href="mailto:buscadordecafe@gmail.com" style="color:var(--primary); font-weight:800;">buscadordecafe@gmail.com</a></p>
     </footer>
+    
+    <button class="btn-flotante-reporte" onclick="abrirReporte()">💬 Reportar Error / Local</button>
 </div>
 
 <script>
@@ -182,7 +190,6 @@
     let cursos = []; 
     let mapaRunning, layerRunning, controlRuta;
 
-    // Inicialización de mapas
     let mapaFederal = L.map('map').setView([-38.41, -63.61], 5);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaFederal);
     
@@ -317,13 +324,12 @@
                     };
                 }).filter(c => c.titulo);
                 
-                armarMenuCursos(); // Llenamos el desplegable con las ciudades encontradas
-                renderizarCursos(); // Mostramos los cursos
+                armarMenuCursos();
+                renderizarCursos(); 
             }
         });
     }
 
-    // NUEVO: Función para armar el menú desplegable de cursos dinámicamente
     function armarMenuCursos() {
         const selectCursos = document.getElementById('select-ciudad-cursos');
         const ciudadesCursos = [...new Set(cursos.map(c => c.ciudad))].sort();
@@ -336,7 +342,6 @@
         });
     }
 
-    // MODIFICADO: Ahora renderizarCursos filtra según lo que diga el menú desplegable
     function renderizarCursos() {
         const contenedor = document.getElementById('lista-cursos');
         contenedor.innerHTML = "";
@@ -344,7 +349,6 @@
         const selectCursos = document.getElementById('select-ciudad-cursos');
         const ciudadElegida = selectCursos ? selectCursos.value : "Todas";
 
-        // Filtramos la lista principal según la ciudad elegida
         const cursosFiltrados = cursos.filter(c => ciudadElegida === "Todas" || c.ciudad === ciudadElegida);
 
         if (cursosFiltrados.length === 0) {
@@ -623,8 +627,66 @@
         });
     }
 
+    // Funciones del Modal de Reporte integradas con tus credenciales
+    async function abrirReporte() {
+        const { value: formValues } = await Swal.fire({
+            title: 'Reportar Novedad',
+            html:
+                '<select id="swal-tipo" class="swal2-input">' +
+                '<option value="Nuevo Local">☕ Sugerir nuevo local</option>' +
+                '<option value="Local Cerrado">🚪 Local cerrado</option>' +
+                '<option value="Dato Incorrecto">✏️ Dato incorrecto (Ej: IG, dirección)</option>' +
+                '<option value="Otro">❓ Otro problema</option>' +
+                '</select>' +
+                '<input id="swal-local" class="swal2-input" placeholder="Nombre del local y Ciudad">' +
+                '<textarea id="swal-detalle" class="swal2-textarea" placeholder="Detalles extra (link de IG, calle correcta...)" style="height: 100px; resize: none;"></textarea>',
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Enviar Reporte',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                return {
+                    tipo: document.getElementById('swal-tipo').value,
+                    local: document.getElementById('swal-local').value,
+                    detalle: document.getElementById('swal-detalle').value
+                }
+            }
+        });
+
+        if (formValues) {
+            if (!formValues.local) {
+                return Swal.fire('Error', 'Por favor escribí el nombre del local o la ciudad para poder ubicarlo.', 'error');
+            }
+            enviarTelegram(formValues);
+        }
+    }
+
+    function enviarTelegram(datos) {
+        // Datos integrados (se eliminó el espacio inválido en el token)
+        const botToken = '8733046942:AAGYePWGw4XR1lrGtKD0GsG5Gpt1gQ9db2Q'; 
+        const chatId = '8437988676';       
+
+        const mensaje = `🚨 *Nuevo Reporte en el Buscador*\n\n*Tipo:* ${datos.tipo}\n*Local/Ciudad:* ${datos.local}\n*Detalle:* ${datos.detalle || "Sin detalles extra"}`;
+        const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+        
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: chatId, text: mensaje, parse_mode: 'Markdown' })
+        }).then(response => {
+            if (response.ok) {
+                Swal.fire('¡Enviado!', 'Gracias por ayudar a mejorar la comunidad cafetera.', 'success');
+            } else {
+                Swal.fire('Atención', 'Hubo un error con la configuración del Bot.', 'warning');
+            }
+        }).catch(error => {
+            Swal.fire('Error', 'No hay conexión a internet para enviar el reporte.', 'error');
+        });
+    }
+
     iniciarSistema();
 </script>
 </body>
 </html>
+
 
