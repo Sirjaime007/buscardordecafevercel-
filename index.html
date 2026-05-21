@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buscador de Café Argentina | Especialidad</title>
+    <title>Café de Especialidad Argentina | Buscador</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#5D4037">
@@ -31,27 +31,41 @@
         body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
         .container { max-width: 900px; margin: auto; }
         
-        header { text-align: center; margin-bottom: 25px; }
-        h1 { font-size: 2.2rem; margin: 0; font-weight: 800; letter-spacing: -1px; }
+        /* HEADER ACTUALIZADO */
+        header { text-align: center; margin-bottom: 25px; padding-top: 10px; }
+        h1 { font-size: 2.2rem; margin: 0; font-weight: 800; letter-spacing: -1px; color: var(--text); line-height: 1.2; }
         h1 span { color: var(--primary); }
-        #contador-total { font-size: 0.95rem; color: #64748B; font-weight: 500; margin-top: 5px; }
+        .subtitle { color: #64748B; font-size: 0.95rem; margin-top: 6px; font-weight: 500; }
 
-        .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-        .tab-btn { background: #E2E8F0; border: none; padding: 12px 18px; font-weight: 700; border-radius: 10px; cursor: pointer; color: #475569; font-size: 0.85rem; transition: all 0.2s; }
+        .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
+        .tab-btn { background: #E2E8F0; border: none; padding: 12px 18px; font-weight: 700; border-radius: 12px; cursor: pointer; color: #475569; font-size: 0.85rem; transition: all 0.2s; }
         .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(93, 64, 55, 0.2); }
         .tab-btn.special { background: #fee2e2; color: var(--running); border: 1px solid #fecaca; }
         .tab-btn.special.active { background: var(--running); color: white; }
 
-        .panel { background: var(--card); padding: 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid var(--border); }
-        select, input { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 1rem; box-sizing: border-box; outline: none; }
+        .panel { background: var(--card); padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; border: 1px solid var(--border); }
         
-        .botones-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px; }
-        .btn-accion { padding: 14px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; color: white; font-size: 0.9rem; transition: transform 0.1s, opacity 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        /* ESTILOS DE INPUTS UNIFICADOS (Limpios y redondeados) */
+        .input-moderno { width: 100%; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 0.95rem; box-sizing: border-box; background: var(--bg); transition: border-color 0.2s; outline: none; color: var(--text); margin-bottom: 12px; }
+        .input-moderno:focus { border-color: var(--primary); background: white; }
+        
+        /* NUEVOS BOTONES DE BÚSQUEDA */
+        .botones-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 5px; }
+        .btn-accion { padding: 14px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 0.9rem; transition: transform 0.1s, all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .btn-accion:active { transform: scale(0.98); }
-        .btn-filtro { background: #475569; }
-        .btn-distancia { background: var(--top); }
-        .btn-gps { grid-column: span 2; background: var(--accent); }
-        .btn-run { background: var(--running); width: 100%; margin-top: 5px; font-size: 1rem; }
+        
+        .btn-outline { background: transparent; border: 2px solid var(--border); color: #475569; }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+        
+        .btn-primary-gps { background: var(--primary); color: white; border: none; box-shadow: 0 4px 10px rgba(93, 64, 55, 0.2); }
+        .btn-primary-gps:hover { background: #452f28; }
+        
+        .btn-run { background: var(--running); color: white; border: none; width: 100%; margin-top: 5px; font-size: 1rem; }
+
+        /* CONTADOR DE LOCALES DENTRO DEL PANEL */
+        .panel-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+        .panel-title { margin: 0; font-size: 1.2rem; font-weight: 800; color: var(--text); }
+        .badge-count { background: #F1F5F9; color: #475569; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid var(--border); }
 
         #map, #mapa-radar, #mapa-running { width: 100%; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 20px; display: none; height: 400px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         .activo { display: block !important; }
@@ -70,7 +84,6 @@
         .links a { background: white; color: var(--text); text-decoration: none; padding: 12px; border-radius: 10px; font-size: 0.9rem; font-weight: 700; text-align: center; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s; }
         .links a:hover { background: var(--primary); color: white; border-color: var(--primary); }
         
-        /* Estilos para las pestañas de Tarjetas (Eventos y Cursos) */
         .eventos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 10px; }
         .event-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; flex-direction: column; }
         .event-img { width: 100%; height: 160px; object-fit: cover; background-color: #e2e8f0; }
@@ -85,17 +98,17 @@
         .event-badge.today { background: #d1fae5; color: var(--accent); }
         .event-badge.passed { background: #e2e8f0; color: #64748B; }
 
+        .popup-custom { font-family: 'Inter', sans-serif; text-align: center; }
+        .popup-btn { background: var(--primary); color: white !important; padding: 8px 12px; border-radius: 6px; text-decoration: none; display: inline-block; margin-top: 10px; font-weight: 700; font-size: 0.8rem; }
+
         /* Estilos personalizados para el Modal de Reportes */
         .swal-custom-popup { border-radius: 24px !important; padding: 25px !important; border: 1px solid var(--border); }
         .swal-custom-title { font-weight: 800 !important; color: var(--text) !important; font-size: 1.6rem !important; margin-bottom: 15px !important;}
-        .swal-custom-input, .swal-custom-textarea { width: 100%; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 0.95rem; box-sizing: border-box; background: var(--bg); transition: border-color 0.2s; outline: none; color: var(--text); margin-bottom: 5px; }
-        .swal-custom-input:focus, .swal-custom-textarea:focus { border-color: var(--primary); background: white; }
         .swal-custom-textarea { height: 100px; resize: none; margin-bottom: 10px; }
         .swal-custom-label { font-weight: 700; font-size: 0.85rem; color: #64748B; display: block; text-align: left; margin: 15px 0 6px 4px; text-transform: uppercase; letter-spacing: 0.5px; }
         .swal-custom-btn { font-weight: 700 !important; border-radius: 12px !important; padding: 14px 28px !important; font-size: 1rem !important; transition: transform 0.1s !important; }
         .swal-custom-btn:active { transform: scale(0.96) !important; }
 
-        /* Botón flotante para reportes */
         .btn-flotante-reporte { position: fixed; bottom: 20px; right: 20px; background: #1E293B; color: white; border: none; padding: 14px 20px; border-radius: 30px; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9999; transition: transform 0.2s, background 0.2s; display: flex; align-items: center; gap: 8px; }
         .btn-flotante-reporte:hover { transform: scale(1.05); background: var(--primary); }
 
@@ -104,7 +117,7 @@
         .leaflet-routing-container { display: none !important; }
 
         @media (max-width: 600px) { 
-            .cafe-card { flex-direction: column; align-items: stretch; } .links { flex-direction: row; } .links a { flex: 1; } .botones-grid { grid-template-columns: 1fr; } .btn-gps { grid-column: span 1; }
+            .cafe-card { flex-direction: column; align-items: stretch; } .links { flex-direction: row; } .links a { flex: 1; } .botones-grid { grid-template-columns: 1fr; } 
             .btn-flotante-reporte { bottom: 15px; right: 15px; font-size: 0.85rem; padding: 12px 16px; } 
         }
     </style>
@@ -113,30 +126,35 @@
 
 <div class="container">
     <header>
-        <h1>Buscador de Café <span>Argentina</span></h1>
-        <p id="contador-total">Sincronizando cafeterías de especialidad...</p>
+        <h1>Café de Especialidad <span>Argentina</span></h1>
+        <p class="subtitle">Buscador oficial de cafeterías, tostadurías y eventos.</p>
     </header>
 
     <div class="tabs">
         <button class="tab-btn active" onclick="cambiarPestaña('lista', this)">Explorar</button>
         <button class="tab-btn" onclick="cambiarPestaña('mapa', this)">Mapa Federal</button>
-        <button class="tab-btn special" onclick="cambiarPestaña('running', this)">🏃‍♂️ Running y Cafecito</button>
         <button class="tab-btn" onclick="cambiarPestaña('eventos', this)">📅 Eventos</button>
         <button class="tab-btn" onclick="cambiarPestaña('cursos', this)">🎓 Cursos</button>
+        <button class="tab-btn special" onclick="cambiarPestaña('running', this)">🏃‍♂️ Running y Cafecito</button>
     </div>
 
     <div id="tab-lista">
         <div class="panel">
-            <select id="select-ciudad" onchange="filtrarPorTexto()"></select>
-            <input type="text" id="input-busqueda" placeholder="Ej: Gascon 2525 o nombre del local..." onkeyup="filtrarPorTexto()">
+            <div class="panel-header-flex">
+                <h2 class="panel-title">Encontrá tu próximo café</h2>
+                <span id="contador-total" class="badge-count">Sincronizando...</span>
+            </div>
+            
+            <select id="select-ciudad" class="input-moderno" onchange="filtrarPorTexto()"></select>
+            <input type="text" id="input-busqueda" class="input-moderno" placeholder="Ej: Kopi, Cuervo o Gascón 2525..." onkeyup="filtrarPorTexto()">
             
             <div class="botones-grid">
-                <button class="btn-accion btn-filtro" onclick="filtrarPorTexto()">🔍 Filtrar Lista</button>
-                <button class="btn-accion btn-distancia" onclick="medirDesdeDireccion()">📍 Dirección Exacta</button>
-                <button class="btn-accion btn-gps" onclick="usarMiGPS()">📡 Cafés a mi alrededor</button>
+                <button class="btn-accion btn-outline" onclick="medirDesdeDireccion()">📍 Buscar por Dirección</button>
+                <button class="btn-accion btn-primary-gps" onclick="usarMiGPS()">🎯 Buscar Cerca de Mí</button>
             </div>
-            <div id="status" style="text-align:center; font-weight:700; color:var(--accent); min-height:20px; font-size:0.85rem;"></div>
+            <div id="status" style="text-align:center; font-weight:700; color:var(--accent); min-height:20px; font-size:0.85rem; margin-top:10px;"></div>
         </div>
+        
         <div id="mapa-radar"></div>
         <div id="resultados"></div>
     </div>
@@ -146,9 +164,9 @@
     <div id="tab-running" class="hidden">
         <div class="panel">
             <h3 style="margin:0 0 15px 0">¿Cuánto corremos hoy?</h3>
-            <select id="run-ciudad"><option value="">Seleccioná ciudad...</option></select>
-            <input type="text" id="run-partida" placeholder="¿Dónde arrancás? (Ej: Parque Primavesi)">
-            <select id="run-distancia">
+            <select id="run-ciudad" class="input-moderno"><option value="">Seleccioná ciudad...</option></select>
+            <input type="text" id="run-partida" class="input-moderno" placeholder="¿Dónde arrancás? (Ej: Parque Primavesi)">
+            <select id="run-distancia" class="input-moderno">
                 <option value="2">Corta: 2 km</option>
                 <option value="5">Media: 5 km</option>
                 <option value="10">Larga: 10 km (Meta a mitad de camino)</option>
@@ -167,8 +185,8 @@
 
     <div id="tab-cursos" class="hidden">
         <h2 style="margin: 0 0 15px 0; font-weight: 800;">Cursos y Formación Barista</h2>
-        <div class="panel" style="margin-bottom: 20px;">
-            <select id="select-ciudad-cursos" onchange="renderizarCursos()"></select>
+        <div class="panel" style="margin-bottom: 20px; padding: 15px;">
+            <select id="select-ciudad-cursos" class="input-moderno" style="margin: 0;" onchange="renderizarCursos()"></select>
         </div>
         <div id="lista-cursos" class="eventos-grid"></div>
     </div>
@@ -268,7 +286,8 @@
                         armarMenus(); 
                         dibujarMapaFederal(); 
                         renderizarLista(bd);
-                        document.getElementById('contador-total').innerText = `Encontramos ${bd.length} cafeterías de especialidad`;
+                        // SE ACTUALIZÓ EL CONTADOR A SU NUEVA UBICACIÓN
+                        document.getElementById('contador-total').innerText = `${bd.length} locales guardados`;
                     }
                 }
             });
@@ -532,7 +551,7 @@
             error => {
                 document.getElementById('status').innerText = "";
                 let mensajeError = "No pudimos obtener tu GPS.";
-                if (error.code === error.PERMISSION_DENIED) mensajeError = "Permiso de ubicación denegado. Tenés que habilitar los permisos de localización para el navegador en los Ajustes de tu iPhone.";
+                if (error.code === error.PERMISSION_DENIED) mensajeError = "Permiso de ubicación denegado. Tenés que habilitar los permisos de localización para el navegador en los Ajustes de tu dispositivo.";
                 else if (error.code === error.TIMEOUT) mensajeError = "Se agotó el tiempo de espera. Probá de nuevo en un espacio más abierto.";
                 else if (error.code === error.POSITION_UNAVAILABLE) mensajeError = "La ubicación no está disponible en este momento.";
                 Swal.fire("Aviso", mensajeError, "warning");
@@ -634,11 +653,10 @@
         });
     }
 
-    // Funciones del Modal de Reporte actualizadas con nueva estética y Logo
     async function abrirReporte() {
         const { value: formValues } = await Swal.fire({
             title: 'Reportar Novedad',
-            imageUrl: 'https://i.postimg.cc/FzYvpzqW/1779197111449.png', // Tu logo minimalista
+            imageUrl: 'https://i.postimg.cc/FzYvpzqW/1779197111449.png',
             imageWidth: 60,
             imageHeight: 60,
             imageAlt: 'Logo Buscador de Café',
@@ -646,10 +664,11 @@
                 popup: 'swal-custom-popup',
                 title: 'swal-custom-title',
                 confirmButton: 'swal-custom-btn',
-                cancelButton: 'swal-custom-btn'
+                cancelButton: 'swal-custom-btn',
+                input: 'swal-custom-input',
             },
-            confirmButtonColor: '#5D4037', // Tu marrón cafetero
-            cancelButtonColor: '#94A3B8',  // Gris neutro
+            confirmButtonColor: '#5D4037',
+            cancelButtonColor: '#94A3B8',
             html: `
                 <div style="text-align: left;">
                     <label class="swal-custom-label">¿Qué nos querés contar?</label>
@@ -664,7 +683,7 @@
                     <input id="swal-local" class="swal-custom-input" placeholder="Ej: Café Gascón, Mar del Plata">
 
                     <label class="swal-custom-label">Detalles extras</label>
-                    <textarea id="swal-detalle" class="swal-custom-textarea" placeholder="Dejanos el link de Instagram, la calle correcta o la info que nos falte..."></textarea>
+                    <textarea id="swal-detalle" class="swal-custom-textarea swal-custom-input" placeholder="Dejanos el link de Instagram, la calle correcta o la info que nos falte..."></textarea>
                 </div>
             `,
             focusConfirm: false,
@@ -690,7 +709,6 @@
         }
     }
 
-    // Se conecta a tu propia API en Vercel sin mostrar la clave pública
     function enviarTelegram(datos) {
         fetch('/api/reporte', {
             method: 'POST',
@@ -726,3 +744,4 @@
 </script>
 </body>
 </html>
+
