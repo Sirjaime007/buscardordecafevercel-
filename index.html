@@ -786,12 +786,21 @@
         }
     }
 
-    function enviarTelegram(datos) {
-        fetch('/api/reporte', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(datos)
-        }).then(response => {
+    // FUNCIÓN DE ENVÍO OPTIMIZADA PARA CELULARES
+    async function enviarTelegram(datos) {
+        try {
+            // Se inyecta el origen completo para evitar errores de ruteo relativo en celulares
+            const urlAbsoluta = window.location.origin + '/api/reporte';
+            
+            const response = await fetch(urlAbsoluta, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(datos)
+            });
+
             if (response.ok) {
                 Swal.fire({
                     title: '¡Enviado!',
@@ -800,22 +809,30 @@
                     confirmButtonColor: '#5D4037'
                 });
             } else {
-                Swal.fire({
-                    title: 'Atención',
-                    text: 'Hubo un error enviando el reporte.',
-                    icon: 'warning',
-                    confirmButtonColor: '#5D4037'
-                });
+                throw new Error('Error de respuesta del servidor');
             }
-        }).catch(error => {
-            console.error("Error al enviar a Telegram:", error);
+        } catch (error) {
+            console.error("Error enviando reporte:", error);
+            
+            // EL SALVAVIDAS PROFESIONAL:
+            // Si el bloqueador del celular rompe el envío, aseguramos la comunicación con un mail.
             Swal.fire({
                 title: 'Conexión Bloqueada',
-                text: 'El navegador bloqueó el envío. Si usás Brave, desactivá los "Escudos" temporalmente (el ícono del león arriba a la derecha) e intentá de nuevo.',
-                icon: 'error',
-                confirmButtonColor: '#5D4037'
+                text: 'El navegador de tu dispositivo bloqueó el envío automático del formulario. ¿Nos lo mandás por mail en un clic?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: '📩 Enviar por Mail',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#5D4037',
+                cancelButtonColor: '#94A3B8'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const asunto = encodeURIComponent('Reporte Buscador de Café');
+                    const cuerpo = encodeURIComponent(`Tipo: ${datos.tipo}\nLocal: ${datos.local}\nDetalles: ${datos.detalle}`);
+                    window.location.href = `mailto:buscadordecafe@gmail.com?subject=${asunto}&body=${cuerpo}`;
+                }
             });
-        });
+        }
     }
 
     iniciarSistema();
