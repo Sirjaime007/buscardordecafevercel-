@@ -786,9 +786,7 @@
         }
     }
 
-    // FUNCIÓN ORIGINAL RESTAURADA: ENVÍO A TELEGRAM VÍA VERCEL
     function enviarTelegram(datos) {
-        // Esta ruta requiere que el código esté subido a Vercel
         fetch('/api/reporte', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -811,10 +809,9 @@
             }
         }).catch(error => {
             console.error("Error al enviar a Telegram:", error);
-            // Mensaje específico si falla en celular (seguramente por el bloqueador de Brave)
             Swal.fire({
-                title: 'Error de conexión',
-                text: 'No se pudo conectar. Si estás desde el celular usando Brave, apagá el "Escudo" (ícono de león arriba a la derecha) y probá de nuevo.',
+                title: 'Conexión Bloqueada',
+                text: 'El navegador bloqueó el envío. Si usás Brave, desactivá los "Escudos" temporalmente (el ícono del león arriba a la derecha) e intentá de nuevo.',
                 icon: 'error',
                 confirmButtonColor: '#5D4037'
             });
