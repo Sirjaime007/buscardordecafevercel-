@@ -97,12 +97,81 @@
         .popup-custom { font-family: 'Inter', sans-serif; text-align: center; }
         .popup-btn { background: var(--primary); color: white !important; padding: 8px 12px; border-radius: 6px; text-decoration: none; display: inline-block; margin-top: 10px; font-weight: 700; font-size: 0.8rem; }
 
-        .swal-custom-popup { border-radius: 24px !important; padding: 25px !important; border: 1px solid var(--border); }
-        .swal-custom-title { font-weight: 800 !important; color: var(--text) !important; font-size: 1.6rem !important; margin-bottom: 15px !important;}
-        .swal-custom-textarea { height: 100px; resize: none; margin-bottom: 10px; }
-        .swal-custom-label { font-weight: 700; font-size: 0.85rem; color: #64748B; display: block; text-align: left; margin: 15px 0 6px 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .swal-custom-btn { font-weight: 700 !important; border-radius: 12px !important; padding: 14px 28px !important; font-size: 1rem !important; transition: transform 0.1s !important; }
-        .swal-custom-btn:active { transform: scale(0.96) !important; }
+        /* ESTILOS PREMIUM PARA EL MODAL DE REPORTE */
+        .swal2-popup.swal-custom-popup { 
+            border-radius: 24px !important; 
+            padding: 30px !important; 
+            border: 1px solid var(--border); 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1) !important;
+            font-family: 'Inter', sans-serif;
+        }
+        .swal2-title.swal-custom-title { 
+            font-weight: 800 !important; 
+            color: var(--text) !important; 
+            font-size: 1.6rem !important; 
+            margin-bottom: 20px !important;
+        }
+        .swal-custom-label { 
+            font-weight: 700; 
+            font-size: 0.85rem; 
+            color: #64748B; 
+            display: block; 
+            text-align: left; 
+            margin: 15px 0 6px 4px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+        }
+        .swal-custom-input {
+            width: 100% !important;
+            padding: 14px 16px !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 12px !important;
+            font-family: 'Inter', sans-serif !important;
+            font-size: 0.95rem !important;
+            box-sizing: border-box !important;
+            background: var(--bg) !important;
+            color: var(--text) !important;
+            transition: all 0.2s !important;
+            margin: 0 !important;
+        }
+        .swal-custom-input:focus {
+            border-color: var(--primary) !important;
+            background: white !important;
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(93, 64, 55, 0.1) !important;
+        }
+        .swal-custom-textarea { 
+            height: 100px !important; 
+            resize: vertical !important; 
+        }
+        .swal2-actions {
+            margin-top: 25px !important;
+            gap: 12px !important;
+        }
+        .swal2-styled.swal-custom-btn { 
+            font-weight: 700 !important; 
+            border-radius: 12px !important; 
+            padding: 14px 28px !important; 
+            font-size: 1rem !important; 
+            transition: all 0.2s !important; 
+        }
+        .swal2-styled.swal-custom-btn-confirm {
+            background-color: var(--primary) !important;
+        }
+        .swal2-styled.swal-custom-btn-confirm:hover {
+            background-color: #452f28 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(93, 64, 55, 0.2) !important;
+        }
+        .swal2-styled.swal-custom-btn-cancel {
+            background-color: transparent !important;
+            border: 2px solid var(--border) !important;
+            color: #475569 !important;
+        }
+        .swal2-styled.swal-custom-btn-cancel:hover {
+            border-color: #94A3B8 !important;
+            background-color: #F1F5F9 !important;
+        }
 
         .btn-flotante-reporte { position: fixed; bottom: 20px; right: 20px; background: #1E293B; color: white; border: none; padding: 14px 20px; border-radius: 30px; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9999; transition: transform 0.2s, background 0.2s; display: flex; align-items: center; gap: 8px; }
         .btn-flotante-reporte:hover { transform: scale(1.05); background: var(--primary); }
@@ -495,7 +564,6 @@
             datos = datos.map(c => ({...c, dist: calcularD(origen.lat, origen.lon, c.lat, c.lon)})).sort((a,b) => a.dist - b.dist).slice(0, 15);
             
             datos.forEach(c => {
-                // ACÁ APLICAMOS LA FUNCIÓN DE COLOR POR NOMBRE
                 const color = c.esTop ? '#D97706' : obtenerColorPorNombre(c.nombre);
                 const popHTML = `<div class="popup-custom"><b>${c.nombre}</b><br><small>${c.ubicacion}</small><br><a href="${c.instagram}" target="_blank" class="popup-btn">Instagram</a></div>`;
                 L.circleMarker([c.lat, c.lon], {radius: c.esTop ? 9:7, color: color, fillColor: color, fillOpacity:0.9}).addTo(layerRadar).bindPopup(popHTML);
@@ -657,7 +725,6 @@
     function dibujarMapaFederal() {
         layerFederal.clearLayers(); 
         bd.forEach(c => {
-            // ACÁ APLICAMOS LA FUNCIÓN DE COLOR POR NOMBRE EN EL MAPA PRINCIPAL
             const color = c.esTop ? '#D97706' : obtenerColorPorNombre(c.nombre);
             const popHTML = `<div class="popup-custom"><b>${c.nombre}</b><br><small>${c.ubicacion}</small><br><a href="${c.instagram}" target="_blank" class="popup-btn">Instagram</a></div>`;
             const marker = L.circleMarker([c.lat, c.lon], { radius: c.esTop ? 8:5, color: color, fillColor: color, fillOpacity: 0.8 }).bindPopup(popHTML);
@@ -675,12 +742,10 @@
             customClass: {
                 popup: 'swal-custom-popup',
                 title: 'swal-custom-title',
-                confirmButton: 'swal-custom-btn',
-                cancelButton: 'swal-custom-btn',
+                confirmButton: 'swal-custom-btn swal-custom-btn-confirm',
+                cancelButton: 'swal-custom-btn swal-custom-btn-cancel',
                 input: 'swal-custom-input',
             },
-            confirmButtonColor: '#5D4037',
-            cancelButtonColor: '#94A3B8',
             html: `
                 <div style="text-align: left;">
                     <label class="swal-custom-label">¿Qué nos querés contar?</label>
@@ -721,7 +786,9 @@
         }
     }
 
+    // FUNCIÓN ORIGINAL RESTAURADA: ENVÍO A TELEGRAM VÍA VERCEL
     function enviarTelegram(datos) {
+        // Esta ruta requiere que el código esté subido a Vercel
         fetch('/api/reporte', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -743,9 +810,11 @@
                 });
             }
         }).catch(error => {
+            console.error("Error al enviar a Telegram:", error);
+            // Mensaje específico si falla en celular (seguramente por el bloqueador de Brave)
             Swal.fire({
-                title: 'Error',
-                text: 'No hay conexión a internet para enviar el reporte.',
+                title: 'Error de conexión',
+                text: 'No se pudo conectar. Si estás desde el celular usando Brave, apagá el "Escudo" (ícono de león arriba a la derecha) y probá de nuevo.',
                 icon: 'error',
                 confirmButtonColor: '#5D4037'
             });
