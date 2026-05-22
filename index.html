@@ -31,7 +31,6 @@
         body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
         .container { max-width: 900px; margin: auto; }
         
-        /* HEADER ACTUALIZADO */
         header { text-align: center; margin-bottom: 25px; padding-top: 10px; }
         h1 { font-size: 2.2rem; margin: 0; font-weight: 800; letter-spacing: -1px; color: var(--text); line-height: 1.2; }
         h1 span { color: var(--primary); }
@@ -45,11 +44,9 @@
 
         .panel { background: var(--card); padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; border: 1px solid var(--border); }
         
-        /* ESTILOS DE INPUTS UNIFICADOS (Limpios y redondeados) */
         .input-moderno { width: 100%; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 0.95rem; box-sizing: border-box; background: var(--bg); transition: border-color 0.2s; outline: none; color: var(--text); margin-bottom: 12px; }
         .input-moderno:focus { border-color: var(--primary); background: white; }
         
-        /* NUEVOS BOTONES DE BÚSQUEDA */
         .botones-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 5px; }
         .btn-accion { padding: 14px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 0.9rem; transition: transform 0.1s, all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .btn-accion:active { transform: scale(0.98); }
@@ -62,7 +59,6 @@
         
         .btn-run { background: var(--running); color: white; border: none; width: 100%; margin-top: 5px; font-size: 1rem; }
 
-        /* CONTADOR DE LOCALES DENTRO DEL PANEL */
         .panel-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
         .panel-title { margin: 0; font-size: 1.2rem; font-weight: 800; color: var(--text); }
         .badge-count { background: #F1F5F9; color: #475569; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid var(--border); }
@@ -101,7 +97,6 @@
         .popup-custom { font-family: 'Inter', sans-serif; text-align: center; }
         .popup-btn { background: var(--primary); color: white !important; padding: 8px 12px; border-radius: 6px; text-decoration: none; display: inline-block; margin-top: 10px; font-weight: 700; font-size: 0.8rem; }
 
-        /* Estilos personalizados para el Modal de Reportes */
         .swal-custom-popup { border-radius: 24px !important; padding: 25px !important; border: 1px solid var(--border); }
         .swal-custom-title { font-weight: 800 !important; color: var(--text) !important; font-size: 1.6rem !important; margin-bottom: 15px !important;}
         .swal-custom-textarea { height: 100px; resize: none; margin-bottom: 10px; }
@@ -209,6 +204,22 @@
     const EVENTOS_GID = "1650811704"; 
     const CURSOS_GID = "1424993305"; 
 
+    // PALETA DE MARRONES Y FUNCIÓN HASH PARA ASIGNAR EL MISMO COLOR A SUCURSALES IGUALES
+    const PALETA_MARRONES = [
+        '#3E2723', '#4E342E', '#5D4037', '#6D4C41', '#795548',
+        '#8B4513', '#A0522D', '#CD853F', '#D2691E', '#5C4033',
+        '#8C3800', '#722F37', '#804000', '#A52A2A', '#964B00'
+    ];
+
+    function obtenerColorPorNombre(nombre) {
+        const str = nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return PALETA_MARRONES[Math.abs(hash) % PALETA_MARRONES.length];
+    }
+
     let bd = [];
     let promedios = {}; 
     let eventos = [];
@@ -286,7 +297,6 @@
                         armarMenus(); 
                         dibujarMapaFederal(); 
                         renderizarLista(bd);
-                        // SE ACTUALIZÓ EL CONTADOR A SU NUEVA UBICACIÓN
                         document.getElementById('contador-total').innerText = `${bd.length} locales guardados`;
                     }
                 }
@@ -485,7 +495,8 @@
             datos = datos.map(c => ({...c, dist: calcularD(origen.lat, origen.lon, c.lat, c.lon)})).sort((a,b) => a.dist - b.dist).slice(0, 15);
             
             datos.forEach(c => {
-                const color = c.esTop ? '#D97706' : '#5D4037';
+                // ACÁ APLICAMOS LA FUNCIÓN DE COLOR POR NOMBRE
+                const color = c.esTop ? '#D97706' : obtenerColorPorNombre(c.nombre);
                 const popHTML = `<div class="popup-custom"><b>${c.nombre}</b><br><small>${c.ubicacion}</small><br><a href="${c.instagram}" target="_blank" class="popup-btn">Instagram</a></div>`;
                 L.circleMarker([c.lat, c.lon], {radius: c.esTop ? 9:7, color: color, fillColor: color, fillOpacity:0.9}).addTo(layerRadar).bindPopup(popHTML);
             });
@@ -646,7 +657,8 @@
     function dibujarMapaFederal() {
         layerFederal.clearLayers(); 
         bd.forEach(c => {
-            const color = c.esTop ? '#D97706' : '#5D4037';
+            // ACÁ APLICAMOS LA FUNCIÓN DE COLOR POR NOMBRE EN EL MAPA PRINCIPAL
+            const color = c.esTop ? '#D97706' : obtenerColorPorNombre(c.nombre);
             const popHTML = `<div class="popup-custom"><b>${c.nombre}</b><br><small>${c.ubicacion}</small><br><a href="${c.instagram}" target="_blank" class="popup-btn">Instagram</a></div>`;
             const marker = L.circleMarker([c.lat, c.lon], { radius: c.esTop ? 8:5, color: color, fillColor: color, fillOpacity: 0.8 }).bindPopup(popHTML);
             layerFederal.addLayer(marker); 
@@ -744,4 +756,3 @@
 </script>
 </body>
 </html>
-
