@@ -788,11 +788,12 @@
 
     async function enviarTelegram(datos) {
         try {
-            // El truco para engañar a Brave: ruta absoluta y palabra 'contacto'
-            const urlSegura = window.location.origin + '/api/contacto';
+            // Cambiamos a 'reporte' para evitar bloqueadores en navegadores móviles
+            const urlSegura = window.location.origin + '/api/reporte';
             
             const response = await fetch(urlSegura, {
                 method: 'POST',
+                mode: 'cors', // <-- Agregado explícitamente para móviles
                 headers: { 
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
