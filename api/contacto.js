@@ -1,13 +1,17 @@
 export default async function handler(req, res) {
-    // 1. LA SOLUCIÓN: Dejar pasar la "pregunta de seguridad" (OPTIONS) del celular
+    // 1. CABECERAS GLOBALES (La clave para Safari, Brave y Chrome móvil)
+    // Se aplican a CUALQUIER respuesta que salga de esta función
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+
+    // 2. Dejar pasar la "pregunta de seguridad" (OPTIONS) del celular
     if (req.method === 'OPTIONS') {
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
         return res.status(200).end();
     }
 
-    // 2. Solo permitimos enviar datos (POST)
+    // 3. Solo permitimos enviar datos (POST)
     if (req.method !== 'POST') {
         return res.status(405).json({ message: 'Método no permitido' });
     }
@@ -35,17 +39,17 @@ export default async function handler(req, res) {
 
         const data = await response.json();
 
-        // Le avisamos también a Vercel que permita la respuesta hacia el celular
-        res.setHeader('Access-Control-Allow-Origin', '*');
+        // Ya no necesitamos setear el CORS acá porque lo pusimos arriba de todo
 
         if (response.ok) {
-            res.status(200).json({ success: true });
+            // Importante usar return para terminar la ejecución
+            return res.status(200).json({ success: true });
         } else {
             console.error("API RECHAZÓ EL MENSAJE:", data);
-            res.status(500).json({ error: 'Telegram rechazó el pedido', detalles: data });
+            return res.status(500).json({ error: 'Telegram rechazó el pedido', detalles: data });
         }
     } catch (error) {
         console.error("ERROR DEL SERVIDOR:", error);
-        res.status(500).json({ error: 'Error del servidor' });
+        return res.status(500).json({ error: 'Error del servidor interno' });
     }
 }
