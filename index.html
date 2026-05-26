@@ -703,17 +703,20 @@
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
 
-    function cambiarPestaña(tab, btn) {
+        function cambiarPestaña(tab, btn) {
         document.getElementById('tab-lista').classList.toggle('hidden', tab !== 'lista');
-        document.getElementById('tab-mapa').classList.toggle('toggle', tab !== 'mapa');
+        // El error estaba en la línea de abajo. Ahora dice 'hidden' correctamente.
+        document.getElementById('tab-mapa').classList.toggle('hidden', tab !== 'mapa'); 
         document.getElementById('tab-running').classList.toggle('hidden', tab !== 'running');
         document.getElementById('tab-eventos').classList.toggle('hidden', tab !== 'eventos'); 
         document.getElementById('tab-cursos').classList.toggle('hidden', tab !== 'cursos'); 
         
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+        // El setTimeout le da tiempo al contenedor a abrirse antes de recalcular el mapa
         if(tab === 'mapa') setTimeout(() => mapaFederal.invalidateSize(), 300);
         if(tab === 'running' && mapaRunning) setTimeout(() => mapaRunning.invalidateSize(), 300);
     }
+
 
     function filtrarPorTexto() {
         const ciu = document.getElementById('select-ciudad').value;
