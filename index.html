@@ -787,7 +787,6 @@
     }
 
     async function enviarReporteEmail(datos) {
-        // Generamos un timestamp para burlar el caché del celular y forzar conexión directa a Vercel
         const urlSegura = '/api/reporte?t=' + new Date().getTime();
         
         try {
@@ -807,17 +806,22 @@
                     confirmButtonColor: '#5D4037'
                 });
             } else {
-                throw new Error('Rechazado por el servidor');
+                const errorBackend = await response.text();
+                throw new Error(errorBackend);
             }
         } catch (error) {
-            // Plan de emergencia en caso de bloqueos extremos (abrimos correo directo)
-            const asunto = encodeURIComponent('Reporte Buscador de Café');
-            const cuerpo = encodeURIComponent(`Tipo: ${datos.tipo}\nLocal: ${datos.local}\nDetalles: ${datos.detalle}`);
-            window.location.href = `mailto:buscadordecafe@gmail.com?subject=${asunto}&body=${cuerpo}`;
+            console.error("Falla de envío:", error);
+            
+            Swal.fire({
+                title: 'Error Interno',
+                html: `<p style="font-size: 0.9rem;">El servidor rechazó el envío. Detalle técnico:<br><b style="color:red;">${error.message}</b></p>`,
+                icon: 'error',
+                confirmButtonText: 'Cerrar',
+                confirmButtonColor: '#5D4037'
+            });
         }
     }
 
-    // El Service Worker se registra al cargar la página
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js');
