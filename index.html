@@ -273,7 +273,6 @@
     const EVENTOS_GID = "1650811704"; 
     const CURSOS_GID = "1424993305"; 
 
-    // PALETA DE MARRONES Y FUNCIÓN HASH PARA ASIGNAR EL MISMO COLOR A SUCURSALES IGUALES
     const PALETA_MARRONES = [
         '#3E2723', '#4E342E', '#5D4037', '#6D4C41', '#795548',
         '#8B4513', '#A0522D', '#CD853F', '#D2691E', '#5C4033',
@@ -706,7 +705,7 @@
 
     function cambiarPestaña(tab, btn) {
         document.getElementById('tab-lista').classList.toggle('hidden', tab !== 'lista');
-        document.getElementById('tab-mapa').classList.toggle('hidden', tab !== 'mapa');
+        document.getElementById('tab-mapa').classList.toggle('toggle', tab !== 'mapa');
         document.getElementById('tab-running').classList.toggle('hidden', tab !== 'running');
         document.getElementById('tab-eventos').classList.toggle('hidden', tab !== 'eventos'); 
         document.getElementById('tab-cursos').classList.toggle('hidden', tab !== 'cursos'); 
@@ -790,12 +789,18 @@
         const urlSegura = '/api/reporte?t=' + new Date().getTime();
         
         try {
+            // Transformamos los datos a formato de formulario urlencoded para evitar que Brave móvil bloquee la petición simple
+            const formBody = new URLSearchParams();
+            for (const key in datos) {
+                formBody.append(key, datos[key]);
+            }
+
             const response = await fetch(urlSegura, {
                 method: 'POST',
                 headers: { 
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
                 },
-                body: JSON.stringify(datos)
+                body: formBody
             });
 
             if (response.ok) {
