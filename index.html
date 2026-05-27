@@ -173,28 +173,27 @@
             background-color: #F1F5F9 !important;
         }
 
-        /* BOTONES FLOTANTES */
+        /* BOTONES FLOTANTES ESCRITORIO (SEPARADOS) */
         .btn-flotante-reporte { position: fixed; bottom: 20px; right: 20px; background: #1E293B; color: white; border: none; padding: 14px 20px; border-radius: 30px; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9999; transition: transform 0.2s, background 0.2s; display: flex; align-items: center; gap: 8px; }
         .btn-flotante-reporte:hover { transform: scale(1.05); background: var(--primary); }
         
         .btn-flotante-sumate { position: fixed; bottom: 20px; left: 20px; background: var(--accent); color: white; border: none; padding: 14px 20px; border-radius: 30px; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9999; transition: transform 0.2s, background 0.2s; display: flex; align-items: center; gap: 8px; }
         .btn-flotante-sumate:hover { transform: scale(1.05); background: #047857; }
 
-        /* ESTILOS FLOTANTES DE COFI (NUEVO Y ANIMADO) */
+        /* ESTILOS FLOTANTES DE COFI (ANIMADO) */
         .cofi-helper-container {
             position: fixed;
-            bottom: 90px; /* Más arriba para que no pise el botón negro */
+            bottom: 90px; 
             right: 25px;
-            width: 110px; /* ¡Casi el doble de grande! */
+            width: 110px;
             cursor: pointer;
             z-index: 9998; 
             text-align: center;
         }
 
-        /* Creamos la animación de levitación */
         @keyframes flotar {
             0% { transform: translateY(0px); }
-            50% { transform: translateY(-12px); } /* Sube 12 píxeles */
+            50% { transform: translateY(-12px); }
             100% { transform: translateY(0px); }
         }
 
@@ -202,18 +201,15 @@
             width: 100%;
             height: auto;
             display: block;
-            mix-blend-mode: multiply; /* Magia pura: borra el fondo cuadrado de la imagen */
-            animation: flotar 3s ease-in-out infinite; /* Aplica el movimiento continuo */
+            animation: flotar 3s ease-in-out infinite; 
             transition: transform 0.3s ease;
         }
 
-        /* Cuando le pasás el mouse por encima */
         .cofi-helper-container:hover img {
-            animation: none; /* Frena el flote */
-            transform: scale(1.1) rotate(-5deg); /* Se agranda y gira para saludarte */
+            animation: none; 
+            transform: scale(1.1) rotate(-5deg); 
         }
 
-        /* Globo de texto flotante para COFI */
         .cofi-bubble {
             position: absolute;
             top: -20px;
@@ -237,18 +233,22 @@
         }
 
         .hidden { display: none !important; }
-        footer { margin-top: 50px; text-align: center; color: #64748B; border-top: 1px solid var(--border); padding: 30px 0 80px 0; font-size: 0.85rem; }
+        footer { margin-top: 50px; text-align: center; color: #64748B; border-top: 1px solid var(--border); padding: 30px 0 150px 0; font-size: 0.85rem; }
         .leaflet-routing-container { display: none !important; }
 
+        /* ========= RESPONSIVE CELULARES ========= */
         @media (max-width: 600px) { 
             .cafe-card { flex-direction: column; align-items: stretch; } .links { flex-direction: row; } .links a { flex: 1; } .botones-grid { grid-template-columns: 1fr; } 
-            .btn-flotante-reporte { bottom: 15px; right: 15px; font-size: 0.85rem; padding: 12px 16px; } 
-            .btn-flotante-sumate { bottom: 15px; left: 15px; font-size: 0.85rem; padding: 12px 16px; } 
-            /* Ajuste responsive para COFI */
+            
+            /* Apilamos los botones en la derecha para limpiar la pantalla */
+            .btn-flotante-reporte { bottom: 15px; right: 15px; left: auto; font-size: 0.8rem; padding: 12px 16px; } 
+            .btn-flotante-sumate { bottom: 70px; right: 15px; left: auto; font-size: 0.8rem; padding: 12px 16px; } 
+            
+            /* COFI se posiciona por encima de la columna de botones */
             .cofi-helper-container {
-                bottom: 85px;
+                bottom: 135px;
                 right: 15px;
-                width: 90px;
+                width: 85px;
             }
         }
     </style>
@@ -331,7 +331,7 @@
 
     <div class="cofi-helper-container" onclick="abrirBienvenidaCofi()">
         <div class="cofi-bubble">¡Hola! Haz clic</div>
-        <img src="https://i.postimg.cc/RV9rMCyW/1779904711534.png" alt="COFI Asistente de Café">
+        <img src="https://i.postimg.cc/tCPMV008/1779904711534-removebg-preview.png" alt="COFI Asistente de Café">
     </div>
 </div>
 
@@ -969,7 +969,7 @@
         Swal.fire({
             title: '¡Hola, Cafetero!',
             text: '¡Bienvenido a Buscador de Café. El primer buscador de café de especialidad de Argentina, acá vas a encontrar cafés, eventos, clases y mucho más.',
-            imageUrl: 'https://i.postimg.cc/RV9rMCyW/1779904711534.png',
+            imageUrl: 'https://i.postimg.cc/tCPMV008/1779904711534-removebg-preview.png',
             imageWidth: 120,
             imageHeight: 'auto',
             imageAlt: 'COFI Asistente de Café',
