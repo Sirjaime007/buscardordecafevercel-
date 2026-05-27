@@ -97,7 +97,7 @@
         .popup-custom { font-family: 'Inter', sans-serif; text-align: center; }
         .popup-btn { background: var(--primary); color: white !important; padding: 8px 12px; border-radius: 6px; text-decoration: none; display: inline-block; margin-top: 10px; font-weight: 700; font-size: 0.8rem; }
 
-        /* ESTILOS PREMIUM PARA EL MODAL DE REPORTE */
+        /* ESTILOS PREMIUM PARA LOS MODALES */
         .swal2-popup.swal-custom-popup { 
             border-radius: 24px !important; 
             padding: 30px !important; 
@@ -173,8 +173,12 @@
             background-color: #F1F5F9 !important;
         }
 
+        /* BOTONES FLOTANTES */
         .btn-flotante-reporte { position: fixed; bottom: 20px; right: 20px; background: #1E293B; color: white; border: none; padding: 14px 20px; border-radius: 30px; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9999; transition: transform 0.2s, background 0.2s; display: flex; align-items: center; gap: 8px; }
         .btn-flotante-reporte:hover { transform: scale(1.05); background: var(--primary); }
+        
+        .btn-flotante-sumate { position: fixed; bottom: 20px; left: 20px; background: var(--accent); color: white; border: none; padding: 14px 20px; border-radius: 30px; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9999; transition: transform 0.2s, background 0.2s; display: flex; align-items: center; gap: 8px; }
+        .btn-flotante-sumate:hover { transform: scale(1.05); background: #047857; }
 
         .hidden { display: none !important; }
         footer { margin-top: 50px; text-align: center; color: #64748B; border-top: 1px solid var(--border); padding: 30px 0 80px 0; font-size: 0.85rem; }
@@ -183,6 +187,7 @@
         @media (max-width: 600px) { 
             .cafe-card { flex-direction: column; align-items: stretch; } .links { flex-direction: row; } .links a { flex: 1; } .botones-grid { grid-template-columns: 1fr; } 
             .btn-flotante-reporte { bottom: 15px; right: 15px; font-size: 0.85rem; padding: 12px 16px; } 
+            .btn-flotante-sumate { bottom: 15px; left: 15px; font-size: 0.85rem; padding: 12px 16px; } 
         }
     </style>
 </head>
@@ -260,6 +265,7 @@
     </footer>
     
     <button class="btn-flotante-reporte" onclick="abrirReporte()">💬 Reportar Error / Local</button>
+    <button class="btn-flotante-sumate" onclick="abrirSumate()">✨ ¡Sumar mi proyecto!</button>
 </div>
 
 <script>
@@ -703,20 +709,17 @@
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
 
-        function cambiarPestaña(tab, btn) {
+    function cambiarPestaña(tab, btn) {
         document.getElementById('tab-lista').classList.toggle('hidden', tab !== 'lista');
-        // El error estaba en la línea de abajo. Ahora dice 'hidden' correctamente.
         document.getElementById('tab-mapa').classList.toggle('hidden', tab !== 'mapa'); 
         document.getElementById('tab-running').classList.toggle('hidden', tab !== 'running');
         document.getElementById('tab-eventos').classList.toggle('hidden', tab !== 'eventos'); 
         document.getElementById('tab-cursos').classList.toggle('hidden', tab !== 'cursos'); 
         
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
-        // El setTimeout le da tiempo al contenedor a abrirse antes de recalcular el mapa
         if(tab === 'mapa') setTimeout(() => mapaFederal.invalidateSize(), 300);
         if(tab === 'running' && mapaRunning) setTimeout(() => mapaRunning.invalidateSize(), 300);
     }
-
 
     function filtrarPorTexto() {
         const ciu = document.getElementById('select-ciudad').value;
@@ -784,6 +787,69 @@
         });
 
         if (formValues) {
+            enviarReporteEmail(formValues);
+        }
+    }
+
+    async function abrirSumate() {
+        const { value: formValues } = await Swal.fire({
+            title: '¡Sumate al Buscador!',
+            imageUrl: 'https://i.postimg.cc/FzYvpzqW/1779197111449.png',
+            imageWidth: 60,
+            imageHeight: 60,
+            imageAlt: 'Logo Buscador de Café',
+            customClass: {
+                popup: 'swal-custom-popup',
+                title: 'swal-custom-title',
+                confirmButton: 'swal-custom-btn swal-custom-btn-confirm',
+                cancelButton: 'swal-custom-btn swal-custom-btn-cancel',
+                input: 'swal-custom-input',
+            },
+            html: `
+                <div style="text-align: left;">
+                    <label class="swal-custom-label">¿Qué querés agregar?</label>
+                    <select id="sumate-tipo" class="swal-custom-input">
+                        <option value="Cafetería / Tostaduría">☕ Cafetería / Tostaduría</option>
+                        <option value="Evento Cafetero">📅 Evento Cafetero</option>
+                        <option value="Curso / Formación">🎓 Curso / Formación</option>
+                    </select>
+
+                    <label class="swal-custom-label">Nombre del proyecto y Ciudad</label>
+                    <input id="sumate-nombre" class="swal-custom-input" placeholder="Ej: Kopi (Mar del Plata)">
+
+                    <label class="swal-custom-label">Instagram o Link</label>
+                    <input id="sumate-link" class="swal-custom-input" placeholder="Ej: @kopi.cafe">
+
+                    <label class="swal-custom-label">Más información</label>
+                    <textarea id="sumate-detalle" class="swal-custom-textarea swal-custom-input" placeholder="Dirección exacta, fechas del evento, etc..."></textarea>
+                </div>
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Enviar Solicitud',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                const nombreStr = document.getElementById('sumate-nombre').value.trim();
+                if (!nombreStr) {
+                    Swal.showValidationMessage('Por favor escribí el nombre de tu proyecto.');
+                    return false;
+                }
+                
+                const tipoVal = document.getElementById('sumate-tipo').value;
+                const linkVal = document.getElementById('sumate-link').value.trim();
+                const detalleVal = document.getElementById('sumate-detalle').value.trim();
+                
+                // Empaquetamos los datos para que el backend de correos los procese sin tener que modificar nada en Vercel
+                return {
+                    tipo: "✨ ALTA NUEVA: " + tipoVal,
+                    local: nombreStr,
+                    detalle: "Link/IG: " + (linkVal || "No provisto") + "\n\nDetalles extras: " + (detalleVal || "Sin detalles adicionales")
+                }
+            }
+        });
+
+        if (formValues) {
+            // Mandamos los datos por la tubería que ya funciona a la perfección
             enviarReporteEmail(formValues);
         }
     }
