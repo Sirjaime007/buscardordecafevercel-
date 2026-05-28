@@ -693,21 +693,52 @@
         document.getElementById('status').innerText = "Buscando...";
         
         try {
-            // Límite aumentado a 20 para captar más opciones
-            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=20&q=${encodeURIComponent(dir + ", " + (ciu !== 'Todas' ? ciu : 'Argentina'))}`);
+            let queryText = dir;
+            if (ciu !== 'Todas' && !dir.toLowerCase().includes(ciu.toLowerCase())) {
+                queryText += ", " + ciu;
+            }
+            queryText += ", Argentina";
+
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=20&addressdetails=1&q=${encodeURIComponent(queryText)}`);
             const data = await res.json();
             
             document.getElementById('status').innerText = ""; 
             
-            if (data.length === 1) { 
-                renderizarLista(bd, { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) }); 
-            } else if (data.length > 1) {
-                // Filtro de duplicados: Descartamos resultados con el mismo nombre limpio
+            if (data.length > 0) {
+                const tieneNumero = /\d/.test(dir);
                 const opcionesUnicas = [];
                 const nombresVistos = new Set();
+
+                if (tieneNumero) {
+                    data.sort((a, b) => {
+                        const aHasNum = a.address && a.address.house_number ? 1 : 0;
+                        const bHasNum = b.address && b.address.house_number ? 1 : 0;
+                        return bHasNum - aHasNum;
+                    });
+                }
                 
                 data.forEach((item) => {
-                    const nombreLimpio = item.display_name.split(',').slice(0, 3).join(', ').trim();
+                    let nombreLimpio = "";
+                    if (item.address) {
+                        const calle = item.address.road || item.address.pedestrian || "";
+                        const altura = item.address.house_number ? " " + item.address.house_number : "";
+                        const barrio = item.address.suburb || item.address.neighbourhood || "";
+                        const localidad = item.address.city || item.address.town || item.address.village || item.address.county || "";
+
+                        let partes = [];
+                        if (calle) partes.push(calle + altura);
+                        if (barrio && barrio !== localidad) partes.push(barrio);
+                        if (localidad) partes.push(localidad);
+
+                        if (partes.length > 0) {
+                            nombreLimpio = partes.join(", ");
+                        } else {
+                            nombreLimpio = item.display_name.split(',').slice(0, 3).join(', ').trim();
+                        }
+                    } else {
+                        nombreLimpio = item.display_name.split(',').slice(0, 3).join(', ').trim();
+                    }
+
                     if (!nombresVistos.has(nombreLimpio)) {
                         nombresVistos.add(nombreLimpio);
                         opcionesUnicas.push({ ...item, nombreLimpio });
@@ -717,22 +748,26 @@
                 if (opcionesUnicas.length === 1) {
                     renderizarLista(bd, { lat: parseFloat(opcionesUnicas[0].lat), lon: parseFloat(opcionesUnicas[0].lon) });
                 } else {
-                    // Contenedor con scroll para mostrar hasta 15 opciones únicas filtradas
                     let opcionesHTML = '<div class="swal-scrollable-container">';
                     opcionesUnicas.slice(0, 15).forEach((item) => { 
+                        
+                        const advertenciaAltura = (tieneNumero && (!item.address || !item.address.house_number)) 
+                            ? ' <span style="color:#ef4444; font-size:0.75rem; font-weight:700;">(Altura aprox)</span>' 
+                            : '';
+
                         opcionesHTML += `
                             <button onclick="seleccionarUbicacion(${item.lat}, ${item.lon})" 
                                     onmouseover="this.style.borderColor='var(--primary)'"
                                     onmouseout="this.style.borderColor='var(--border)'"
-                                    style="text-align: left; background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 14px; border-radius: 10px; cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; font-weight: 500; font-size: 0.9rem; flex-shrink: 0;">
-                                📍 ${item.nombreLimpio}
+                                    style="text-align: left; background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 14px; border-radius: 10px; cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; font-weight: 500; font-size: 0.9rem; flex-shrink: 0; line-height: 1.3;">
+                                📍 ${item.nombreLimpio}${advertenciaAltura}
                             </button>
                         `;
                     });
                     opcionesHTML += '</div>';
 
                     Swal.fire({
-                        title: 'Varias calles coinciden',
+                        title: 'Elegí la ubicación correcta',
                         html: opcionesHTML,
                         showConfirmButton: false,
                         showCancelButton: true,
@@ -745,7 +780,11 @@
                     });
                 }
             } else { 
-                Swal.fire("No encontramos esa dirección."); 
+                Swal.fire(
+                    "No encontramos esa dirección.", 
+                    "Tip: Si no aparece, probá agregar la localidad exacta al lado de la calle (Ej: Patricios 1704, Maschwitz).", 
+                    "warning"
+                ); 
             }
         } catch (e) { 
             document.getElementById('status').innerText = ""; 
