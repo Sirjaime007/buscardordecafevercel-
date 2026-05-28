@@ -680,15 +680,60 @@
         const dir = document.getElementById('input-busqueda').value.trim();
         const ciu = document.getElementById('select-ciudad').value;
         if (!dir) return Swal.fire("Ingresá una dirección.");
+        
         document.getElementById('status').innerText = "Buscando...";
+        
         try {
             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dir + ", " + (ciu !== 'Todas' ? ciu : 'Argentina'))}`);
             const data = await res.json();
-            if (data.length > 0) { 
-                document.getElementById('status').innerText = ""; 
+            
+            document.getElementById('status').innerText = ""; 
+            
+            if (data.length === 1) { 
+                // Un solo resultado exacto, buscamos directo
                 renderizarLista(bd, { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) }); 
-            } else { Swal.fire("No encontramos esa dirección."); }
-        } catch (e) { document.getElementById('status').innerText = ""; }
+            } else if (data.length > 1) {
+                // Hay múltiples coincidencias, le damos a elegir al usuario (máximo 5 opciones para no saturar)
+                let opcionesHTML = '<div style="display: flex; flex-direction: column; gap: 8px; margin-top: 15px;">';
+                data.slice(0, 5).forEach((item) => { 
+                    // Limpiamos el texto largo para que se lea mejor (ej: "Patricios, Garín, Escobar...")
+                    const nombreLimpio = item.display_name.split(',').slice(0, 3).join(', ');
+                    opcionesHTML += `
+                        <button onclick="seleccionarUbicacion(${item.lat}, ${item.lon})" 
+                                onmouseover="this.style.borderColor='var(--primary)'"
+                                onmouseout="this.style.borderColor='var(--border)'"
+                                style="text-align: left; background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 14px; border-radius: 10px; cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; font-weight: 500; font-size: 0.9rem;">
+                            📍 ${nombreLimpio}
+                        </button>
+                    `;
+                });
+                opcionesHTML += '</div>';
+
+                Swal.fire({
+                    title: 'Varias calles coinciden',
+                    html: opcionesHTML,
+                    showConfirmButton: false,
+                    showCancelButton: true,
+                    cancelButtonText: 'Cancelar',
+                    customClass: {
+                        popup: 'swal-custom-popup',
+                        title: 'swal-custom-title',
+                        cancelButton: 'swal-custom-btn swal-custom-btn-cancel'
+                    }
+                });
+            } else { 
+                Swal.fire("No encontramos esa dirección."); 
+            }
+        } catch (e) { 
+            document.getElementById('status').innerText = ""; 
+            Swal.fire("Error", "No pudimos conectar con el servidor de mapas.", "error");
+        }
+    }
+
+    // Función auxiliar para cuando el usuario hace clic en una de las opciones del modal
+    function seleccionarUbicacion(lat, lon) {
+        Swal.close();
+        renderizarLista(bd, { lat: parseFloat(lat), lon: parseFloat(lon) });
     }
 
     function usarMiGPS() { 
