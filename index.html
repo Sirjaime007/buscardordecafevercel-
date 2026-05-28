@@ -111,6 +111,17 @@
             font-size: 1.6rem !important; 
             margin-bottom: 20px !important;
         }
+        
+        /* ESTILO PARA EL SCROLL DE LAS OPCIONES DE DIRECCIÓN */
+        .swal-scrollable-container {
+            display: flex; flex-direction: column; gap: 8px; margin-top: 15px;
+            max-height: 260px; overflow-y: auto; padding-right: 8px;
+        }
+        .swal-scrollable-container::-webkit-scrollbar { width: 6px; }
+        .swal-scrollable-container::-webkit-scrollbar-track { background: #F1F5F9; border-radius: 10px; }
+        .swal-scrollable-container::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+        .swal-scrollable-container::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
         .swal-custom-label { 
             font-weight: 700; 
             font-size: 0.85rem; 
@@ -173,7 +184,7 @@
             background-color: #F1F5F9 !important;
         }
 
-        /* BOTONES FLOTANTES ESCRITORIO (SEPARADOS) */
+        /* BOTONES FLOTANTES ESCRITORIO */
         .btn-flotante-reporte { position: fixed; bottom: 20px; right: 20px; background: #1E293B; color: white; border: none; padding: 14px 20px; border-radius: 30px; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9999; transition: transform 0.2s, background 0.2s; display: flex; align-items: center; gap: 8px; }
         .btn-flotante-reporte:hover { transform: scale(1.05); background: var(--primary); }
         
@@ -240,11 +251,9 @@
         @media (max-width: 600px) { 
             .cafe-card { flex-direction: column; align-items: stretch; } .links { flex-direction: row; } .links a { flex: 1; } .botones-grid { grid-template-columns: 1fr; } 
             
-            /* Apilamos los botones en la derecha para limpiar la pantalla */
             .btn-flotante-reporte { bottom: 15px; right: 15px; left: auto; font-size: 0.8rem; padding: 12px 16px; } 
             .btn-flotante-sumate { bottom: 70px; right: 15px; left: auto; font-size: 0.8rem; padding: 12px 16px; } 
             
-            /* COFI se posiciona por encima de la columna de botones */
             .cofi-helper-container {
                 bottom: 135px;
                 right: 15px;
@@ -684,43 +693,57 @@
         document.getElementById('status').innerText = "Buscando...";
         
         try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dir + ", " + (ciu !== 'Todas' ? ciu : 'Argentina'))}`);
+            // Límite aumentado a 20 para captar más opciones
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=20&q=${encodeURIComponent(dir + ", " + (ciu !== 'Todas' ? ciu : 'Argentina'))}`);
             const data = await res.json();
             
             document.getElementById('status').innerText = ""; 
             
             if (data.length === 1) { 
-                // Un solo resultado exacto, buscamos directo
                 renderizarLista(bd, { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) }); 
             } else if (data.length > 1) {
-                // Hay múltiples coincidencias, le damos a elegir al usuario (máximo 5 opciones para no saturar)
-                let opcionesHTML = '<div style="display: flex; flex-direction: column; gap: 8px; margin-top: 15px;">';
-                data.slice(0, 5).forEach((item) => { 
-                    // Limpiamos el texto largo para que se lea mejor (ej: "Patricios, Garín, Escobar...")
-                    const nombreLimpio = item.display_name.split(',').slice(0, 3).join(', ');
-                    opcionesHTML += `
-                        <button onclick="seleccionarUbicacion(${item.lat}, ${item.lon})" 
-                                onmouseover="this.style.borderColor='var(--primary)'"
-                                onmouseout="this.style.borderColor='var(--border)'"
-                                style="text-align: left; background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 14px; border-radius: 10px; cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; font-weight: 500; font-size: 0.9rem;">
-                            📍 ${nombreLimpio}
-                        </button>
-                    `;
-                });
-                opcionesHTML += '</div>';
-
-                Swal.fire({
-                    title: 'Varias calles coinciden',
-                    html: opcionesHTML,
-                    showConfirmButton: false,
-                    showCancelButton: true,
-                    cancelButtonText: 'Cancelar',
-                    customClass: {
-                        popup: 'swal-custom-popup',
-                        title: 'swal-custom-title',
-                        cancelButton: 'swal-custom-btn swal-custom-btn-cancel'
+                // Filtro de duplicados: Descartamos resultados con el mismo nombre limpio
+                const opcionesUnicas = [];
+                const nombresVistos = new Set();
+                
+                data.forEach((item) => {
+                    const nombreLimpio = item.display_name.split(',').slice(0, 3).join(', ').trim();
+                    if (!nombresVistos.has(nombreLimpio)) {
+                        nombresVistos.add(nombreLimpio);
+                        opcionesUnicas.push({ ...item, nombreLimpio });
                     }
                 });
+
+                if (opcionesUnicas.length === 1) {
+                    renderizarLista(bd, { lat: parseFloat(opcionesUnicas[0].lat), lon: parseFloat(opcionesUnicas[0].lon) });
+                } else {
+                    // Contenedor con scroll para mostrar hasta 15 opciones únicas filtradas
+                    let opcionesHTML = '<div class="swal-scrollable-container">';
+                    opcionesUnicas.slice(0, 15).forEach((item) => { 
+                        opcionesHTML += `
+                            <button onclick="seleccionarUbicacion(${item.lat}, ${item.lon})" 
+                                    onmouseover="this.style.borderColor='var(--primary)'"
+                                    onmouseout="this.style.borderColor='var(--border)'"
+                                    style="text-align: left; background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 14px; border-radius: 10px; cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; font-weight: 500; font-size: 0.9rem; flex-shrink: 0;">
+                                📍 ${item.nombreLimpio}
+                            </button>
+                        `;
+                    });
+                    opcionesHTML += '</div>';
+
+                    Swal.fire({
+                        title: 'Varias calles coinciden',
+                        html: opcionesHTML,
+                        showConfirmButton: false,
+                        showCancelButton: true,
+                        cancelButtonText: 'Cancelar',
+                        customClass: {
+                            popup: 'swal-custom-popup',
+                            title: 'swal-custom-title',
+                            cancelButton: 'swal-custom-btn swal-custom-btn-cancel'
+                        }
+                    });
+                }
             } else { 
                 Swal.fire("No encontramos esa dirección."); 
             }
@@ -730,7 +753,6 @@
         }
     }
 
-    // Función auxiliar para cuando el usuario hace clic en una de las opciones del modal
     function seleccionarUbicacion(lat, lon) {
         Swal.close();
         renderizarLista(bd, { lat: parseFloat(lat), lon: parseFloat(lon) });
@@ -952,7 +974,6 @@
                 const linkVal = document.getElementById('sumate-link').value.trim();
                 const detalleVal = document.getElementById('sumate-detalle').value.trim();
                 
-                // Empaquetamos los datos para que el backend de correos los procese sin tener que modificar nada en Vercel
                 return {
                     tipo: "✨ ALTA NUEVA: " + tipoVal,
                     local: nombreStr,
@@ -962,7 +983,6 @@
         });
 
         if (formValues) {
-            // Mandamos los datos por la tubería que ya funciona a la perfección
             enviarReporteEmail(formValues);
         }
     }
@@ -971,7 +991,6 @@
         const urlSegura = '/api/reporte?t=' + new Date().getTime();
         
         try {
-            // Transformamos los datos a formato de formulario urlencoded para evitar que Brave móvil bloquee la petición simple
             const formBody = new URLSearchParams();
             for (const key in datos) {
                 formBody.append(key, datos[key]);
@@ -1009,7 +1028,6 @@
         }
     }
 
-    // NUEVA FUNCIÓN: Bienvenida de COFI
     function abrirBienvenidaCofi() {
         Swal.fire({
             title: '¡Hola, Cafetero!',
