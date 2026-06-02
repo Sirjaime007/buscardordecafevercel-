@@ -459,6 +459,10 @@
         Papa.parse(url, {
             download: true, header: true, skipEmptyLines: true,
             complete: function(res) {
+                // Generamos la fecha de hoy a la medianoche para comparar de forma exacta
+                const hoy = new Date();
+                hoy.setHours(0, 0, 0, 0);
+
                 eventos = res.data.map(f => ({
                     titulo: f.TITULO || f.Titulo,
                     fecha: f.FECHA || f.Fecha,
@@ -467,7 +471,20 @@
                     desc: f.DESCRIPCION || f.Descripcion,
                     foto: f.FOTO || f.Foto,
                     link: f.LINK || f.Link
-                })).filter(e => e.titulo);
+                })).filter(e => {
+                    // 1. Filtrar filas vacías sin título
+                    if (!e.titulo) return false;
+                    
+                    // 2. Si no le pusiste fecha en el Excel, lo dejamos visible por defecto
+                    if (e.fechaOrden === "9999-12-31") return true; 
+
+                    // 3. Convertimos el texto (YYYY-MM-DD) a una fecha real
+                    const partes = e.fechaOrden.split('-');
+                    const fechaEv = new Date(partes[0], partes[1] - 1, partes[2]);
+                    
+                    // 4. Solo dejamos pasar los eventos que son de hoy en adelante
+                    return fechaEv >= hoy;
+                });
                 
                 ordenarEventos();
                 renderizarEventos();
@@ -1068,21 +1085,55 @@
     }
 
     function abrirBienvenidaCofi() {
-        Swal.fire({
-            title: '¡Hola, Cafetero!',
-            text: '¡Bienvenido a Buscador de Café. El primer buscador de café de especialidad de Argentina, acá vas a encontrar cafés, eventos, clases y mucho más.',
-            imageUrl: 'https://i.postimg.cc/tCPMV008/1779904711534-removebg-preview.png',
-            imageWidth: 120,
-            imageHeight: 'auto',
-            imageAlt: 'COFI Asistente de Café',
-            confirmButtonText: '¡Entendido, COFI!',
-            confirmButtonColor: '#5D4037',
-            customClass: {
-                popup: 'swal-custom-popup',
-                title: 'swal-custom-title',
-                confirmButton: 'swal-custom-btn swal-custom-btn-confirm'
-            }
-        });
+        if (eventos && eventos.length > 0) {
+            const proximoEvento = eventos[0]; 
+            
+            Swal.fire({
+                title: '¡Hola! ¿Buscás un buen plan?',
+                html: `
+                    <p style="font-size: 0.95rem; color: #64748B; margin-bottom: 15px;">Te sugiero este evento cafetero que se viene:</p>
+                    <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 15px; text-align: left; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+                        <strong style="color: var(--top); font-size: 0.85rem; text-transform: uppercase; display: block; margin-bottom: 4px;">📅 ${proximoEvento.fecha} • 📍 ${proximoEvento.ciudad}</strong>
+                        <h4 style="margin: 0 0 6px 0; font-size: 1.15rem; color: var(--text); font-weight: 800;">${proximoEvento.titulo}</h4>
+                        <p style="font-size: 0.85rem; margin: 0; color: #475569; line-height: 1.4;">${proximoEvento.desc.substring(0, 90)}...</p>
+                    </div>
+                `,
+                imageUrl: 'https://i.postimg.cc/tCPMV008/1779904711534-removebg-preview.png',
+                imageWidth: 90,
+                imageHeight: 'auto',
+                imageAlt: 'COFI Asistente de Café',
+                showCancelButton: true,
+                confirmButtonText: 'Ver todos los eventos',
+                cancelButtonText: 'Cerrar',
+                customClass: {
+                    popup: 'swal-custom-popup',
+                    title: 'swal-custom-title',
+                    confirmButton: 'swal-custom-btn swal-custom-btn-confirm',
+                    cancelButton: 'swal-custom-btn swal-custom-btn-cancel'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const btnEventos = document.querySelectorAll('.tab-btn')[2]; 
+                    cambiarPestaña('eventos', btnEventos);
+                    window.scrollTo({ top: 0, behavior: 'smooth' }); 
+                }
+            });
+        } else {
+            Swal.fire({
+                title: '¡Hola, Cafetero!',
+                text: '¡Bienvenido al Buscador de Café! Acá vas a encontrar las mejores opciones de especialidad, eventos, clases y mucho más.',
+                imageUrl: 'https://i.postimg.cc/tCPMV008/1779904711534-removebg-preview.png',
+                imageWidth: 120,
+                imageHeight: 'auto',
+                imageAlt: 'COFI Asistente de Café',
+                confirmButtonText: '¡Entendido, COFI!',
+                customClass: {
+                    popup: 'swal-custom-popup',
+                    title: 'swal-custom-title',
+                    confirmButton: 'swal-custom-btn swal-custom-btn-confirm'
+                }
+            });
+        }
     }
 
     if ('serviceWorker' in navigator) {
