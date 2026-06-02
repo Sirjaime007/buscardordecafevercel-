@@ -29,6 +29,26 @@
     <style>
         :root { --primary: #5D4037; --bg: #F8FAFC; --card: #FFFFFF; --text: #1E293B; --border: #E2E8F0; --accent: #059669; --top: #D97706; --running: #ef4444; }
         body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
+        
+        /* =========================================
+           AJUSTES DE COMPATIBILIDAD IOS / ANDROID
+           ========================================= */
+        * { -webkit-tap-highlight-color: transparent; }
+        input, select, textarea, button {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        select {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+            padding-right: 2.5rem !important; 
+        }
+        .swal-scrollable-container { -webkit-overflow-scrolling: touch; }
+        /* ========================================= */
+
         .container { max-width: 900px; margin: auto; }
         
         header { text-align: center; margin-bottom: 25px; padding-top: 10px; }
@@ -112,7 +132,6 @@
             margin-bottom: 20px !important;
         }
         
-        /* ESTILO PARA EL SCROLL DE LAS OPCIONES DE DIRECCIÓN */
         .swal-scrollable-container {
             display: flex; flex-direction: column; gap: 8px; margin-top: 15px;
             max-height: 260px; overflow-y: auto; padding-right: 8px;
@@ -191,12 +210,12 @@
         .btn-flotante-sumate { position: fixed; bottom: 20px; left: 20px; background: var(--accent); color: white; border: none; padding: 14px 20px; border-radius: 30px; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9999; transition: transform 0.2s, background 0.2s; display: flex; align-items: center; gap: 8px; }
         .btn-flotante-sumate:hover { transform: scale(1.05); background: #047857; }
 
-        /* ESTILOS FLOTANTES DE COFI (ANIMADO) */
+        /* ESTILOS FLOTANTES DE COFI (ANIMADO Y MÁS GRANDE) */
         .cofi-helper-container {
             position: fixed;
             bottom: 90px; 
             right: 25px;
-            width: 110px;
+            width: 130px; /* Aumentado */
             cursor: pointer;
             z-index: 9998; 
             text-align: center;
@@ -257,7 +276,7 @@
             .cofi-helper-container {
                 bottom: 135px;
                 right: 15px;
-                width: 85px;
+                width: 105px; /* Aumentado en mobile */
             }
         }
     </style>
@@ -459,7 +478,6 @@
         Papa.parse(url, {
             download: true, header: true, skipEmptyLines: true,
             complete: function(res) {
-                // Generamos la fecha de hoy a la medianoche para comparar de forma exacta
                 const hoy = new Date();
                 hoy.setHours(0, 0, 0, 0);
 
@@ -472,17 +490,12 @@
                     foto: f.FOTO || f.Foto,
                     link: f.LINK || f.Link
                 })).filter(e => {
-                    // 1. Filtrar filas vacías sin título
                     if (!e.titulo) return false;
-                    
-                    // 2. Si no le pusiste fecha en el Excel, lo dejamos visible por defecto
                     if (e.fechaOrden === "9999-12-31") return true; 
 
-                    // 3. Convertimos el texto (YYYY-MM-DD) a una fecha real
                     const partes = e.fechaOrden.split('-');
                     const fechaEv = new Date(partes[0], partes[1] - 1, partes[2]);
                     
-                    // 4. Solo dejamos pasar los eventos que son de hoy en adelante
                     return fechaEv >= hoy;
                 });
                 
@@ -672,8 +685,6 @@
 
         datos.forEach(c => {
             const stats = promedios[c.nombre] ? `⭐ ${promedios[c.nombre].avg} (${promedios[c.nombre].total} votos)` : "Sin votos aún";
-            
-            // LINK CORREGIDO
             const linkMap = `https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lon}`;
             
             let textoDistancia = "";
@@ -880,7 +891,6 @@
         const distReal = calcularD(origen.lat, origen.lon, cafe.lat, cafe.lon).toFixed(1);
         const mensajeExtra = esFondo ? `<br><small style="color:#64748B">Corré hasta el café y volvé para completar los <b>${distTotal} km</b>.</small>` : "";
         
-        // LINK CORREGIDO DE RUTA
         const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origen.lat},${origen.lon}&destination=${cafe.lat},${cafe.lon}&travelmode=walking`;
 
         document.getElementById('resultado-running').innerHTML = `
@@ -914,7 +924,6 @@
         if(tab === 'mapa') setTimeout(() => mapaFederal.invalidateSize(), 300);
         if(tab === 'running' && mapaRunning) setTimeout(() => mapaRunning.invalidateSize(), 300);
     }
-
 
     function filtrarPorTexto() {
         const ciu = document.getElementById('select-ciudad').value;
@@ -1089,7 +1098,6 @@
     }
 
     function abrirBienvenidaCofi() {
-       // 1. Armamos la bolsa de imágenes de COFI con varias opciones
         const imagenesCofi = [
             'https://i.postimg.cc/tCPMV008/1779904711534-removebg-preview.png', 
             'https://i.postimg.cc/hPVswwDr/1780436389315-removebg-preview.png',
@@ -1097,10 +1105,8 @@
             'https://i.postimg.cc/K8JPhhds/1780436224561-removebg-preview.png'
         ];
 
-        // Elegimos una imagen al azar matemáticamente
         const imagenElegida = imagenesCofi[Math.floor(Math.random() * imagenesCofi.length)];
 
-        // Efecto visual extra: Hacemos que el COFI flotante de la esquina también cambie de imagen
         const cofiFlotante = document.querySelector('.cofi-helper-container img');
         if (cofiFlotante) cofiFlotante.src = imagenElegida;
 
@@ -1153,7 +1159,7 @@
             title: mensajeElegido.title,
             html: mensajeElegido.html,
             imageUrl: imagenElegida, 
-            imageWidth: 90,
+            imageWidth: 110, // Aumentado el tamaño en el popup también
             imageHeight: 'auto',
             imageAlt: 'COFI Asistente de Café',
             showCancelButton: mensajeElegido.esEvento === true, 
@@ -1174,7 +1180,6 @@
         });
     }
 
-    // EL ARRANQUE DEL SISTEMA
     iniciarSistema();
 
 </script>
