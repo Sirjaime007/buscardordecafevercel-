@@ -672,6 +672,8 @@
 
         datos.forEach(c => {
             const stats = promedios[c.nombre] ? `⭐ ${promedios[c.nombre].avg} (${promedios[c.nombre].total} votos)` : "Sin votos aún";
+            
+            // LINK CORREGIDO
             const linkMap = `https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lon}`;
             
             let textoDistancia = "";
@@ -877,6 +879,8 @@
 
         const distReal = calcularD(origen.lat, origen.lon, cafe.lat, cafe.lon).toFixed(1);
         const mensajeExtra = esFondo ? `<br><small style="color:#64748B">Corré hasta el café y volvé para completar los <b>${distTotal} km</b>.</small>` : "";
+        
+        // LINK CORREGIDO DE RUTA
         const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origen.lat},${origen.lon}&destination=${cafe.lat},${cafe.lon}&travelmode=walking`;
 
         document.getElementById('resultado-running').innerHTML = `
@@ -1084,26 +1088,16 @@
         }
     }
 
-        function abrirBienvenidaCofi() {
-        // 1. Armamos la bolsa de imágenes de COFI
-        // Reemplazá estos links de ejemplo con los links reales de tus imágenes en Postimages
+    function abrirBienvenidaCofi() {
         const imagenesCofi = [
-            'https://i.postimg.cc/tCPMV008/1779904711534-removebg-preview.png', // COFI clásico
-            // Agregá tus otras imágenes abajo:
-            // 'https://i.postimg.cc/hPVswwDr/1780436389315-removebg-preview.png',
-            // 'https://i.postimg.cc/7YrMgV37/1780436326622-removebg-preview.png',
-            // 'https://i.postimg.cc/K8JPhhds/1780436224561-removebg-preview.png'
-            // 'https://i.postimg.cc/tCPMV008/1779904711534-removebg-preview.png' 
+            'https://i.postimg.cc/tCPMV008/1779904711534-removebg-preview.png', 
         ];
 
-        // Elegimos una imagen al azar matemáticamente
         const imagenElegida = imagenesCofi[Math.floor(Math.random() * imagenesCofi.length)];
 
-        // Efecto visual extra: Hacemos que el COFI flotante de la esquina también cambie de imagen
         const cofiFlotante = document.querySelector('.cofi-helper-container img');
         if (cofiFlotante) cofiFlotante.src = imagenElegida;
 
-        // 2. Armamos la lista de mensajes
         let mensajes = [
             {
                 title: '¡Tip de Barista! ☕',
@@ -1127,7 +1121,6 @@
             }
         ];
 
-        // 3. Si hay eventos, sumamos el próximo evento a la bolsa
         if (eventos && eventos.length > 0) {
             const proximoEvento = eventos[0]; 
             const mensajeEvento = {
@@ -1148,14 +1141,12 @@
             mensajes.push(mensajeEvento);
         }
 
-        // Elegimos el mensaje al azar
         const mensajeElegido = mensajes[Math.floor(Math.random() * mensajes.length)];
 
-        // 4. Mostramos el cartel con el mensaje y la IMAGEN al azar
         Swal.fire({
             title: mensajeElegido.title,
             html: mensajeElegido.html,
-            imageUrl: imagenElegida, // ACÁ CARGA LA IMAGEN AL AZAR
+            imageUrl: imagenElegida, 
             imageWidth: 90,
             imageHeight: 'auto',
             imageAlt: 'COFI Asistente de Café',
@@ -1176,3 +1167,10 @@
             }
         });
     }
+
+    // EL ARRANQUE DEL SISTEMA
+    iniciarSistema();
+
+</script>
+</body>
+</html>
