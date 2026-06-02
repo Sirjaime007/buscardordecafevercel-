@@ -1084,11 +1084,53 @@
         }
     }
 
-    function abrirBienvenidaCofi() {
+        function abrirBienvenidaCofi() {
+        // 1. Armamos la bolsa de imágenes de COFI
+        // Reemplazá estos links de ejemplo con los links reales de tus imágenes en Postimages
+        const imagenesCofi = [
+            'https://i.postimg.cc/tCPMV008/1779904711534-removebg-preview.png', // COFI clásico
+            // Agregá tus otras imágenes abajo:
+            // 'https://i.postimg.cc/hPVswwDr/1780436389315-removebg-preview.png',
+            // 'https://i.postimg.cc/7YrMgV37/1780436326622-removebg-preview.png',
+            // 'https://i.postimg.cc/K8JPhhds/1780436224561-removebg-preview.png'
+            // 'https://i.postimg.cc/tCPMV008/1779904711534-removebg-preview.png' 
+        ];
+
+        // Elegimos una imagen al azar matemáticamente
+        const imagenElegida = imagenesCofi[Math.floor(Math.random() * imagenesCofi.length)];
+
+        // Efecto visual extra: Hacemos que el COFI flotante de la esquina también cambie de imagen
+        const cofiFlotante = document.querySelector('.cofi-helper-container img');
+        if (cofiFlotante) cofiFlotante.src = imagenElegida;
+
+        // 2. Armamos la lista de mensajes
+        let mensajes = [
+            {
+                title: '¡Tip de Barista! ☕',
+                html: '<p style="color: #475569; font-size: 0.95rem; line-height: 1.5;">¿Sabías que el agua hirviendo quema el café? Lo ideal es usar agua entre <b>90°C y 96°C</b> para extraer los mejores sabores en tu casa.</p>',
+                btnText: '¡Buen dato!'
+            },
+            {
+                title: 'A un clic de distancia 🎯',
+                html: '<p style="color: #475569; font-size: 0.95rem; line-height: 1.5;">Usá el botón <b>"Buscar Cerca de Mí"</b> en la pestaña Explorar para encontrar las cafeterías de especialidad que tenés a menos de un par de cuadras.</p>',
+                btnText: '¡Genial!'
+            },
+            {
+                title: '¿Te gusta correr? 🏃‍♂️',
+                html: '<p style="color: #475569; font-size: 0.95rem; line-height: 1.5;">En la pestaña <b>"Running y Cafecito"</b> podés armar una ruta desde tu casa hasta un café para ganarte tu dosis de cafeína.</p>',
+                btnText: 'Voy a probarlo'
+            },
+            {
+                title: 'Dato Curioso 💡',
+                html: '<p style="color: #475569; font-size: 0.95rem; line-height: 1.5;">Un café se considera "de especialidad" cuando alcanza más de <b>80 puntos</b> en la escala internacional de cata. ¡Acá solo listamos esos!</p>',
+                btnText: '¡Mirá vos!'
+            }
+        ];
+
+        // 3. Si hay eventos, sumamos el próximo evento a la bolsa
         if (eventos && eventos.length > 0) {
             const proximoEvento = eventos[0]; 
-            
-            Swal.fire({
+            const mensajeEvento = {
                 title: '¡Hola! ¿Buscás un buen plan?',
                 html: `
                     <p style="font-size: 0.95rem; color: #64748B; margin-bottom: 15px;">Te sugiero este evento cafetero que se viene:</p>
@@ -1098,51 +1140,39 @@
                         <p style="font-size: 0.85rem; margin: 0; color: #475569; line-height: 1.4;">${proximoEvento.desc.substring(0, 90)}...</p>
                     </div>
                 `,
-                imageUrl: 'https://i.postimg.cc/tCPMV008/1779904711534-removebg-preview.png',
-                imageWidth: 90,
-                imageHeight: 'auto',
-                imageAlt: 'COFI Asistente de Café',
-                showCancelButton: true,
-                confirmButtonText: 'Ver todos los eventos',
-                cancelButtonText: 'Cerrar',
-                customClass: {
-                    popup: 'swal-custom-popup',
-                    title: 'swal-custom-title',
-                    confirmButton: 'swal-custom-btn swal-custom-btn-confirm',
-                    cancelButton: 'swal-custom-btn swal-custom-btn-cancel'
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const btnEventos = document.querySelectorAll('.tab-btn')[2]; 
-                    cambiarPestaña('eventos', btnEventos);
-                    window.scrollTo({ top: 0, behavior: 'smooth' }); 
-                }
-            });
-        } else {
-            Swal.fire({
-                title: '¡Hola, Cafetero!',
-                text: '¡Bienvenido al Buscador de Café! Acá vas a encontrar las mejores opciones de especialidad, eventos, clases y mucho más.',
-                imageUrl: 'https://i.postimg.cc/tCPMV008/1779904711534-removebg-preview.png',
-                imageWidth: 120,
-                imageHeight: 'auto',
-                imageAlt: 'COFI Asistente de Café',
-                confirmButtonText: '¡Entendido, COFI!',
-                customClass: {
-                    popup: 'swal-custom-popup',
-                    title: 'swal-custom-title',
-                    confirmButton: 'swal-custom-btn swal-custom-btn-confirm'
-                }
-            });
+                btnText: 'Ver eventos',
+                esEvento: true
+            };
+            
+            mensajes.push(mensajeEvento);
+            mensajes.push(mensajeEvento);
         }
-    }
 
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js');
-      });
-    }
+        // Elegimos el mensaje al azar
+        const mensajeElegido = mensajes[Math.floor(Math.random() * mensajes.length)];
 
-    iniciarSistema();
-</script>
-</body>
-</html>
+        // 4. Mostramos el cartel con el mensaje y la IMAGEN al azar
+        Swal.fire({
+            title: mensajeElegido.title,
+            html: mensajeElegido.html,
+            imageUrl: imagenElegida, // ACÁ CARGA LA IMAGEN AL AZAR
+            imageWidth: 90,
+            imageHeight: 'auto',
+            imageAlt: 'COFI Asistente de Café',
+            showCancelButton: mensajeElegido.esEvento === true, 
+            confirmButtonText: mensajeElegido.btnText,
+            cancelButtonText: 'Cerrar',
+            customClass: {
+                popup: 'swal-custom-popup',
+                title: 'swal-custom-title',
+                confirmButton: 'swal-custom-btn swal-custom-btn-confirm',
+                cancelButton: 'swal-custom-btn swal-custom-btn-cancel'
+            }
+        }).then((result) => {
+            if (result.isConfirmed && mensajeElegido.esEvento) {
+                const btnEventos = document.querySelectorAll('.tab-btn')[2]; 
+                cambiarPestaña('eventos', btnEventos);
+                window.scrollTo({ top: 0, behavior: 'smooth' }); 
+            }
+        });
+    }
