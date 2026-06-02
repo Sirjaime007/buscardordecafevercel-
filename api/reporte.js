@@ -21,7 +21,7 @@ module.exports = async (req, res) => {
     const emailPass = process.env.EMAIL_PASS;
 
     if (!emailUser || !emailPass) {
-        return res.status(500).send('Configuración del servidor incompleta: Faltan las variables en el panel de Vercel.');
+        return res.status(500).send('Configuración del servidor incompleta: Faltan las variables en el panel de Vercel.FUNCIONAAAA');
     }
 
     // 4. Captura de datos del formulario (URLSearchParams)
