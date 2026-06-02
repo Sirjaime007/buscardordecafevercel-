@@ -1089,12 +1089,18 @@
     }
 
     function abrirBienvenidaCofi() {
+       // 1. Armamos la bolsa de imágenes de COFI con varias opciones
         const imagenesCofi = [
             'https://i.postimg.cc/tCPMV008/1779904711534-removebg-preview.png', 
+            'https://i.postimg.cc/hPVswwDr/1780436389315-removebg-preview.png',
+            'https://i.postimg.cc/7YrMgV37/1780436326622-removebg-preview.png',
+            'https://i.postimg.cc/K8JPhhds/1780436224561-removebg-preview.png'
         ];
 
+        // Elegimos una imagen al azar matemáticamente
         const imagenElegida = imagenesCofi[Math.floor(Math.random() * imagenesCofi.length)];
 
+        // Efecto visual extra: Hacemos que el COFI flotante de la esquina también cambie de imagen
         const cofiFlotante = document.querySelector('.cofi-helper-container img');
         if (cofiFlotante) cofiFlotante.src = imagenElegida;
 
