@@ -1,7 +1,7 @@
 
 {
-  "name": "Buscador de Café Argentina",
-  "short_name": "BuscadorCafé",
+  "name": "Cofiteca",
+  "short_name": "Cofiteca",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F8FAFC",
