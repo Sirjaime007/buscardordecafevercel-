@@ -11,10 +11,11 @@
     <link rel="icon" type="image/png" href="https://i.postimg.cc/8zTgpkJD/13640-removebg-preview.png">
     <link rel="apple-touch-icon" href="https://i.postimg.cc/8zTgpkJD/13640-removebg-preview.png">
 
-    <script>
-      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-    </script>
-    <script defer src="/_vercel/insights/script.js"></script>
+   <script type="module">
+  import { inject } from 'https://esm.sh/@vercel/analytics';
+  inject();
+</script>
+
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
