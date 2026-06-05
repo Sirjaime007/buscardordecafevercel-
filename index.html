@@ -354,6 +354,16 @@
         <div id="lista-cursos" class="eventos-grid"></div>
     </div>
 
+    <div id="panel-newsletter" class="panel" style="text-align: center; margin-top: 40px; border: 2px dashed var(--border);">
+        <h3 style="margin: 0 0 10px 0; font-weight: 800; color: var(--text);">☕ Sumate al Newsletter</h3>
+        <p style="color: #64748B; font-size: 0.95rem; margin-bottom: 20px;">Recibí los nuevos locales, catas y eventos de especialidad directo en tu mail.</p>
+        
+        <div style="display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap;">
+            <input type="email" id="input-newsletter" class="input-moderno" placeholder="tu@email.com" style="max-width: 300px; margin-bottom: 0;">
+            <button class="btn-accion btn-primary-gps" style="margin-top: 0;" onclick="suscribirNewsletter()">¡Anotarme!</button>
+        </div>
+    </div>
+
     <footer>
         <p><strong>© 2026 Buscador de Café Argentina</strong><br>Contacto: <a href="mailto:buscadordecafe@gmail.com" style="color:var(--primary); font-weight:800;">buscadordecafe@gmail.com</a></p>
     </footer>
@@ -1183,6 +1193,61 @@
             }
         });
     }
+
+    // ==========================================
+    // LOGICA DEL NEWSLETTER
+    // ==========================================
+    document.addEventListener('DOMContentLoaded', () => {
+        if (localStorage.getItem('cofi_suscrito') === 'true') {
+            const panel = document.getElementById('panel-newsletter');
+            if (panel) panel.style.display = 'none'; 
+        }
+    });
+
+    async function suscribirNewsletter() {
+        const emailInput = document.getElementById('input-newsletter');
+        const email = emailInput.value.trim();
+        const panel = document.getElementById('panel-newsletter');
+
+        if (!email || !email.includes('@')) {
+            return Swal.fire({
+                title: 'Mmm...',
+                text: 'Por favor, ingresá un correo válido.',
+                icon: 'warning',
+                confirmButtonColor: '#5D4037',
+                customClass: { popup: 'swal-custom-popup', title: 'swal-custom-title' }
+            });
+        }
+
+        const { error } = await _supabase.from('newsletter').insert([{ email: email }]);
+
+        if (error) {
+            if (error.code === '23505' || error.message.includes('duplicate')) {
+                Swal.fire({
+                    title: '¡Ya estabas en la lista!',
+                    text: 'Ese correo ya está registrado. Nos leemos pronto.',
+                    icon: 'info',
+                    confirmButtonColor: '#5D4037',
+                    customClass: { popup: 'swal-custom-popup', title: 'swal-custom-title' }
+                });
+                localStorage.setItem('cofi_suscrito', 'true');
+                if (panel) panel.style.display = 'none';
+            } else {
+                Swal.fire('Error', 'Hubo un problema al guardarlo. Intentá de nuevo.', 'error');
+            }
+        } else {
+            Swal.fire({
+                title: '¡Adentro!',
+                text: 'Ya estás en la lista. Prepará la taza para el próximo correo.',
+                icon: 'success',
+                confirmButtonColor: '#5D4037',
+                customClass: { popup: 'swal-custom-popup', title: 'swal-custom-title' }
+            });
+            localStorage.setItem('cofi_suscrito', 'true');
+            if (panel) panel.style.display = 'none';
+        }
+    }
+    // ==========================================
 
     iniciarSistema();
 
