@@ -11,9 +11,7 @@
     <link rel="icon" type="image/png" href="https://i.postimg.cc/8zTgpkJD/13640-removebg-preview.png">
     <link rel="apple-touch-icon" href="https://i.postimg.cc/8zTgpkJD/13640-removebg-preview.png">
 
-  <script defer src="/_vercel/insights/script.js"></script>
-
-
+    <script defer src="/_vercel/insights/script.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
@@ -34,40 +32,45 @@
         :root { --primary: #5D4037; --bg: #F8FAFC; --card: #FFFFFF; --text: #1E293B; --border: #E2E8F0; --accent: #059669; --top: #D97706; --running: #ef4444; }
         body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
         
-        /* =========================================
-           AJUSTES DE COMPATIBILIDAD IOS / ANDROID
-           ========================================= */
         * { -webkit-tap-highlight-color: transparent; }
-        input, select, textarea, button {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-        }
+        input, select, textarea, button { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
         select {
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 1em;
-            padding-right: 2.5rem !important; 
+            background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em; padding-right: 2.5rem !important; 
         }
         .swal-scrollable-container { -webkit-overflow-scrolling: touch; }
-        /* ========================================= */
 
         .container { max-width: 900px; margin: auto; }
         
-        header { text-align: center; margin-bottom: 25px; padding-top: 10px; }
-        h1 { font-size: 2.2rem; margin: 0; font-weight: 800; letter-spacing: -1px; color: var(--text); line-height: 1.2; }
-        h1 span { color: var(--primary); }
-        .subtitle { color: #64748B; font-size: 0.95rem; margin-top: 6px; font-weight: 500; }
+        /* HEADER MINIMALISTA Y MENÚ LATERAL */
+        .header-main { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; padding-top: 10px; }
+        .btn-menu { background: none; border: none; font-size: 1.8rem; color: var(--text); cursor: pointer; padding: 0 10px; transition: transform 0.2s; }
+        .btn-menu:active { transform: scale(0.9); }
+        .header-titles { text-align: center; flex-grow: 1; }
+        .header-titles h1 { font-size: 1.8rem; margin: 0; font-weight: 800; letter-spacing: -1px; line-height: 1.2; color: var(--text); }
+        .header-titles h1 span { color: var(--primary); }
+        .header-titles .subtitle { color: #64748B; font-size: 0.85rem; margin-top: 4px; font-weight: 500; }
+        .spacer { width: 44px; } 
 
-        .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
-        .tab-btn { background: #E2E8F0; border: none; padding: 12px 18px; font-weight: 700; border-radius: 12px; cursor: pointer; color: #475569; font-size: 0.85rem; transition: all 0.2s; }
-        .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(93, 64, 55, 0.2); }
-        .tab-btn.special { background: #fee2e2; color: var(--running); border: 1px solid #fecaca; }
-        .tab-btn.special.active { background: var(--running); color: white; }
+        /* ESTILOS DEL SIDEBAR */
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; opacity: 0; visibility: hidden; transition: 0.3s; backdrop-filter: blur(2px); }
+        .sidebar-overlay.activo { opacity: 1; visibility: visible; }
+        
+        .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: var(--card); z-index: 10001; transition: 0.3s ease; box-shadow: 4px 0 25px rgba(0,0,0,0.15); display: flex; flex-direction: column; }
+        .sidebar.abierto { left: 0; }
+        
+        .sidebar-header { padding: 25px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--bg); }
+        .sidebar-header h2 { margin: 0; font-weight: 800; font-size: 1.2rem; color: var(--text); }
+        .btn-close { background: white; border: 1px solid var(--border); width: 35px; height: 35px; border-radius: 50%; font-size: 1rem; cursor: pointer; color: var(--text); font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s; }
+        .btn-close:active { transform: scale(0.9); }
+        
+        .sidebar-links { padding: 15px 0; display: flex; flex-direction: column; overflow-y: auto; flex-grow: 1; }
+        .sidebar-links a { padding: 16px 25px; color: var(--text); text-decoration: none; font-weight: 600; font-size: 0.95rem; border-left: 4px solid transparent; transition: 0.2s; display: flex; align-items: center; gap: 12px; }
+        .sidebar-links a:hover, .sidebar-links a.active { background: #F1F5F9; border-left-color: var(--primary); color: var(--primary); }
+        .sidebar-links hr { border: 0; border-top: 1px solid var(--border); margin: 15px 20px; }
+        .sidebar-footer { padding: 20px; font-size: 0.8rem; text-align: center; color: #94A3B8; border-top: 1px solid var(--border); }
 
         .panel { background: var(--card); padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; border: 1px solid var(--border); }
-        
         .input-moderno { width: 100%; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 0.95rem; box-sizing: border-box; background: var(--bg); transition: border-color 0.2s; outline: none; color: var(--text); margin-bottom: 12px; }
         .input-moderno:focus { border-color: var(--primary); background: white; }
         
@@ -77,10 +80,8 @@
         
         .btn-outline { background: transparent; border: 2px solid var(--border); color: #475569; }
         .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
-        
         .btn-primary-gps { background: var(--primary); color: white; border: none; box-shadow: 0 4px 10px rgba(93, 64, 55, 0.2); }
         .btn-primary-gps:hover { background: #452f28; }
-        
         .btn-run { background: var(--running); color: white; border: none; width: 100%; margin-top: 5px; font-size: 1rem; }
 
         .panel-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
@@ -113,7 +114,6 @@
         .event-desc { font-size: 0.88rem; color: #64748B; margin: 0 0 15px 0; line-height: 1.4; }
         .event-link { display: block; text-align: center; background: var(--primary); color: white; text-decoration: none; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 0.9rem; transition: background 0.2s; }
         .event-link:hover { background: #452f28; }
-
         .event-badge { background: #fee2e2; color: var(--running); padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; display: inline-block; }
         .event-badge.today { background: #d1fae5; color: var(--accent); }
         .event-badge.passed { background: #e2e8f0; color: #64748B; }
@@ -122,198 +122,91 @@
         .popup-btn { background: var(--primary); color: white !important; padding: 8px 12px; border-radius: 6px; text-decoration: none; display: inline-block; margin-top: 10px; font-weight: 700; font-size: 0.8rem; }
 
         /* ESTILOS PREMIUM PARA LOS MODALES */
-        .swal2-popup.swal-custom-popup { 
-            border-radius: 24px !important; 
-            padding: 30px !important; 
-            border: 1px solid var(--border); 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1) !important;
-            font-family: 'Inter', sans-serif;
-        }
-        .swal2-title.swal-custom-title { 
-            font-weight: 800 !important; 
-            color: var(--text) !important; 
-            font-size: 1.6rem !important; 
-            margin-bottom: 20px !important;
-        }
+        .swal2-popup.swal-custom-popup { border-radius: 24px !important; padding: 30px !important; border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.1) !important; font-family: 'Inter', sans-serif; }
+        .swal2-title.swal-custom-title { font-weight: 800 !important; color: var(--text) !important; font-size: 1.6rem !important; margin-bottom: 20px !important; }
         
-        .swal-scrollable-container {
-            display: flex; flex-direction: column; gap: 8px; margin-top: 15px;
-            max-height: 260px; overflow-y: auto; padding-right: 8px;
-        }
+        .swal-scrollable-container { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; max-height: 260px; overflow-y: auto; padding-right: 8px; }
         .swal-scrollable-container::-webkit-scrollbar { width: 6px; }
         .swal-scrollable-container::-webkit-scrollbar-track { background: #F1F5F9; border-radius: 10px; }
         .swal-scrollable-container::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
-        .swal-scrollable-container::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
-
-        .swal-custom-label { 
-            font-weight: 700; 
-            font-size: 0.85rem; 
-            color: #64748B; 
-            display: block; 
-            text-align: left; 
-            margin: 15px 0 6px 4px; 
-            text-transform: uppercase; 
-            letter-spacing: 0.5px; 
-        }
-        .swal-custom-input {
-            width: 100% !important;
-            padding: 14px 16px !important;
-            border: 1px solid var(--border) !important;
-            border-radius: 12px !important;
-            font-family: 'Inter', sans-serif !important;
-            font-size: 0.95rem !important;
-            box-sizing: border-box !important;
-            background: var(--bg) !important;
-            color: var(--text) !important;
-            transition: all 0.2s !important;
-            margin: 0 !important;
-        }
-        .swal-custom-input:focus {
-            border-color: var(--primary) !important;
-            background: white !important;
-            outline: none !important;
-            box-shadow: 0 0 0 3px rgba(93, 64, 55, 0.1) !important;
-        }
-        .swal-custom-textarea { 
-            height: 100px !important; 
-            resize: vertical !important; 
-        }
-        .swal2-actions {
-            margin-top: 25px !important;
-            gap: 12px !important;
-        }
-        .swal2-styled.swal-custom-btn { 
-            font-weight: 700 !important; 
-            border-radius: 12px !important; 
-            padding: 14px 28px !important; 
-            font-size: 1rem !important; 
-            transition: all 0.2s !important; 
-        }
-        .swal2-styled.swal-custom-btn-confirm {
-            background-color: var(--primary) !important;
-        }
-        .swal2-styled.swal-custom-btn-confirm:hover {
-            background-color: #452f28 !important;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(93, 64, 55, 0.2) !important;
-        }
-        .swal2-styled.swal-custom-btn-cancel {
-            background-color: transparent !important;
-            border: 2px solid var(--border) !important;
-            color: #475569 !important;
-        }
-        .swal2-styled.swal-custom-btn-cancel:hover {
-            border-color: #94A3B8 !important;
-            background-color: #F1F5F9 !important;
-        }
+        
+        .swal-custom-label { font-weight: 700; font-size: 0.85rem; color: #64748B; display: block; text-align: left; margin: 15px 0 6px 4px; text-transform: uppercase; }
+        .swal-custom-input { width: 100% !important; padding: 14px 16px !important; border: 1px solid var(--border) !important; border-radius: 12px !important; font-family: 'Inter', sans-serif !important; font-size: 0.95rem !important; box-sizing: border-box !important; background: var(--bg) !important; color: var(--text) !important; transition: all 0.2s !important; margin: 0 !important; }
+        .swal-custom-input:focus { border-color: var(--primary) !important; background: white !important; outline: none !important; box-shadow: 0 0 0 3px rgba(93, 64, 55, 0.1) !important; }
+        .swal-custom-textarea { height: 100px !important; resize: vertical !important; }
+        .swal2-actions { margin-top: 25px !important; gap: 12px !important; }
+        .swal2-styled.swal-custom-btn { font-weight: 700 !important; border-radius: 12px !important; padding: 14px 28px !important; font-size: 1rem !important; transition: all 0.2s !important; }
+        .swal2-styled.swal-custom-btn-confirm { background-color: var(--primary) !important; }
+        .swal2-styled.swal-custom-btn-cancel { background-color: transparent !important; border: 2px solid var(--border) !important; color: #475569 !important; }
 
         /* BOTONES FLOTANTES ESCRITORIO */
-        .btn-flotante-reporte { position: fixed; bottom: 20px; right: 20px; background: #1E293B; color: white; border: none; padding: 14px 20px; border-radius: 30px; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9999; transition: transform 0.2s, background 0.2s; display: flex; align-items: center; gap: 8px; }
-        .btn-flotante-reporte:hover { transform: scale(1.05); background: var(--primary); }
-        
-        .btn-flotante-sumate { position: fixed; bottom: 20px; left: 20px; background: var(--accent); color: white; border: none; padding: 14px 20px; border-radius: 30px; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9999; transition: transform 0.2s, background 0.2s; display: flex; align-items: center; gap: 8px; }
-        .btn-flotante-sumate:hover { transform: scale(1.05); background: #047857; }
+        .btn-flotante-reporte { position: fixed; bottom: 20px; right: 20px; background: #1E293B; color: white; border: none; padding: 14px 20px; border-radius: 30px; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9997; transition: transform 0.2s; display: flex; align-items: center; gap: 8px; }
+        .btn-flotante-sumate { position: fixed; bottom: 20px; left: 20px; background: var(--accent); color: white; border: none; padding: 14px 20px; border-radius: 30px; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9997; transition: transform 0.2s; display: flex; align-items: center; gap: 8px; }
 
-        /* ESTILOS FLOTANTES DE COFI (ANIMADO Y MÁS GRANDE) */
-        .cofi-helper-container {
-            position: fixed;
-            bottom: 90px; 
-            right: 25px;
-            width: 130px; /* Aumentado */
-            cursor: pointer;
-            z-index: 9998; 
-            text-align: center;
-        }
-
-        @keyframes flotar {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-12px); }
-            100% { transform: translateY(0px); }
-        }
-
-        .cofi-helper-container img {
-            width: 100%;
-            height: auto;
-            display: block;
-            animation: flotar 3s ease-in-out infinite; 
-            transition: transform 0.3s ease;
-        }
-
-        .cofi-helper-container:hover img {
-            animation: none; 
-            transform: scale(1.1) rotate(-5deg); 
-        }
-
-        .cofi-bubble {
-            position: absolute;
-            top: -20px;
-            right: 15px;
-            background-color: var(--primary);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 12px 12px 0 12px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            white-space: nowrap;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-            z-index: 2;
-        }
-        .cofi-helper-container:hover .cofi-bubble {
-            opacity: 1;
-            visibility: visible;
-        }
+        .cofi-helper-container { position: fixed; bottom: 90px; right: 25px; width: 130px; cursor: pointer; z-index: 9996; text-align: center; }
+        @keyframes flotar { 0% { transform: translateY(0px); } 50% { transform: translateY(-12px); } 100% { transform: translateY(0px); } }
+        .cofi-helper-container img { width: 100%; height: auto; display: block; animation: flotar 3s ease-in-out infinite; transition: transform 0.3s ease; }
+        .cofi-bubble { position: absolute; top: -20px; right: 15px; background-color: var(--primary); color: white; padding: 8px 12px; border-radius: 12px 12px 0 12px; font-size: 0.85rem; font-weight: 700; white-space: nowrap; box-shadow: 0 4px 8px rgba(0,0,0,0.2); opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; z-index: 2; }
+        .cofi-helper-container:hover .cofi-bubble { opacity: 1; visibility: visible; }
 
         .hidden { display: none !important; }
         footer { margin-top: 50px; text-align: center; color: #64748B; border-top: 1px solid var(--border); padding: 30px 0 150px 0; font-size: 0.85rem; }
         .leaflet-routing-container { display: none !important; }
 
-        /* ========= RESPONSIVE CELULARES ========= */
         @media (max-width: 600px) { 
             .cafe-card { flex-direction: column; align-items: stretch; } .links { flex-direction: row; } .links a { flex: 1; } .botones-grid { grid-template-columns: 1fr; } 
-            
             .btn-flotante-reporte { bottom: 15px; right: 15px; left: auto; font-size: 0.8rem; padding: 12px 16px; } 
             .btn-flotante-sumate { bottom: 70px; right: 15px; left: auto; font-size: 0.8rem; padding: 12px 16px; } 
-            
-            .cofi-helper-container {
-                bottom: 135px;
-                right: 15px;
-                width: 105px; /* Aumentado en mobile */
-            }
+            .cofi-helper-container { bottom: 135px; right: 15px; width: 105px; }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <h1>Café de Especialidad <span>Argentina</span></h1>
-        <p class="subtitle">Buscador oficial de cafeterías, tostadurías y eventos.</p>
-    </header>
-
-    <div class="tabs">
-        <button class="tab-btn active" onclick="cambiarPestaña('lista', this)">Explorar</button>
-        <button class="tab-btn" onclick="cambiarPestaña('mapa', this)">Mapa Federal</button>
-        <button class="tab-btn" onclick="cambiarPestaña('eventos', this)">📅 Eventos</button>
-        <button class="tab-btn" onclick="cambiarPestaña('cursos', this)">🎓 Cursos</button>
-        <button class="tab-btn special" onclick="cambiarPestaña('running', this)">🏃‍♂️ Running y Cafecito</button>
+<div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleMenu()"></div>
+<div id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+        <h2>Menú</h2>
+        <button class="btn-close" onclick="toggleMenu()">✕</button>
     </div>
+    <div class="sidebar-links">
+        <a href="#" class="nav-link active" data-tab="lista" onclick="cambiarPestaña('lista'); return false;">☕ Explorar Cafés</a>
+        <a href="#" class="nav-link" data-tab="mapa" onclick="cambiarPestaña('mapa'); return false;">🗺️ Mapa Federal</a>
+        <a href="#" class="nav-link" data-tab="eventos" onclick="cambiarPestaña('eventos'); return false;">📅 Agenda de Eventos</a>
+        <a href="#" class="nav-link" data-tab="cursos" onclick="cambiarPestaña('cursos'); return false;">🎓 Cursos y Formación</a>
+        <a href="#" class="nav-link" data-tab="running" onclick="cambiarPestaña('running'); return false;">🏃‍♂️ Running y Cafecito</a>
+        <hr>
+        <a href="#" class="nav-link" data-tab="newsletter" onclick="cambiarPestaña('newsletter'); return false;">💌 Newsletter</a>
+    </div>
+    <div class="sidebar-footer">
+        Buscador de Café Arg v2.0
+    </div>
+</div>
+
+<div class="container">
+    
+    <header class="header-main">
+        <button class="btn-menu" onclick="toggleMenu()">☰</button>
+        <div class="header-titles">
+            <h1>Café de Especialidad <span>Argentina</span></h1>
+            <p class="subtitle">Encontrá la extracción perfecta cerca tuyo.</p>
+        </div>
+        <div class="spacer"></div>
+    </header>
 
     <div id="tab-lista">
         <div class="panel">
             <div class="panel-header-flex">
-                <h2 class="panel-title">Encontrá tu próximo café</h2>
+                <h2 class="panel-title">¿Qué café visitamos hoy?</h2>
                 <span id="contador-total" class="badge-count">Sincronizando...</span>
             </div>
             
             <select id="select-ciudad" class="input-moderno" onchange="filtrarPorTexto()"></select>
-            <input type="text" id="input-busqueda" class="input-moderno" placeholder="Ej: Kopi, Cuervo o Gascón 2525..." onkeyup="filtrarPorTexto()">
+            <input type="text" id="input-busqueda" class="input-moderno" placeholder="Ej: Kopi, Cuervo, Gascón 2525..." onkeyup="filtrarPorTexto()">
             
             <div class="botones-grid">
                 <button class="btn-accion btn-outline" onclick="medirDesdeDireccion()">📍 Buscar por Dirección</button>
-                <button class="btn-accion btn-primary-gps" onclick="usarMiGPS()">🎯 Buscar Cerca de Mí</button>
+                <button class="btn-accion btn-primary-gps" onclick="usarMiGPS()">🎯 Cerca de Mí</button>
             </div>
             <div id="status" style="text-align:center; font-weight:700; color:var(--accent); min-height:20px; font-size:0.85rem; margin-top:10px;"></div>
         </div>
@@ -354,13 +247,18 @@
         <div id="lista-cursos" class="eventos-grid"></div>
     </div>
 
-    <div id="panel-newsletter" class="panel" style="text-align: center; margin-top: 40px; border: 2px dashed var(--border);">
-        <h3 style="margin: 0 0 10px 0; font-weight: 800; color: var(--text);">☕ Sumate al Newsletter</h3>
-        <p style="color: #64748B; font-size: 0.95rem; margin-bottom: 20px;">Recibí los nuevos locales, catas y eventos de especialidad directo en tu mail.</p>
-        
-        <div style="display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap;">
-            <input type="email" id="input-newsletter" class="input-moderno" placeholder="tu@email.com" style="max-width: 300px; margin-bottom: 0;">
-            <button class="btn-accion btn-primary-gps" style="margin-top: 0;" onclick="suscribirNewsletter()">¡Anotarme!</button>
+    <div id="tab-newsletter" class="hidden">
+        <div class="panel" style="text-align: center; border: 2px dashed var(--primary); background-color: var(--card);">
+            <div id="newsletter-form-container">
+                <img src="https://i.postimg.cc/8zTgpkJD/13640-removebg-preview.png" style="width: 60px; margin-bottom: 10px;">
+                <h2 style="margin: 0 0 10px 0; font-weight: 800; color: var(--text);">Comunidad Cafetera</h2>
+                <p style="color: #64748B; font-size: 0.95rem; margin-bottom: 25px;">Dejanos tu correo y enterate antes que nadie de las nuevas tostadurías, catas y eventos de especialidad.</p>
+                
+                <div style="display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap;">
+                    <input type="email" id="input-newsletter" class="input-moderno" placeholder="tu@email.com" style="max-width: 300px; margin-bottom: 0;">
+                    <button class="btn-accion btn-primary-gps" style="margin-top: 0;" onclick="suscribirNewsletter()">¡Anotarme!</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -368,8 +266,8 @@
         <p><strong>© 2026 Buscador de Café Argentina</strong><br>Contacto: <a href="mailto:buscadordecafe@gmail.com" style="color:var(--primary); font-weight:800;">buscadordecafe@gmail.com</a></p>
     </footer>
     
-    <button class="btn-flotante-reporte" onclick="abrirReporte()">💬 Reportar Error / Local</button>
-    <button class="btn-flotante-sumate" onclick="abrirSumate()">✨ ¡Sumar mi proyecto!</button>
+    <button class="btn-flotante-reporte" onclick="abrirReporte()">💬 Reportar</button>
+    <button class="btn-flotante-sumate" onclick="abrirSumate()">✨ ¡Sumar local!</button>
 
     <div class="cofi-helper-container" onclick="abrirBienvenidaCofi()">
         <div class="cofi-bubble">¡Hola! Haz clic</div>
@@ -388,36 +286,20 @@
     const EVENTOS_GID = "1650811704"; 
     const CURSOS_GID = "1424993305"; 
 
-    const PALETA_MARRONES = [
-        '#3E2723', '#4E342E', '#5D4037', '#6D4C41', '#795548',
-        '#8B4513', '#A0522D', '#CD853F', '#D2691E', '#5C4033',
-        '#8C3800', '#722F37', '#804000', '#A52A2A', '#964B00'
-    ];
+    const PALETA_MARRONES = ['#3E2723', '#4E342E', '#5D4037', '#6D4C41', '#795548', '#8B4513', '#A0522D', '#CD853F', '#D2691E', '#5C4033', '#8C3800', '#722F37', '#804000', '#A52A2A', '#964B00'];
 
     function obtenerColorPorNombre(nombre) {
         const str = nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
         let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            hash = str.charCodeAt(i) + ((hash << 5) - hash);
-        }
+        for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
         return PALETA_MARRONES[Math.abs(hash) % PALETA_MARRONES.length];
     }
 
-    let bd = [];
-    let promedios = {}; 
-    let eventos = [];
-    let cursos = []; 
-    let mapaRunning, layerRunning, controlRuta;
+    let bd = []; let promedios = {}; let eventos = []; let cursos = []; let mapaRunning, layerRunning, controlRuta;
 
     let mapaFederal = L.map('map').setView([-38.41, -63.61], 5);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaFederal);
-    
-    let layerFederal = L.markerClusterGroup({
-        maxClusterRadius: 40,        
-        disableClusteringAtZoom: 14, 
-        spiderfyOnMaxZoom: true,
-        showCoverageOnHover: false   
-    }).addTo(mapaFederal);
+    let layerFederal = L.markerClusterGroup({ maxClusterRadius: 40, disableClusteringAtZoom: 14, spiderfyOnMaxZoom: true, showCoverageOnHover: false }).addTo(mapaFederal);
 
     let mapaRadar = L.map('mapa-radar').setView([-38.41, -63.61], 14);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaRadar);
@@ -427,59 +309,42 @@
         const { data } = await _supabase.from('resenas').select('cafe_nombre, estrellas');
         if (data) {
             const sumas = {}, conts = {};
-            data.forEach(r => {
-                sumas[r.cafe_nombre] = (sumas[r.cafe_nombre] || 0) + r.estrellas;
-                conts[r.cafe_nombre] = (conts[r.cafe_nombre] || 0) + 1;
-            });
+            data.forEach(r => { sumas[r.cafe_nombre] = (sumas[r.cafe_nombre] || 0) + r.estrellas; conts[r.cafe_nombre] = (conts[r.cafe_nombre] || 0) + 1; });
             Object.keys(sumas).forEach(n => promedios[n] = { avg: (sumas[n] / conts[n]).toFixed(1), total: conts[n] });
         }
     }
 
     async function enviarVoto(nombre, puntos) {
         const { error } = await _supabase.from('resenas').insert([{ cafe_nombre: nombre, estrellas: puntos }]);
-        if (error) {
-            Swal.fire('Error', 'No se pudo registrar el voto', 'error');
-        } else {
+        if (error) Swal.fire('Error', 'No se pudo registrar el voto', 'error');
+        else {
             Swal.fire({ title: '¡Gracias!', text: `Voto guardado para ${nombre}`, icon: 'success', timer: 1500, showConfirmButton: false, toast: true, position: 'top-end' });
-            await cargarPromedios();
-            filtrarPorTexto();
+            await cargarPromedios(); filtrarPorTexto();
         }
     }
 
     async function iniciarSistema() {
-        await cargarPromedios();
-        await cargarEventos(); 
-        await cargarCursos(); 
+        await cargarPromedios(); await cargarEventos(); await cargarCursos(); 
         let completados = 0;
         for (const [ciu, gid] of Object.entries(GIDS)) {
-            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}&v=${new Date().getTime()}`;
-            Papa.parse(url, {
+            Papa.parse(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}&v=${new Date().getTime()}`, {
                 download: true, header: true, skipEmptyLines: true,
                 complete: function(res) {
                     res.data.forEach(f => {
                         const n = f.CAFE || f.Cafe || f.cafe;
                         const latRaw = f.LAT || f.Lat || f.lat || f.LATITUD || f.latitud;
                         const lonRaw = f.LONG || f.Long || f.long || f.LNG || f.Lng || f.lng || f.LONGITUD || f.longitud;
-                        
                         if (n && latRaw && lonRaw) {
                             const latClean = parseFloat(latRaw.toString().replace(',', '.'));
                             const lonClean = parseFloat(lonRaw.toString().replace(',', '.'));
-                            
                             if (!isNaN(latClean) && !isNaN(lonClean)) {
-                                bd.push({
-                                    nombre: n.trim(), ciudad: ciu === "Top Sudamérica" ? (f.CIUDAD || "Top") : ciu,
-                                    ubicacion: f.UBICACION || f.Ubicacion || "-", instagram: f.INSTAGRAM || f.Instagram || "#",
-                                    lat: latClean, lon: lonClean,
-                                    esTop: ciu === "Top Sudamérica"
-                                });
+                                bd.push({ nombre: n.trim(), ciudad: ciu === "Top Sudamérica" ? (f.CIUDAD || "Top") : ciu, ubicacion: f.UBICACION || f.Ubicacion || "-", instagram: f.INSTAGRAM || f.Instagram || "#", lat: latClean, lon: lonClean, esTop: ciu === "Top Sudamérica" });
                             }
                         }
                     });
                     if (++completados === Object.keys(GIDS).length) {
                         bd.sort((a,b) => a.nombre.localeCompare(b.nombre));
-                        armarMenus(); 
-                        dibujarMapaFederal(); 
-                        renderizarLista(bd);
+                        armarMenus(); dibujarMapaFederal(); renderizarLista(bd);
                         document.getElementById('contador-total').innerText = `${bd.length} locales guardados`;
                     }
                 }
@@ -488,74 +353,28 @@
     }
 
     async function cargarEventos() {
-        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${EVENTOS_GID}&v=${new Date().getTime()}`;
-        Papa.parse(url, {
+        Papa.parse(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${EVENTOS_GID}&v=${new Date().getTime()}`, {
             download: true, header: true, skipEmptyLines: true,
             complete: function(res) {
-                const hoy = new Date();
-                hoy.setHours(0, 0, 0, 0);
-
-                eventos = res.data.map(f => ({
-                    titulo: f.TITULO || f.Titulo,
-                    fecha: f.FECHA || f.Fecha,
-                    fechaOrden: f.FECHA_ORDEN || f.Fecha_Orden || "9999-12-31",
-                    ciudad: f.CIUDAD || f.Ciudad || "Varios",
-                    desc: f.DESCRIPCION || f.Descripcion,
-                    foto: f.FOTO || f.Foto,
-                    link: f.LINK || f.Link
-                })).filter(e => {
+                const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+                eventos = res.data.map(f => ({ titulo: f.TITULO || f.Titulo, fecha: f.FECHA || f.Fecha, fechaOrden: f.FECHA_ORDEN || f.Fecha_Orden || "9999-12-31", ciudad: f.CIUDAD || f.Ciudad || "Varios", desc: f.DESCRIPCION || f.Descripcion, foto: f.FOTO || f.Foto, link: f.LINK || f.Link })).filter(e => {
                     if (!e.titulo) return false;
                     if (e.fechaOrden === "9999-12-31") return true; 
-
                     const partes = e.fechaOrden.split('-');
-                    const fechaEv = new Date(partes[0], partes[1] - 1, partes[2]);
-                    
-                    return fechaEv >= hoy;
+                    return new Date(partes[0], partes[1] - 1, partes[2]) >= hoy;
                 });
-                
-                ordenarEventos();
+                eventos.sort((a, b) => a.fechaOrden !== b.fechaOrden ? a.fechaOrden.localeCompare(b.fechaOrden) : a.ciudad.localeCompare(b.ciudad));
                 renderizarEventos();
             }
         });
     }
 
-    function ordenarEventos() {
-        eventos.sort((a, b) => {
-            if (a.fechaOrden !== b.fechaOrden) {
-                return a.fechaOrden.localeCompare(b.fechaOrden);
-            }
-            return a.ciudad.localeCompare(b.ciudad);
-        });
-    }
-
     async function cargarCursos() {
-        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${CURSOS_GID}&v=${new Date().getTime()}`;
-        Papa.parse(url, {
-            download: true, 
-            header: true, 
-            skipEmptyLines: true,
-            transformHeader: function(header) {
-                return header.trim().toUpperCase(); 
-            },
+        Papa.parse(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${CURSOS_GID}&v=${new Date().getTime()}`, {
+            download: true, header: true, skipEmptyLines: true, transformHeader: h => h.trim().toUpperCase(),
             complete: function(res) {
-                cursos = res.data.map(f => {
-                    const n = f.TITULO || f['TÍTULO'];
-                    const c = f.CIUDAD || f.CUIDAD; 
-                    const d = f.DESCRIPCION || f['DESCRIPCIÓN'];
-                    const p = f.FOTO || f.IMAGEN;
-                    const l = f.LINK || f.ENLACE;
-                    
-                    return {
-                        titulo: n,
-                        ciudad: c ? c.trim() : "Varias/Online", 
-                        desc: d || "",
-                        foto: p,
-                        link: l
-                    };
-                }).filter(c => c.titulo);
-                
-                armarMenuCursos();
-                renderizarCursos(); 
+                cursos = res.data.map(f => ({ titulo: f.TITULO || f['TÍTULO'], ciudad: f.CIUDAD || f.CUIDAD ? (f.CIUDAD || f.CUIDAD).trim() : "Varias/Online", desc: f.DESCRIPCION || f['DESCRIPCIÓN'] || "", foto: f.FOTO || f.IMAGEN, link: f.LINK || f.ENLACE })).filter(c => c.titulo);
+                armarMenuCursos(); renderizarCursos(); 
             }
         });
     }
@@ -563,66 +382,30 @@
     function armarMenuCursos() {
         const selectCursos = document.getElementById('select-ciudad-cursos');
         const ciudadesCursos = [...new Set(cursos.map(c => c.ciudad))].sort();
-        
         selectCursos.innerHTML = `<option value="Todas">Todas las ciudades (${cursos.length} cursos)</option>`;
-        
-        ciudadesCursos.forEach(c => {
-            const cant = cursos.filter(x => x.ciudad === c).length;
-            selectCursos.innerHTML += `<option value="${c}">${c} (${cant})</option>`;
-        });
+        ciudadesCursos.forEach(c => selectCursos.innerHTML += `<option value="${c}">${c} (${cursos.filter(x => x.ciudad === c).length})</option>`);
     }
 
     function renderizarCursos() {
-        const contenedor = document.getElementById('lista-cursos');
-        contenedor.innerHTML = "";
-        
-        const selectCursos = document.getElementById('select-ciudad-cursos');
-        const ciudadElegida = selectCursos ? selectCursos.value : "Todas";
-
+        const contenedor = document.getElementById('lista-cursos'); contenedor.innerHTML = "";
+        const ciudadElegida = document.getElementById('select-ciudad-cursos') ? document.getElementById('select-ciudad-cursos').value : "Todas";
         const cursosFiltrados = cursos.filter(c => ciudadElegida === "Todas" || c.ciudad === ciudadElegida);
 
-        if (cursosFiltrados.length === 0) {
-            contenedor.innerHTML = `<p style="color:#64748B; font-weight:500;">No hay cursos disponibles programados en este momento.</p>`;
-            return;
-        }
+        if (cursosFiltrados.length === 0) return contenedor.innerHTML = `<p style="color:#64748B; font-weight:500;">No hay cursos disponibles programados en este momento.</p>`;
 
         const gruposPorCiudad = {};
-        cursosFiltrados.forEach(c => {
-            if (!gruposPorCiudad[c.ciudad]) {
-                gruposPorCiudad[c.ciudad] = [];
-            }
-            gruposPorCiudad[c.ciudad].push(c);
-        });
+        cursosFiltrados.forEach(c => { if (!gruposPorCiudad[c.ciudad]) gruposPorCiudad[c.ciudad] = []; gruposPorCiudad[c.ciudad].push(c); });
 
-        const ciudadesOrdenadas = Object.keys(gruposPorCiudad).sort();
-
-        ciudadesOrdenadas.forEach(ciudad => {
+        Object.keys(gruposPorCiudad).sort().forEach(ciudad => {
             const tituloCiudad = document.createElement('h3');
-            tituloCiudad.style.gridColumn = "1 / -1";
-            tituloCiudad.style.margin = "25px 0 10px 0";
-            tituloCiudad.style.fontSize = "1.4rem";
-            tituloCiudad.style.fontWeight = "800";
-            tituloCiudad.style.color = "var(--primary)";
-            tituloCiudad.style.borderBottom = "2px solid var(--border)";
-            tituloCiudad.style.paddingBottom = "6px";
+            tituloCiudad.style.gridColumn = "1 / -1"; tituloCiudad.style.margin = "25px 0 10px 0"; tituloCiudad.style.fontSize = "1.4rem"; tituloCiudad.style.fontWeight = "800"; tituloCiudad.style.color = "var(--primary)"; tituloCiudad.style.borderBottom = "2px solid var(--border)"; tituloCiudad.style.paddingBottom = "6px";
             tituloCiudad.innerHTML = `📍 Cursos en ${ciudad}`;
             contenedor.appendChild(tituloCiudad);
 
             gruposPorCiudad[ciudad].forEach(e => {
                 const imgUrl = e.foto ? e.foto : 'https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=600';
-                const div = document.createElement('div');
-                div.className = 'event-card';
-                div.innerHTML = `
-                    <img src="${imgUrl}" class="event-img" alt="${e.titulo}" onerror="this.src='https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=600'">
-                    <div class="event-content">
-                        <div>
-                            <div class="event-date">🎓 Formación Barista</div>
-                            <h3 class="event-title">${e.titulo}</h3>
-                            <p class="event-desc">${e.desc}</p>
-                        </div>
-                        <a href="${e.link}" target="_blank" class="event-link">Reservar Lugar / Info</a>
-                    </div>
-                `;
+                const div = document.createElement('div'); div.className = 'event-card';
+                div.innerHTML = `<img src="${imgUrl}" class="event-img" onerror="this.src='https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=600'"><div class="event-content"><div><div class="event-date">🎓 Formación Barista</div><h3 class="event-title">${e.titulo}</h3><p class="event-desc">${e.desc}</p></div><a href="${e.link}" target="_blank" class="event-link">Reservar Lugar / Info</a></div>`;
                 contenedor.appendChild(div);
             });
         });
@@ -632,10 +415,7 @@
         if (!fechaOrdenStr || fechaOrdenStr === "9999-12-31") return "";
         const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
         const partes = fechaOrdenStr.split('-');
-        const fechaEv = new Date(partes[0], partes[1] - 1, partes[2]);
-        const diffTiempo = fechaEv - hoy;
-        const diffDias = Math.floor(diffTiempo / (1000 * 60 * 60 * 24));
-        
+        const diffDias = Math.floor((new Date(partes[0], partes[1] - 1, partes[2]) - hoy) / (1000 * 60 * 60 * 24));
         if (diffDias > 1) return `<span class="event-badge">Faltan ${diffDias} días</span>`;
         if (diffDias === 1) return `<span class="event-badge">¡Falta 1 día!</span>`;
         if (diffDias === 0) return `<span class="event-badge today">¡Es hoy! 🎉</span>`;
@@ -643,236 +423,104 @@
     }
 
     function renderizarEventos() {
-        const contenedor = document.getElementById('lista-eventos');
-        contenedor.innerHTML = "";
-        if (eventos.length === 0) { contenedor.innerHTML = `<p style="color:#64748B; font-weight:500;">No hay eventos agendados próximamente.</p>`; return; }
-
+        const contenedor = document.getElementById('lista-eventos'); contenedor.innerHTML = "";
+        if (eventos.length === 0) return contenedor.innerHTML = `<p style="color:#64748B; font-weight:500;">No hay eventos agendados próximamente.</p>`;
         eventos.forEach(e => {
             const imgUrl = e.foto ? e.foto : 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600';
-            const badgeCountdown = calcularDiasRestantes(e.fechaOrden);
-            const div = document.createElement('div');
-            div.className = 'event-card';
-            div.innerHTML = `
-                <img src="${imgUrl}" class="event-img" alt="${e.titulo}" onerror="this.src='https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600'">
-                <div class="event-content">
-                    <div>
-                        <div class="event-date"><span>📅 ${e.fecha} • 📍 ${e.ciudad}</span>${badgeCountdown}</div>
-                        <h3 class="event-title">${e.titulo}</h3><p class="event-desc">${e.desc}</p>
-                    </div>
-                    <a href="${e.link}" target="_blank" class="event-link">Más Información</a>
-                </div>
-            `;
+            const div = document.createElement('div'); div.className = 'event-card';
+            div.innerHTML = `<img src="${imgUrl}" class="event-img" onerror="this.src='https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600'"><div class="event-content"><div><div class="event-date"><span>📅 ${e.fecha} • 📍 ${e.ciudad}</span>${calcularDiasRestantes(e.fechaOrden)}</div><h3 class="event-title">${e.titulo}</h3><p class="event-desc">${e.desc}</p></div><a href="${e.link}" target="_blank" class="event-link">Más Información</a></div>`;
             contenedor.appendChild(div);
         });
     }
 
     function armarMenus() {
-        const s1 = document.getElementById('select-ciudad');
-        const s2 = document.getElementById('run-ciudad');
+        const s1 = document.getElementById('select-ciudad'); const s2 = document.getElementById('run-ciudad');
         const ciudades = [...new Set(bd.map(c => c.ciudad))].sort();
         s1.innerHTML = `<option value="Todas">Todas las ciudades (${bd.length})</option>`;
         ciudades.forEach(c => {
-            const cant = bd.filter(x => x.ciudad === c).length;
-            s1.innerHTML += `<option value="${c}">${c} (${cant})</option>`;
+            s1.innerHTML += `<option value="${c}">${c} (${bd.filter(x => x.ciudad === c).length})</option>`;
             s2.innerHTML += `<option value="${c}">${c}</option>`;
         });
     }
 
     function renderizarLista(datos, origen = null) {
-        const contenedor = document.getElementById('resultados'); contenedor.innerHTML = "";
-        layerRadar.clearLayers();
-        
+        const contenedor = document.getElementById('resultados'); contenedor.innerHTML = ""; layerRadar.clearLayers();
         if (origen) {
             document.getElementById('mapa-radar').classList.add('activo');
             setTimeout(() => { mapaRadar.invalidateSize(); mapaRadar.setView([origen.lat, origen.lon], 15); }, 250);
             L.circleMarker([origen.lat, origen.lon], { radius: 10, color: "#059669", fillColor: "#fff", weight: 3, fillOpacity: 1 }).addTo(layerRadar).bindPopup("Estás acá");
             datos = datos.map(c => ({...c, dist: calcularD(origen.lat, origen.lon, c.lat, c.lon)})).sort((a,b) => a.dist - b.dist).slice(0, 15);
-            
             datos.forEach(c => {
                 const color = c.esTop ? '#D97706' : obtenerColorPorNombre(c.nombre);
-                const popHTML = `<div class="popup-custom"><b>${c.nombre}</b><br><small>${c.ubicacion}</small><br><a href="${c.instagram}" target="_blank" class="popup-btn">Instagram</a></div>`;
-                L.circleMarker([c.lat, c.lon], {radius: c.esTop ? 9:7, color: color, fillColor: color, fillOpacity:0.9}).addTo(layerRadar).bindPopup(popHTML);
+                L.circleMarker([c.lat, c.lon], {radius: c.esTop ? 9:7, color: color, fillColor: color, fillOpacity:0.9}).addTo(layerRadar).bindPopup(`<div class="popup-custom"><b>${c.nombre}</b><br><small>${c.ubicacion}</small><br><a href="${c.instagram}" target="_blank" class="popup-btn">Instagram</a></div>`);
             });
-        } else {
-            document.getElementById('mapa-radar').classList.remove('activo');
-        }
+        } else { document.getElementById('mapa-radar').classList.remove('activo'); }
 
         datos.forEach(c => {
             const stats = promedios[c.nombre] ? `⭐ ${promedios[c.nombre].avg} (${promedios[c.nombre].total} votos)` : "Sin votos aún";
-            const linkMap = `https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lon}`;
-            
             let textoDistancia = "";
             if (origen && c.dist !== undefined) {
                 const cuadras = Math.round(c.dist * 10); 
-                if (cuadras === 0) {
-                    textoDistancia = ` • <span style="color:var(--accent); font-weight:800;">¡A menos de 1 cuadra! 📍</span>`;
-                } else {
-                    textoDistancia = ` • <span style="color:var(--accent); font-weight:800;">A ${cuadras} ${cuadras === 1 ? 'cuadra' : 'cuadras'} 📍</span>`;
-                }
+                textoDistancia = cuadras === 0 ? ` • <span style="color:var(--accent); font-weight:800;">¡A menos de 1 cuadra! 📍</span>` : ` • <span style="color:var(--accent); font-weight:800;">A ${cuadras} ${cuadras === 1 ? 'cuadra' : 'cuadras'} 📍</span>`;
             }
-
             const div = document.createElement('div'); div.className = 'cafe-card';
-            div.innerHTML = `
-                <div class="cafe-info">
-                    <h3 class="cafe-title">${c.nombre} ${c.esTop ? '★' : ''}</h3>
-                    <p class="puntuacion-box">${stats}</p>
-                    <p style="font-size:0.85rem; color:#64748B;">${c.ubicacion} • <b>${c.ciudad}</b>${textoDistancia}</p>
-                    <div class="estrellas-voto">
-                        <span onclick="enviarVoto('${c.nombre}', 1)">⭐</span><span onclick="enviarVoto('${c.nombre}', 2)">⭐</span><span onclick="enviarVoto('${c.nombre}', 3)">⭐</span><span onclick="enviarVoto('${c.nombre}', 4)">⭐</span><span onclick="enviarVoto('${c.nombre}', 5)">⭐</span>
-                    </div>
-                </div>
-                <div class="links">
-                    <a href="${c.instagram}" target="_blank">Instagram</a>
-                    <a href="${linkMap}" target="_blank">Cómo llegar</a>
-                </div>`;
+            div.innerHTML = `<div class="cafe-info"><h3 class="cafe-title">${c.nombre} ${c.esTop ? '★' : ''}</h3><p class="puntuacion-box">${stats}</p><p style="font-size:0.85rem; color:#64748B;">${c.ubicacion} • <b>${c.ciudad}</b>${textoDistancia}</p><div class="estrellas-voto"><span onclick="enviarVoto('${c.nombre}', 1)">⭐</span><span onclick="enviarVoto('${c.nombre}', 2)">⭐</span><span onclick="enviarVoto('${c.nombre}', 3)">⭐</span><span onclick="enviarVoto('${c.nombre}', 4)">⭐</span><span onclick="enviarVoto('${c.nombre}', 5)">⭐</span></div></div><div class="links"><a href="${c.instagram}" target="_blank">Instagram</a><a href="https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lon}" target="_blank">Cómo llegar</a></div>`;
             contenedor.appendChild(div);
         });
     }
 
     async function medirDesdeDireccion() {
-        const dir = document.getElementById('input-busqueda').value.trim();
-        const ciu = document.getElementById('select-ciudad').value;
+        const dir = document.getElementById('input-busqueda').value.trim(); const ciu = document.getElementById('select-ciudad').value;
         if (!dir) return Swal.fire("Ingresá una dirección.");
-        
         document.getElementById('status').innerText = "Buscando...";
-        
         try {
-            let queryText = dir;
-            if (ciu !== 'Todas' && !dir.toLowerCase().includes(ciu.toLowerCase())) {
-                queryText += ", " + ciu;
-            }
-            queryText += ", Argentina";
-
-            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=20&addressdetails=1&q=${encodeURIComponent(queryText)}`);
-            const data = await res.json();
-            
+            let queryText = dir + (ciu !== 'Todas' && !dir.toLowerCase().includes(ciu.toLowerCase()) ? ", " + ciu : "") + ", Argentina";
+            const data = await (await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=20&addressdetails=1&q=${encodeURIComponent(queryText)}`)).json();
             document.getElementById('status').innerText = ""; 
-            
             if (data.length > 0) {
-                const tieneNumero = /\d/.test(dir);
-                const opcionesUnicas = [];
-                const nombresVistos = new Set();
-
-                if (tieneNumero) {
-                    data.sort((a, b) => {
-                        const aHasNum = a.address && a.address.house_number ? 1 : 0;
-                        const bHasNum = b.address && b.address.house_number ? 1 : 0;
-                        return bHasNum - aHasNum;
-                    });
-                }
-                
+                const opcionesUnicas = []; const nombresVistos = new Set();
                 data.forEach((item) => {
-                    let nombreLimpio = "";
+                    let partes = [];
                     if (item.address) {
-                        const calle = item.address.road || item.address.pedestrian || "";
-                        const altura = item.address.house_number ? " " + item.address.house_number : "";
-                        const barrio = item.address.suburb || item.address.neighbourhood || "";
-                        const localidad = item.address.city || item.address.town || item.address.village || item.address.county || "";
-
-                        let partes = [];
-                        if (calle) partes.push(calle + altura);
-                        if (barrio && barrio !== localidad) partes.push(barrio);
-                        if (localidad) partes.push(localidad);
-
-                        if (partes.length > 0) {
-                            nombreLimpio = partes.join(", ");
-                        } else {
-                            nombreLimpio = item.display_name.split(',').slice(0, 3).join(', ').trim();
-                        }
-                    } else {
-                        nombreLimpio = item.display_name.split(',').slice(0, 3).join(', ').trim();
+                        if (item.address.road) partes.push(item.address.road + (item.address.house_number ? " " + item.address.house_number : ""));
+                        if (item.address.suburb || item.address.neighbourhood) partes.push(item.address.suburb || item.address.neighbourhood);
+                        if (item.address.city || item.address.town) partes.push(item.address.city || item.address.town);
                     }
-
-                    if (!nombresVistos.has(nombreLimpio)) {
-                        nombresVistos.add(nombreLimpio);
-                        opcionesUnicas.push({ ...item, nombreLimpio });
-                    }
+                    let nombreLimpio = partes.length > 0 ? partes.join(", ") : item.display_name.split(',').slice(0, 3).join(', ').trim();
+                    if (!nombresVistos.has(nombreLimpio)) { nombresVistos.add(nombreLimpio); opcionesUnicas.push({ ...item, nombreLimpio }); }
                 });
 
-                if (opcionesUnicas.length === 1) {
-                    renderizarLista(bd, { lat: parseFloat(opcionesUnicas[0].lat), lon: parseFloat(opcionesUnicas[0].lon) });
-                } else {
+                if (opcionesUnicas.length === 1) renderizarLista(bd, { lat: parseFloat(opcionesUnicas[0].lat), lon: parseFloat(opcionesUnicas[0].lon) });
+                else {
                     let opcionesHTML = '<div class="swal-scrollable-container">';
-                    opcionesUnicas.slice(0, 15).forEach((item) => { 
-                        
-                        const advertenciaAltura = (tieneNumero && (!item.address || !item.address.house_number)) 
-                            ? ' <span style="color:#ef4444; font-size:0.75rem; font-weight:700;">(Altura aprox)</span>' 
-                            : '';
-
-                        opcionesHTML += `
-                            <button onclick="seleccionarUbicacion(${item.lat}, ${item.lon})" 
-                                    onmouseover="this.style.borderColor='var(--primary)'"
-                                    onmouseout="this.style.borderColor='var(--border)'"
-                                    style="text-align: left; background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 14px; border-radius: 10px; cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; font-weight: 500; font-size: 0.9rem; flex-shrink: 0; line-height: 1.3;">
-                                📍 ${item.nombreLimpio}${advertenciaAltura}
-                            </button>
-                        `;
-                    });
-                    opcionesHTML += '</div>';
-
-                    Swal.fire({
-                        title: 'Elegí la ubicación correcta',
-                        html: opcionesHTML,
-                        showConfirmButton: false,
-                        showCancelButton: true,
-                        cancelButtonText: 'Cancelar',
-                        customClass: {
-                            popup: 'swal-custom-popup',
-                            title: 'swal-custom-title',
-                            cancelButton: 'swal-custom-btn swal-custom-btn-cancel'
-                        }
-                    });
+                    opcionesUnicas.slice(0, 15).forEach((item) => { opcionesHTML += `<button onclick="seleccionarUbicacion(${item.lat}, ${item.lon})" style="text-align: left; background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 14px; border-radius: 10px; cursor: pointer; margin-bottom:8px;">📍 ${item.nombreLimpio}</button>`; });
+                    Swal.fire({ title: 'Elegí la ubicación correcta', html: opcionesHTML + '</div>', showConfirmButton: false, showCancelButton: true, cancelButtonText: 'Cancelar', customClass: { popup: 'swal-custom-popup', cancelButton: 'swal-custom-btn swal-custom-btn-cancel' }});
                 }
-            } else { 
-                Swal.fire(
-                    "No encontramos esa dirección.", 
-                    "Tip: Si no aparece, probá agregar la localidad exacta al lado de la calle (Ej: Patricios 1704, Maschwitz).", 
-                    "warning"
-                ); 
-            }
-        } catch (e) { 
-            document.getElementById('status').innerText = ""; 
-            Swal.fire("Error", "No pudimos conectar con el servidor de mapas.", "error");
-        }
+            } else Swal.fire("No encontramos esa dirección.", "Tip: Probá agregar la localidad exacta.", "warning"); 
+        } catch (e) { document.getElementById('status').innerText = ""; Swal.fire("Error", "No pudimos conectar con el servidor.", "error"); }
     }
 
-    function seleccionarUbicacion(lat, lon) {
-        Swal.close();
-        renderizarLista(bd, { lat: parseFloat(lat), lon: parseFloat(lon) });
-    }
+    function seleccionarUbicacion(lat, lon) { Swal.close(); renderizarLista(bd, { lat: parseFloat(lat), lon: parseFloat(lon) }); }
 
     function usarMiGPS() { 
-        if (!navigator.geolocation) return Swal.fire("Error", "Tu navegador o dispositivo no soporta GPS.", "error");
-        document.getElementById('status').innerText = "Conectando con satélites GPS...";
+        if (!navigator.geolocation) return Swal.fire("Error", "Tu navegador no soporta GPS.", "error");
+        document.getElementById('status').innerText = "Conectando con GPS...";
         navigator.geolocation.getCurrentPosition(
-            p => {
-                document.getElementById('status').innerText = "";
-                renderizarLista(bd, { lat: p.coords.latitude, lon: p.coords.longitude });
-            }, 
-            error => {
-                document.getElementById('status').innerText = "";
-                let mensajeError = "No pudimos obtener tu GPS.";
-                if (error.code === error.PERMISSION_DENIED) mensajeError = "Permiso de ubicación denegado. Tenés que habilitar los permisos de localización para el navegador en los Ajustes de tu dispositivo.";
-                else if (error.code === error.TIMEOUT) mensajeError = "Se agotó el tiempo de espera. Probá de nuevo en un espacio más abierto.";
-                else if (error.code === error.POSITION_UNAVAILABLE) mensajeError = "La ubicación no está disponible en este momento.";
-                Swal.fire("Aviso", mensajeError, "warning");
-            },
+            p => { document.getElementById('status').innerText = ""; renderizarLista(bd, { lat: p.coords.latitude, lon: p.coords.longitude }); }, 
+            error => { document.getElementById('status').innerText = ""; Swal.fire("Aviso", "No pudimos obtener tu ubicación. Revisá los permisos.", "warning"); },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         ); 
     }
 
     async function generarRutaRunning() {
-        const ciudad = document.getElementById('run-ciudad').value;
-        const partida = document.getElementById('run-partida').value;
+        const ciudad = document.getElementById('run-ciudad').value; const partida = document.getElementById('run-partida').value;
         let distDeseada = parseFloat(document.getElementById('run-distancia').value);
         if (!ciudad || !partida) return Swal.fire('Completá ciudad y partida');
-        let esFondo = distDeseada >= 10;
-        let distBusqueda = esFondo ? distDeseada / 2 : distDeseada;
+        let esFondo = distDeseada >= 10; let distBusqueda = esFondo ? distDeseada / 2 : distDeseada;
 
         Swal.fire({ title: 'Trazando ruta...', didOpen: () => Swal.showLoading() });
         try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(partida + ", " + ciudad)}`);
-            const data = await res.json();
+            const data = await (await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(partida + ", " + ciudad)}`)).json();
             if (data.length === 0) throw new Error("Dirección no encontrada");
             const origen = { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
             const candidatos = bd.filter(c => {
@@ -881,18 +529,14 @@
                 return d >= (distBusqueda - 0.7) && d <= (distBusqueda + 0.7);
             });
             if (candidatos.length === 0) return Swal.fire('Sin resultados', 'Probá con otra distancia.', 'info');
-            const elegido = candidatos[Math.floor(Math.random() * candidatos.length)];
-            dibujarRecorrido(origen, elegido, esFondo, distDeseada);
+            dibujarRecorrido(origen, candidatos[Math.floor(Math.random() * candidatos.length)], esFondo, distDeseada);
             Swal.close();
         } catch (e) { Swal.fire('Error', e.message, 'error'); }
     }
 
     function dibujarRecorrido(origen, cafe, esFondo, distTotal) {
         document.getElementById('mapa-running').classList.add('activo');
-        if (!mapaRunning) {
-            mapaRunning = L.map('mapa-running');
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaRunning);
-        }
+        if (!mapaRunning) { mapaRunning = L.map('mapa-running'); L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaRunning); }
         if (controlRuta) mapaRunning.removeControl(controlRuta);
         controlRuta = L.Routing.control({
             waypoints: [L.latLng(origen.lat, origen.lon), L.latLng(cafe.lat, cafe.lon)],
@@ -903,40 +547,44 @@
         }).addTo(mapaRunning);
 
         const distReal = calcularD(origen.lat, origen.lon, cafe.lat, cafe.lon).toFixed(1);
-        const mensajeExtra = esFondo ? `<br><small style="color:#64748B">Corré hasta el café y volvé para completar los <b>${distTotal} km</b>.</small>` : "";
-        
-        const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origen.lat},${origen.lon}&destination=${cafe.lat},${cafe.lon}&travelmode=walking`;
-
-        document.getElementById('resultado-running').innerHTML = `
-            <div class="cafe-card" style="border: 2px solid var(--running); margin-top:15px">
-                <div class="cafe-info">
-                    <h3 class="cafe-title">🏃‍♂️ Tu meta: ${cafe.nombre}</h3>
-                    <p style="color:var(--running); font-weight:800; font-size:1.1rem; margin:5px 0;">A ${distReal} km de tu salida</p>
-                    ${mensajeExtra}
-                </div>
-                <div class="links">
-                    <a href="${mapsUrl}" target="_blank" style="background:var(--running); color:white; border-color:var(--running)">Abrir Ruta</a>
-                </div>
-            </div>`;
+        document.getElementById('resultado-running').innerHTML = `<div class="cafe-card" style="border: 2px solid var(--running); margin-top:15px"><div class="cafe-info"><h3 class="cafe-title">🏃‍♂️ Tu meta: ${cafe.nombre}</h3><p style="color:var(--running); font-weight:800; font-size:1.1rem; margin:5px 0;">A ${distReal} km de tu salida</p>${esFondo ? `<br><small style="color:#64748B">Corré hasta el café y volvé para completar los <b>${distTotal} km</b>.</small>` : ""}</div><div class="links"><a href="https://www.google.com/maps/dir/?api=1&origin=${origen.lat},${origen.lon}&destination=${cafe.lat},${cafe.lon}&travelmode=walking" target="_blank" style="background:var(--running); color:white; border-color:var(--running)">Abrir Ruta</a></div></div>`;
     }
 
     function calcularD(lat1, lon1, lat2, lon2) {
-        const R = 6371;
         const dLat = (lat2-lat1)*Math.PI/180; const dLon = (lon2-lon1)*Math.PI/180;
         const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
 
-    function cambiarPestaña(tab, btn) {
-        document.getElementById('tab-lista').classList.toggle('hidden', tab !== 'lista');
-        document.getElementById('tab-mapa').classList.toggle('hidden', tab !== 'mapa'); 
-        document.getElementById('tab-running').classList.toggle('hidden', tab !== 'running');
-        document.getElementById('tab-eventos').classList.toggle('hidden', tab !== 'eventos'); 
-        document.getElementById('tab-cursos').classList.toggle('hidden', tab !== 'cursos'); 
+    // ==========================================
+    // LOGICA DEL SIDEBAR Y NAVEGACIÓN
+    // ==========================================
+    function toggleMenu() {
+        document.getElementById('sidebar').classList.toggle('abierto');
+        document.getElementById('sidebar-overlay').classList.toggle('activo');
+    }
+
+    function cambiarPestaña(tab) {
+        // Mostrar/Ocultar Tabs
+        ['lista', 'mapa', 'running', 'eventos', 'cursos', 'newsletter'].forEach(t => {
+            const el = document.getElementById('tab-' + t);
+            if(el) el.classList.toggle('hidden', t !== tab);
+        });
         
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+        // Actualizar visualmente el sidebar
+        document.querySelectorAll('.nav-link').forEach(link => {
+            if(link.getAttribute('data-tab') === tab) link.classList.add('active');
+            else link.classList.remove('active');
+        });
+
+        // Cerrar el menú automáticamente
+        if(document.getElementById('sidebar').classList.contains('abierto')) {
+            toggleMenu();
+        }
+        
         if(tab === 'mapa') setTimeout(() => mapaFederal.invalidateSize(), 300);
         if(tab === 'running' && mapaRunning) setTimeout(() => mapaRunning.invalidateSize(), 300);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function filtrarPorTexto() {
@@ -949,249 +597,52 @@
         layerFederal.clearLayers(); 
         bd.forEach(c => {
             const color = c.esTop ? '#D97706' : obtenerColorPorNombre(c.nombre);
-            const popHTML = `<div class="popup-custom"><b>${c.nombre}</b><br><small>${c.ubicacion}</small><br><a href="${c.instagram}" target="_blank" class="popup-btn">Instagram</a></div>`;
-            const marker = L.circleMarker([c.lat, c.lon], { radius: c.esTop ? 8:5, color: color, fillColor: color, fillOpacity: 0.8 }).bindPopup(popHTML);
-            layerFederal.addLayer(marker); 
+            layerFederal.addLayer(L.circleMarker([c.lat, c.lon], { radius: c.esTop ? 8:5, color: color, fillColor: color, fillOpacity: 0.8 }).bindPopup(`<div class="popup-custom"><b>${c.nombre}</b><br><small>${c.ubicacion}</small><br><a href="${c.instagram}" target="_blank" class="popup-btn">Instagram</a></div>`)); 
         });
     }
 
+    // ==========================================
+    // MODALES SECUNDARIOS (REPORTES)
+    // ==========================================
     async function abrirReporte() {
         const { value: formValues } = await Swal.fire({
-            title: 'Reportar Novedad',
-            imageUrl: 'https://i.postimg.cc/8zTgpkJD/13640-removebg-preview.png',
-            imageWidth: 60,
-            imageHeight: 60,
-            imageAlt: 'Logo Buscador de Café',
-            customClass: {
-                popup: 'swal-custom-popup',
-                title: 'swal-custom-title',
-                confirmButton: 'swal-custom-btn swal-custom-btn-confirm',
-                cancelButton: 'swal-custom-btn swal-custom-btn-cancel',
-                input: 'swal-custom-input',
-            },
-            html: `
-                <div style="text-align: left;">
-                    <label class="swal-custom-label">¿Qué nos querés contar?</label>
-                    <select id="swal-tipo" class="swal-custom-input">
-                        <option value="Nuevo Local">☕ Sugerir nuevo local</option>
-                        <option value="Local Cerrado">🚪 Local cerrado</option>
-                        <option value="Dato Incorrecto">✏️ Dato incorrecto (Ej: IG, dirección)</option>
-                        <option value="Otro">❓ Otro problema</option>
-                    </select>
-
-                    <label class="swal-custom-label">Nombre del local y ciudad</label>
-                    <input id="swal-local" class="swal-custom-input" placeholder="Ej: Café Gascón, Mar del Plata">
-
-                    <label class="swal-custom-label">Detalles extras</label>
-                    <textarea id="swal-detalle" class="swal-custom-textarea swal-custom-input" placeholder="Dejanos el link de Instagram, la calle correcta o la info que nos falte..."></textarea>
-                </div>
-            `,
-            focusConfirm: false,
-            showCancelButton: true,
-            confirmButtonText: 'Enviar Reporte',
-            cancelButtonText: 'Cancelar',
-            preConfirm: () => {
-                const localStr = document.getElementById('swal-local').value.trim();
-                if (!localStr) {
-                    Swal.showValidationMessage('Por favor escribí el nombre del local o la ciudad para ubicarlo.');
-                    return false;
-                }
-                return {
-                    tipo: document.getElementById('swal-tipo').value,
-                    local: localStr,
-                    detalle: document.getElementById('swal-detalle').value.trim()
-                }
-            }
+            title: 'Reportar Novedad', imageUrl: 'https://i.postimg.cc/8zTgpkJD/13640-removebg-preview.png', imageWidth: 60,
+            customClass: { popup: 'swal-custom-popup', confirmButton: 'swal-custom-btn swal-custom-btn-confirm', cancelButton: 'swal-custom-btn swal-custom-btn-cancel', input: 'swal-custom-input' },
+            html: `<div style="text-align: left;"><select id="swal-tipo" class="swal-custom-input"><option value="Nuevo Local">☕ Sugerir nuevo local</option><option value="Local Cerrado">🚪 Local cerrado</option><option value="Dato Incorrecto">✏️ Dato incorrecto</option></select><input id="swal-local" class="swal-custom-input" placeholder="Ej: Café Gascón, MDQ" style="margin-top:10px;"><textarea id="swal-detalle" class="swal-custom-textarea swal-custom-input" placeholder="Detalles extras..." style="margin-top:10px;"></textarea></div>`,
+            showCancelButton: true, confirmButtonText: 'Enviar', cancelButtonText: 'Cancelar',
+            preConfirm: () => ({ tipo: document.getElementById('swal-tipo').value, local: document.getElementById('swal-local').value.trim(), detalle: document.getElementById('swal-detalle').value.trim() })
         });
-
-        if (formValues) {
-            enviarReporteEmail(formValues);
-        }
+        if (formValues && formValues.local) enviarReporteEmail(formValues);
     }
 
     async function abrirSumate() {
         const { value: formValues } = await Swal.fire({
-            title: '¡Sumate al Buscador!',
-            imageUrl: 'https://i.postimg.cc/8zTgpkJD/13640-removebg-preview.png',
-            imageWidth: 60,
-            imageHeight: 60,
-            imageAlt: 'Logo Buscador de Café',
-            customClass: {
-                popup: 'swal-custom-popup',
-                title: 'swal-custom-title',
-                confirmButton: 'swal-custom-btn swal-custom-btn-confirm',
-                cancelButton: 'swal-custom-btn swal-custom-btn-cancel',
-                input: 'swal-custom-input',
-            },
-            html: `
-                <div style="text-align: left;">
-                    <label class="swal-custom-label">¿Qué querés agregar?</label>
-                    <select id="sumate-tipo" class="swal-custom-input">
-                        <option value="Cafetería / Tostaduría">☕ Cafetería / Tostaduría</option>
-                        <option value="Evento Cafetero">📅 Evento Cafetero</option>
-                        <option value="Curso / Formación">🎓 Curso / Formación</option>
-                    </select>
-
-                    <label class="swal-custom-label">Nombre del proyecto y Ciudad</label>
-                    <input id="sumate-nombre" class="swal-custom-input" placeholder="Ej: Kopi (Mar del Plata)">
-
-                    <label class="swal-custom-label">Instagram o Link</label>
-                    <input id="sumate-link" class="swal-custom-input" placeholder="Ej: @kopi.cafe">
-
-                    <label class="swal-custom-label">Más información</label>
-                    <textarea id="sumate-detalle" class="swal-custom-textarea swal-custom-input" placeholder="Dirección exacta, fechas del evento, etc..."></textarea>
-                </div>
-            `,
-            focusConfirm: false,
-            showCancelButton: true,
-            confirmButtonText: 'Enviar Solicitud',
-            cancelButtonText: 'Cancelar',
-            preConfirm: () => {
-                const nombreStr = document.getElementById('sumate-nombre').value.trim();
-                if (!nombreStr) {
-                    Swal.showValidationMessage('Por favor escribí el nombre de tu proyecto.');
-                    return false;
-                }
-                
-                const tipoVal = document.getElementById('sumate-tipo').value;
-                const linkVal = document.getElementById('sumate-link').value.trim();
-                const detalleVal = document.getElementById('sumate-detalle').value.trim();
-                
-                return {
-                    tipo: "✨ ALTA NUEVA: " + tipoVal,
-                    local: nombreStr,
-                    detalle: "Link/IG: " + (linkVal || "No provisto") + "\n\nDetalles extras: " + (detalleVal || "Sin detalles adicionales")
-                }
-            }
+            title: '¡Sumate al Buscador!', imageUrl: 'https://i.postimg.cc/8zTgpkJD/13640-removebg-preview.png', imageWidth: 60,
+            customClass: { popup: 'swal-custom-popup', confirmButton: 'swal-custom-btn swal-custom-btn-confirm', cancelButton: 'swal-custom-btn swal-custom-btn-cancel', input: 'swal-custom-input' },
+            html: `<div style="text-align: left;"><select id="sumate-tipo" class="swal-custom-input"><option value="Cafetería / Tostaduría">☕ Cafetería / Tostaduría</option><option value="Evento">📅 Evento</option></select><input id="sumate-nombre" class="swal-custom-input" placeholder="Nombre de tu proyecto" style="margin-top:10px;"><input id="sumate-link" class="swal-custom-input" placeholder="Instagram o Link" style="margin-top:10px;"></div>`,
+            showCancelButton: true, confirmButtonText: 'Enviar', cancelButtonText: 'Cancelar',
+            preConfirm: () => ({ tipo: "✨ ALTA NUEVA: " + document.getElementById('sumate-tipo').value, local: document.getElementById('sumate-nombre').value.trim(), detalle: "Link/IG: " + document.getElementById('sumate-link').value.trim() })
         });
-
-        if (formValues) {
-            enviarReporteEmail(formValues);
-        }
+        if (formValues && formValues.local) enviarReporteEmail(formValues);
     }
 
     async function enviarReporteEmail(datos) {
-        const urlSegura = '/api/reporte?t=' + new Date().getTime();
-        
         try {
-            const formBody = new URLSearchParams();
-            for (const key in datos) {
-                formBody.append(key, datos[key]);
-            }
-
-            const response = await fetch(urlSegura, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                },
-                body: formBody
-            });
-
-            if (response.ok) {
-                Swal.fire({
-                    title: '¡Enviado!',
-                    text: 'Gracias por ayudar a mejorar la comunidad cafetera.',
-                    icon: 'success',
-                    confirmButtonColor: '#5D4037'
-                });
-            } else {
-                const errorBackend = await response.text();
-                throw new Error(errorBackend);
-            }
-        } catch (error) {
-            console.error("Falla de envío:", error);
-            
-            Swal.fire({
-                title: 'Error Interno',
-                html: `<p style="font-size: 0.9rem;">El servidor rechazó el envío. Detalle técnico:<br><b style="color:red;">${error.message}</b></p>`,
-                icon: 'error',
-                confirmButtonText: 'Cerrar',
-                confirmButtonColor: '#5D4037'
-            });
-        }
+            const formBody = new URLSearchParams(); for (const key in datos) formBody.append(key, datos[key]);
+            const response = await fetch('/api/reporte?t=' + new Date().getTime(), { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body: formBody });
+            if (response.ok) Swal.fire({ title: '¡Enviado!', text: 'Gracias por ayudar a mejorar la comunidad.', icon: 'success' });
+            else throw new Error("Error en servidor");
+        } catch (error) { Swal.fire({ title: 'Error Interno', text: 'El servidor rechazó el envío temporalmente.', icon: 'error' }); }
     }
 
     function abrirBienvenidaCofi() {
-        const imagenesCofi = [
-            'https://i.postimg.cc/tCPMV008/1779904711534-removebg-preview.png', 
-            'https://i.postimg.cc/hPVswwDr/1780436389315-removebg-preview.png',
-            'https://i.postimg.cc/7YrMgV37/1780436326622-removebg-preview.png',
-            'https://i.postimg.cc/K8JPhhds/1780436224561-removebg-preview.png'
+        const imgs = ['https://i.postimg.cc/tCPMV008/1779904711534-removebg-preview.png', 'https://i.postimg.cc/hPVswwDr/1780436389315-removebg-preview.png', 'https://i.postimg.cc/7YrMgV37/1780436326622-removebg-preview.png'];
+        const msjs = [
+            { title: '¡Tip de Barista! ☕', html: '<p>Usá agua entre <b>90°C y 96°C</b> para los mejores sabores.</p>' },
+            { title: 'A un clic de distancia 🎯', html: '<p>Usá el botón <b>"Cerca de Mí"</b> para encontrar cafeterías cerca tuyo.</p>' }
         ];
-
-        const imagenElegida = imagenesCofi[Math.floor(Math.random() * imagenesCofi.length)];
-
-        const cofiFlotante = document.querySelector('.cofi-helper-container img');
-        if (cofiFlotante) cofiFlotante.src = imagenElegida;
-
-        let mensajes = [
-            {
-                title: '¡Tip de Barista! ☕',
-                html: '<p style="color: #475569; font-size: 0.95rem; line-height: 1.5;">¿Sabías que el agua hirviendo quema el café? Lo ideal es usar agua entre <b>90°C y 96°C</b> para extraer los mejores sabores en tu casa.</p>',
-                btnText: '¡Buen dato!'
-            },
-            {
-                title: 'A un clic de distancia 🎯',
-                html: '<p style="color: #475569; font-size: 0.95rem; line-height: 1.5;">Usá el botón <b>"Buscar Cerca de Mí"</b> en la pestaña Explorar para encontrar las cafeterías de especialidad que tenés a menos de un par de cuadras.</p>',
-                btnText: '¡Genial!'
-            },
-            {
-                title: '¿Te gusta correr? 🏃‍♂️',
-                html: '<p style="color: #475569; font-size: 0.95rem; line-height: 1.5;">En la pestaña <b>"Running y Cafecito"</b> podés armar una ruta desde tu casa hasta un café para ganarte tu dosis de cafeína.</p>',
-                btnText: 'Voy a probarlo'
-            },
-            {
-                title: 'Dato Curioso 💡',
-                html: '<p style="color: #475569; font-size: 0.95rem; line-height: 1.5;">Un café se considera "de especialidad" cuando alcanza más de <b>80 puntos</b> en la escala internacional de cata. ¡Acá solo listamos esos!</p>',
-                btnText: '¡Mirá vos!'
-            }
-        ];
-
-        if (eventos && eventos.length > 0) {
-            const proximoEvento = eventos[0]; 
-            const mensajeEvento = {
-                title: '¡Hola! ¿Buscás un buen plan?',
-                html: `
-                    <p style="font-size: 0.95rem; color: #64748B; margin-bottom: 15px;">Te sugiero este evento cafetero que se viene:</p>
-                    <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 15px; text-align: left; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
-                        <strong style="color: var(--top); font-size: 0.85rem; text-transform: uppercase; display: block; margin-bottom: 4px;">📅 ${proximoEvento.fecha} • 📍 ${proximoEvento.ciudad}</strong>
-                        <h4 style="margin: 0 0 6px 0; font-size: 1.15rem; color: var(--text); font-weight: 800;">${proximoEvento.titulo}</h4>
-                        <p style="font-size: 0.85rem; margin: 0; color: #475569; line-height: 1.4;">${proximoEvento.desc.substring(0, 90)}...</p>
-                    </div>
-                `,
-                btnText: 'Ver eventos',
-                esEvento: true
-            };
-            
-            mensajes.push(mensajeEvento);
-            mensajes.push(mensajeEvento);
-        }
-
-        const mensajeElegido = mensajes[Math.floor(Math.random() * mensajes.length)];
-
-        Swal.fire({
-            title: mensajeElegido.title,
-            html: mensajeElegido.html,
-            imageUrl: imagenElegida, 
-            imageWidth: 110, // Aumentado el tamaño en el popup también
-            imageHeight: 'auto',
-            imageAlt: 'COFI Asistente de Café',
-            showCancelButton: mensajeElegido.esEvento === true, 
-            confirmButtonText: mensajeElegido.btnText,
-            cancelButtonText: 'Cerrar',
-            customClass: {
-                popup: 'swal-custom-popup',
-                title: 'swal-custom-title',
-                confirmButton: 'swal-custom-btn swal-custom-btn-confirm',
-                cancelButton: 'swal-custom-btn swal-custom-btn-cancel'
-            }
-        }).then((result) => {
-            if (result.isConfirmed && mensajeElegido.esEvento) {
-                const btnEventos = document.querySelectorAll('.tab-btn')[2]; 
-                cambiarPestaña('eventos', btnEventos);
-                window.scrollTo({ top: 0, behavior: 'smooth' }); 
-            }
-        });
+        const msj = msjs[Math.floor(Math.random() * msjs.length)];
+        Swal.fire({ title: msj.title, html: msj.html, imageUrl: imgs[0], imageWidth: 100, confirmButtonText: '¡Genial!', customClass: { popup: 'swal-custom-popup', confirmButton: 'swal-custom-btn swal-custom-btn-confirm' }});
     }
 
     // ==========================================
@@ -1199,55 +650,35 @@
     // ==========================================
     document.addEventListener('DOMContentLoaded', () => {
         if (localStorage.getItem('cofi_suscrito') === 'true') {
-            const panel = document.getElementById('panel-newsletter');
-            if (panel) panel.style.display = 'none'; 
+            document.getElementById('newsletter-form-container').innerHTML = `
+                <img src="https://i.postimg.cc/8zTgpkJD/13640-removebg-preview.png" style="width: 60px; margin-bottom: 10px;">
+                <h2 style="margin: 0 0 10px 0; font-weight: 800; color: var(--accent);">¡Ya estás en la lista! 🎉</h2>
+                <p style="color: #64748B; font-size: 0.95rem;">Gracias por ser parte de la comunidad cafetera. Nos leemos pronto por correo.</p>
+            `;
         }
     });
 
     async function suscribirNewsletter() {
         const emailInput = document.getElementById('input-newsletter');
         const email = emailInput.value.trim();
-        const panel = document.getElementById('panel-newsletter');
 
-        if (!email || !email.includes('@')) {
-            return Swal.fire({
-                title: 'Mmm...',
-                text: 'Por favor, ingresá un correo válido.',
-                icon: 'warning',
-                confirmButtonColor: '#5D4037',
-                customClass: { popup: 'swal-custom-popup', title: 'swal-custom-title' }
-            });
-        }
+        if (!email || !email.includes('@')) return Swal.fire({ title: 'Mmm...', text: 'Ingresá un correo válido.', icon: 'warning' });
 
         const { error } = await _supabase.from('newsletter').insert([{ email: email }]);
 
         if (error) {
             if (error.code === '23505' || error.message.includes('duplicate')) {
-                Swal.fire({
-                    title: '¡Ya estabas en la lista!',
-                    text: 'Ese correo ya está registrado. Nos leemos pronto.',
-                    icon: 'info',
-                    confirmButtonColor: '#5D4037',
-                    customClass: { popup: 'swal-custom-popup', title: 'swal-custom-title' }
-                });
+                Swal.fire({ title: '¡Ya estabas en la lista!', text: 'Ese correo ya está registrado.', icon: 'info' });
                 localStorage.setItem('cofi_suscrito', 'true');
-                if (panel) panel.style.display = 'none';
-            } else {
-                Swal.fire('Error', 'Hubo un problema al guardarlo. Intentá de nuevo.', 'error');
-            }
+                cambiarPestaña('lista'); // Volvemos al inicio para limpiar
+            } else Swal.fire('Error', 'Hubo un problema al guardarlo.', 'error');
         } else {
-            Swal.fire({
-                title: '¡Adentro!',
-                text: 'Ya estás en la lista. Prepará la taza para el próximo correo.',
-                icon: 'success',
-                confirmButtonColor: '#5D4037',
-                customClass: { popup: 'swal-custom-popup', title: 'swal-custom-title' }
-            });
+            Swal.fire({ title: '¡Adentro!', text: 'Prepará la taza para el próximo correo.', icon: 'success' });
             localStorage.setItem('cofi_suscrito', 'true');
-            if (panel) panel.style.display = 'none';
+            cambiarPestaña('lista'); // Volvemos al inicio
+            document.getElementById('newsletter-form-container').innerHTML = `<h2 style="color: var(--accent);">¡Ya estás en la lista! 🎉</h2>`;
         }
     }
-    // ==========================================
 
     iniciarSistema();
 
