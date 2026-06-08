@@ -44,7 +44,6 @@
         }
         body { 
             background-color: var(--bg);
-            /* PATRÓN DE FONDO: Micropuntos sutiles */
             background-image: radial-gradient(#E2DCD0 1.5px, transparent 1.5px);
             background-size: 24px 24px;
             color: var(--text); 
@@ -216,16 +215,14 @@
             cursor: pointer;
             font-size: 1.4rem;
             color: transparent;
-            text-shadow: 0 0 0 #CBD5E1; /* Color gris por defecto (vacía) */
+            text-shadow: 0 0 0 #CBD5E1; 
             transition: transform 0.2s;
             user-select: none;
-            /* Se usa background-clip para el efecto de llenado */
             -webkit-background-clip: text;
             background-clip: text;
             background-color: #CBD5E1; 
         }
         .estrella-interactiva:hover { transform: scale(1.25); }
-        /* Clases auxiliares para el pintado por JS */
         .estrella-llena {
             text-shadow: none;
             background-color: var(--top);
@@ -415,7 +412,7 @@
     <div id="tab-tostadores" class="hidden">
         <div class="panel" style="margin-bottom: 20px; padding: 15px;">
             <div class="panel-header-flex" style="margin-bottom: 10px;">
-                <h2 class="panel-title">Tostadores</h2>
+                <h2 class="panel-title">Tostadores Nacionales</h2>
                 <span id="contador-tostadores" class="badge-count">...</span>
             </div>
             <select id="select-ciudad-tostadores" class="input-moderno" style="margin-bottom: 0;" onchange="renderizarTostadores()"></select>
@@ -683,21 +680,22 @@
         }
     }
 
-    // ==========================================
-    // SECCIÓN TOSTADORES (Con Imágenes)
-    // ==========================================
+    // SECCIÓN TOSTADORES CON TRAFORMACIÓN AUTOMÁTICA DE MAYÚSCULAS (Evita el fallo de lectura)
     async function cargarTostadores() {
         Papa.parse(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${TOSTADORES_GID}&v=${new Date().getTime()}`, {
             download: true, 
             header: true, 
             skipEmptyLines: true,
+            transformHeader: function(header) {
+                return header.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            },
             complete: function(res) {
                 tostadores = res.data.map(f => ({
-                    nombre: f.TOSTADOR || f.Tostador,
-                    ig: f.INSTAGRAM || f.Instagram || "#",
-                    tienda: f['Tienda ONLINE'] || f['TIENDA ONLINE'] || f.Tienda || f.TIENDA || "#",
-                    ciudad: f.CIUDAD || f.Ciudad || "Varias",
-                    foto: f.IMAGEN || f.Imagen || f.IMAGENES || f.Imagenes || null // NUEVA COLUMNA
+                    nombre: f.TOSTADOR || f.TOSTADORES || f.NOMBRE,
+                    ig: f.INSTAGRAM || f.IG || "#",
+                    tienda: f['TIENDA ONLINE'] || f.TIENDA || f.LINK || "#",
+                    ciudad: f.CIUDAD || "Varias",
+                    foto: f.IMAGENES || f.IMAGEN || f.FOTO || f.FOTOS || null
                 })).filter(t => t.nombre); 
 
                 const select = document.getElementById('select-ciudad-tostadores');
@@ -745,11 +743,10 @@
             contenedor.appendChild(tituloCiudad);
 
             gruposPorCiudad[ciudad].forEach(t => {
-                // Si no hay foto, pone una de granos de café por defecto
                 const imgUrl = t.foto ? t.foto : 'https://images.unsplash.com/photo-1559525839-b184a4d698c7?w=600';
                 
                 const div = document.createElement('div'); 
-                div.className = 'event-card'; // Usamos la clase de las tarjetas de cursos
+                div.className = 'event-card'; 
                 div.innerHTML = `
                     <img src="${imgUrl}" class="event-img" onerror="this.src='https://images.unsplash.com/photo-1559525839-b184a4d698c7?w=600'">
                     <div class="event-content">
@@ -767,9 +764,6 @@
         });
     }
 
-    // ==========================================
-    // SECCIÓN EVENTOS Y CURSOS
-    // ==========================================
     async function cargarEventos() {
         Papa.parse(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${EVENTOS_GID}&v=${new Date().getTime()}`, {
             download: true, 
@@ -883,47 +877,6 @@
                 `;
                 contenedor.appendChild(div);
             });
-        });
-    }
-
-    function calcularDiasRestantes(fechaOrdenStr) {
-        if (!fechaOrdenStr || fechaOrdenStr === "9999-12-31") return "";
-        const hoy = new Date(); 
-        hoy.setHours(0, 0, 0, 0);
-        const partes = fechaOrdenStr.split('-');
-        const diffDias = Math.floor((new Date(partes[0], partes[1] - 1, partes[2]) - hoy) / (1000 * 60 * 60 * 24));
-        
-        if (diffDias > 1) return `<span class="event-badge">Faltan ${diffDias} días</span>`;
-        if (diffDias === 1) return `<span class="event-badge">¡Falta 1 día!</span>`;
-        if (diffDias === 0) return `<span class="event-badge today">¡Es hoy! 🎉</span>`;
-        return `<span class="event-badge passed">Finalizado</span>`;
-    }
-
-    function renderizarEventos() {
-        const contenedor = document.getElementById('lista-eventos'); 
-        contenedor.innerHTML = "";
-        
-        if (eventos.length === 0) {
-            contenedor.innerHTML = `<p style="color:#64748B; font-weight:500;">No hay eventos agendados próximamente.</p>`;
-            return;
-        }
-        
-        eventos.forEach(e => {
-            const imgUrl = e.foto ? e.foto : 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600';
-            const div = document.createElement('div'); 
-            div.className = 'event-card';
-            div.innerHTML = `
-                <img src="${imgUrl}" class="event-img" onerror="this.src='https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600'">
-                <div class="event-content">
-                    <div>
-                        <div class="event-date"><span>📅 ${e.fecha} • 📍 ${e.ciudad}</span>${calcularDiasRestantes(e.fechaOrden)}</div>
-                        <h3 class="event-title">${e.titulo}</h3>
-                        <p class="event-desc">${e.desc}</p>
-                    </div>
-                    <a href="${e.link}" target="_blank" class="event-link">Más Información</a>
-                </div>
-            `;
-            contenedor.appendChild(div);
         });
     }
 
@@ -1164,9 +1117,6 @@
         return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
 
-    // ==========================================
-    // LOGICA DEL SIDEBAR Y NAVEGACIÓN
-    // ==========================================
     function toggleMenu() {
         document.getElementById('sidebar').classList.toggle('abierto');
         document.getElementById('sidebar-overlay').classList.toggle('activo');
@@ -1214,9 +1164,6 @@
         });
     }
 
-    // ==========================================
-    // MODALES SECUNDARIOS (REPORTES)
-    // ==========================================
     async function abrirReporte() {
         const { value: formValues } = await Swal.fire({
             title: 'Reportar Novedad', 
@@ -1307,9 +1254,6 @@
         }
     }
 
-    // ==========================================
-    // LÓGICA DE COFI
-    // ==========================================
     function abrirBienvenidaCofi() {
         const imagenesCofi = [
             'https://i.postimg.cc/tCPMV008/1779904711534-removebg-preview.png', 
@@ -1389,9 +1333,6 @@
         });
     }
 
-    // ==========================================
-    // LOGICA DEL NEWSLETTER
-    // ==========================================
     document.addEventListener('DOMContentLoaded', () => {
         if (localStorage.getItem('cofi_suscrito') === 'true') {
             const container = document.getElementById('newsletter-form-container');
