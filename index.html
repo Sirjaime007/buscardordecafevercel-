@@ -210,9 +210,31 @@
         .cafe-title { margin: 0; font-size: 1.3rem; font-weight: 800; color: var(--text); }
         .puntuacion-box { color: var(--top); font-weight: 800; font-size: 0.9rem; margin: 6px 0; display: flex; align-items: center; gap: 4px; }
         
+        /* ESTILOS PARA ESTRELLAS CON RELLENO PARCIAL */
         .estrellas-voto { display: flex; gap: 6px; margin-top: 12px; }
-        .estrellas-voto span { cursor: pointer; font-size: 1.4rem; filter: grayscale(1); transition: transform 0.2s; user-select: none; }
-        .estrellas-voto span:hover { filter: grayscale(0); transform: scale(1.25); }
+        .estrella-interactiva {
+            cursor: pointer;
+            font-size: 1.4rem;
+            color: transparent;
+            text-shadow: 0 0 0 #CBD5E1; /* Color gris por defecto (vacía) */
+            transition: transform 0.2s;
+            user-select: none;
+            /* Se usa background-clip para el efecto de llenado */
+            -webkit-background-clip: text;
+            background-clip: text;
+            background-color: #CBD5E1; 
+        }
+        .estrella-interactiva:hover { transform: scale(1.25); }
+        /* Clases auxiliares para el pintado por JS */
+        .estrella-llena {
+            text-shadow: none;
+            background-color: var(--top);
+        }
+        .estrella-media {
+            text-shadow: none;
+            background-image: linear-gradient(to right, var(--top) 50%, #CBD5E1 50%);
+            background-color: transparent;
+        }
 
         .links { display: flex; flex-direction: column; gap: 10px; min-width: 140px; }
         .links a { 
@@ -331,12 +353,9 @@
         <a href="#" class="nav-link" data-tab="eventos" onclick="cambiarPestaña('eventos'); return false;">📅 Eventos</a>
         <a href="#" class="nav-link" data-tab="cursos" onclick="cambiarPestaña('cursos'); return false;">🎓 Cursos</a>
         <hr>
-        <a href="#" class="nav-link" data-tab="tostadores" onclick="cambiarPestaña('tostadores'); return false;">Tostadores</a>
+        <a href="#" class="nav-link" data-tab="tostadores" onclick="cambiarPestaña('tostadores'); return false;">📦 Tostadores Nacionales</a>
         <a href="#" class="nav-link" data-tab="running" onclick="cambiarPestaña('running'); return false;">🏃‍♂️ Running y Cafecito</a>
         <a href="#" class="nav-link" data-tab="newsletter" onclick="cambiarPestaña('newsletter'); return false;">💌 Mi Newsletter</a>
-        <hr>
-        <a href="#" class="nav-link" data-tab="favoritos" onclick="cambiarPestaña('favoritos'); return false;">⭐ Mis Favoritos</a>
-        <a href="#" class="nav-link" data-tab="logros" onclick="cambiarPestaña('logros'); return false;">🏆 Logros de Ciudad</a>
     </div>
     
     <div class="sidebar-footer">
@@ -396,7 +415,7 @@
     <div id="tab-tostadores" class="hidden">
         <div class="panel" style="margin-bottom: 20px; padding: 15px;">
             <div class="panel-header-flex" style="margin-bottom: 10px;">
-                <h2 class="panel-title">Tostadores</h2>
+                <h2 class="panel-title">Tostadores Nacionales</h2>
                 <span id="contador-tostadores" class="badge-count">...</span>
             </div>
             <select id="select-ciudad-tostadores" class="input-moderno" style="margin-bottom: 0;" onchange="renderizarTostadores()"></select>
@@ -446,20 +465,6 @@
                     <button class="btn-accion btn-primary-gps" style="margin-top: 0;" onclick="suscribirNewsletter()">¡Anotarme!</button>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <div id="tab-favoritos" class="hidden">
-        <div class="panel">
-            <h2 class="panel-title">⭐ Mis Favoritos</h2>
-            <p style="color:#64748B; font-size: 0.9rem; margin-top: 10px;">Próximamente: Acá irán apareciendo los locales que guardes para tenerlos siempre a mano y armar tus propias rutas.</p>
-        </div>
-    </div>
-
-    <div id="tab-logros" class="hidden">
-        <div class="panel">
-            <h2 class="panel-title">🏆 Logros de la Ciudad</h2>
-            <p style="color:#64748B; font-size: 0.9rem; margin-top: 10px;">Próximamente: Desbloqueá medallas y beneficios visitando diferentes cafeterías de especialidad en tu ciudad.</p>
         </div>
     </div>
 
@@ -559,16 +564,37 @@
         }
     }
 
-    // NUEVO SISTEMA DE VOTACIÓN INTERACTIVO (Medias Estrellas)
+    // LÓGICA DE VOTACIÓN CON MEDIAS ESTRELLAS
+    function mostrarVotoPreview(e, idBase, val) {
+        const rect = e.target.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const estrellas = document.querySelectorAll(`[data-base="${idBase}"] .estrella-interactiva`);
+        
+        let valorHover = (x < rect.width / 2) ? val - 0.5 : val;
+
+        estrellas.forEach((s, i) => {
+            const index = i + 1;
+            s.classList.remove('estrella-llena', 'estrella-media');
+            
+            if (index <= valorHover) {
+                s.classList.add('estrella-llena');
+            } else if (index === valorHover + 0.5) {
+                s.classList.add('estrella-media');
+            }
+        });
+    }
+
+    function resetearVotoPreview(idBase) {
+        const estrellas = document.querySelectorAll(`[data-base="${idBase}"] .estrella-interactiva`);
+        estrellas.forEach(s => {
+            s.classList.remove('estrella-llena', 'estrella-media');
+        });
+    }
+
     function calcularVoto(e, nombre, baseVal) {
         const rect = e.target.getBoundingClientRect();
         const x = e.clientX - rect.left;
-        
-        // Si clickea en la mitad izquierda, es .5 menos. Si no, entero.
-        let voto = baseVal;
-        if (x < rect.width / 2) {
-            voto = baseVal - 0.5;
-        }
+        let voto = (x < rect.width / 2) ? baseVal - 0.5 : baseVal;
 
         Swal.fire({
             title: `¿Votar ${voto} estrellas?`,
@@ -657,6 +683,9 @@
         }
     }
 
+    // ==========================================
+    // SECCIÓN TOSTADORES (Con Imágenes)
+    // ==========================================
     async function cargarTostadores() {
         Papa.parse(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${TOSTADORES_GID}&v=${new Date().getTime()}`, {
             download: true, 
@@ -667,7 +696,8 @@
                     nombre: f.TOSTADOR || f.Tostador,
                     ig: f.INSTAGRAM || f.Instagram || "#",
                     tienda: f['Tienda ONLINE'] || f['TIENDA ONLINE'] || f.Tienda || f.TIENDA || "#",
-                    ciudad: f.CIUDAD || f.Ciudad || "Varias"
+                    ciudad: f.CIUDAD || f.Ciudad || "Varias",
+                    foto: f.IMAGEN || f.Imagen || f.IMAGENES || f.Imagenes || null // NUEVA COLUMNA
                 })).filter(t => t.nombre); 
 
                 const select = document.getElementById('select-ciudad-tostadores');
@@ -715,17 +745,21 @@
             contenedor.appendChild(tituloCiudad);
 
             gruposPorCiudad[ciudad].forEach(t => {
+                // Si no hay foto, pone una de granos de café por defecto
+                const imgUrl = t.foto ? t.foto : 'https://images.unsplash.com/photo-1559525839-b184a4d698c7?w=600';
+                
                 const div = document.createElement('div'); 
-                div.className = 'cafe-card';
-                div.style.flexDirection = 'column';
-                div.style.alignItems = 'flex-start';
+                div.className = 'event-card'; // Usamos la clase de las tarjetas de cursos
                 div.innerHTML = `
-                    <div class="cafe-info" style="width: 100%; margin-bottom: 15px;">
-                        <h3 class="cafe-title" style="margin-bottom: 5px;">${t.nombre}</h3>
-                    </div>
-                    <div class="links" style="width: 100%; flex-direction: row; gap: 10px;">
-                        <a href="${t.ig}" target="_blank" style="flex: 1; border: 2px solid var(--border); background: transparent;">Instagram</a>
-                        <a href="${t.tienda}" target="_blank" style="flex: 1; background: var(--primary); color: white; border-color: var(--primary);">Tienda Online</a>
+                    <img src="${imgUrl}" class="event-img" onerror="this.src='https://images.unsplash.com/photo-1559525839-b184a4d698c7?w=600'">
+                    <div class="event-content">
+                        <div>
+                            <h3 class="event-title" style="margin-bottom: 15px;">${t.nombre}</h3>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-direction: column;">
+                            <a href="${t.ig}" target="_blank" class="event-link" style="background: transparent; border: 2px solid var(--border); color: var(--text);">Instagram</a>
+                            <a href="${t.tienda}" target="_blank" class="event-link">Tienda Online</a>
+                        </div>
                     </div>
                 `;
                 contenedor.appendChild(div);
@@ -733,6 +767,9 @@
         });
     }
 
+    // ==========================================
+    // SECCIÓN EVENTOS Y CURSOS
+    // ==========================================
     async function cargarEventos() {
         Papa.parse(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${EVENTOS_GID}&v=${new Date().getTime()}`, {
             download: true, 
@@ -945,7 +982,6 @@
                 textoDistancia = cuadras === 0 ? ` • <span style="color:var(--accent); font-weight:800;">¡A menos de 1 cuadra! 📍</span>` : ` • <span style="color:var(--accent); font-weight:800;">A ${cuadras} ${cuadras === 1 ? 'cuadra' : 'cuadras'} 📍</span>`;
             }
             
-            // SE INYECTA EL NOMBRE LIMPIO ESCAPADO PARA EVITAR ERRORES EN JS
             const nombreLimpio = c.nombre.replace(/'/g, "\\'");
 
             const div = document.createElement('div'); 
@@ -955,12 +991,12 @@
                     <h3 class="cafe-title">${c.nombre} ${c.esTop ? '★' : ''}</h3>
                     <p class="puntuacion-box">${stats}</p>
                     <p style="font-size:0.85rem; color:#64748B;">${c.ubicacion} • <b>${c.ciudad}</b>${textoDistancia}</p>
-                    <div class="estrellas-voto" title="Votar (Clic en la izquierda para medio punto)">
-                        <span onclick="calcularVoto(event, '${nombreLimpio}', 1)">⭐</span>
-                        <span onclick="calcularVoto(event, '${nombreLimpio}', 2)">⭐</span>
-                        <span onclick="calcularVoto(event, '${nombreLimpio}', 3)">⭐</span>
-                        <span onclick="calcularVoto(event, '${nombreLimpio}', 4)">⭐</span>
-                        <span onclick="calcularVoto(event, '${nombreLimpio}', 5)">⭐</span>
+                    <div class="estrellas-voto" data-base="${nombreLimpio}" onmouseleave="resetearVotoPreview('${nombreLimpio}')">
+                        <span class="estrella-interactiva" onmousemove="mostrarVotoPreview(event, '${nombreLimpio}', 1)" onclick="calcularVoto(event, '${nombreLimpio}', 1)">⭐</span>
+                        <span class="estrella-interactiva" onmousemove="mostrarVotoPreview(event, '${nombreLimpio}', 2)" onclick="calcularVoto(event, '${nombreLimpio}', 2)">⭐</span>
+                        <span class="estrella-interactiva" onmousemove="mostrarVotoPreview(event, '${nombreLimpio}', 3)" onclick="calcularVoto(event, '${nombreLimpio}', 3)">⭐</span>
+                        <span class="estrella-interactiva" onmousemove="mostrarVotoPreview(event, '${nombreLimpio}', 4)" onclick="calcularVoto(event, '${nombreLimpio}', 4)">⭐</span>
+                        <span class="estrella-interactiva" onmousemove="mostrarVotoPreview(event, '${nombreLimpio}', 5)" onclick="calcularVoto(event, '${nombreLimpio}', 5)">⭐</span>
                     </div>
                 </div>
                 <div class="links">
@@ -1137,7 +1173,7 @@
     }
 
     function cambiarPestaña(tab) {
-        ['lista', 'mapa', 'running', 'eventos', 'cursos', 'tostadores', 'newsletter', 'favoritos', 'logros'].forEach(t => {
+        ['lista', 'mapa', 'running', 'eventos', 'cursos', 'tostadores', 'newsletter'].forEach(t => {
             const el = document.getElementById('tab-' + t);
             if(el) el.classList.toggle('hidden', t !== tab);
         });
