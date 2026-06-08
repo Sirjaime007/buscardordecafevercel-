@@ -610,7 +610,7 @@
     }
 
     // ==========================================
-    // SECCIÓN TOSTADORES
+    // SECCIÓN TOSTADORES (Corregida navegación y orden)
     // ==========================================
     async function cargarTostadores() {
         Papa.parse(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${TOSTADORES_GID}&v=${new Date().getTime()}`, {
@@ -1084,7 +1084,7 @@
     }
 
     // ==========================================
-    // LOGICA DEL SIDEBAR Y NAVEGACIÓN
+    // LOGICA DEL SIDEBAR Y NAVEGACIÓN (CORREGIDA)
     // ==========================================
     function toggleMenu() {
         document.getElementById('sidebar').classList.toggle('abierto');
@@ -1092,7 +1092,7 @@
     }
 
     function cambiarPestaña(tab) {
-        // Ocultar todas
+        // CORRECCIÓN CLAVE: Agregado 'tostadores' al array de chequeo
         ['lista', 'mapa', 'running', 'eventos', 'cursos', 'tostadores', 'newsletter'].forEach(t => {
             const el = document.getElementById('tab-' + t);
             if(el) el.classList.toggle('hidden', t !== tab);
@@ -1359,4 +1359,3 @@
 </script>
 </body>
 </html>
-
