@@ -31,7 +31,8 @@
     <style>
         :root { 
             --primary: #5D4037; 
-            --bg: #F8FAFC; 
+            /* NUEVO FONDO: Un tono crema/latte muy sutil y elegante */
+            --bg: #FAF8F5; 
             --card: #FFFFFF; 
             --text: #1E293B; 
             --border: #E2E8F0; 
@@ -72,7 +73,7 @@
             display: flex; 
             align-items: center; 
             justify-content: space-between; 
-            margin-bottom: 25px; 
+            margin-bottom: 20px; 
             padding-top: 10px; 
         }
         .btn-menu { 
@@ -102,6 +103,11 @@
         }
         .spacer { width: 44px; } 
 
+        /* PESTAÑAS FRONTALES (Restauradas) */
+        .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
+        .tab-btn { background: #E2E8F0; border: none; padding: 12px 18px; font-weight: 700; border-radius: 12px; cursor: pointer; color: #475569; font-size: 0.85rem; transition: all 0.2s; }
+        .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(93, 64, 55, 0.2); }
+
         /* ESTILOS DEL SIDEBAR */
         .sidebar-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
@@ -120,7 +126,7 @@
         .sidebar-header { 
             padding: 25px 20px; border-bottom: 1px solid var(--border); 
             display: flex; justify-content: space-between; align-items: center; 
-            background: var(--bg); 
+            background: var(--card); 
         }
         .sidebar-header h2 { margin: 0; font-weight: 800; font-size: 1.2rem; color: var(--text); }
         
@@ -141,7 +147,7 @@
             transition: 0.2s; display: flex; align-items: center; gap: 12px; 
         }
         .sidebar-links a:hover, .sidebar-links a.active { 
-            background: #F1F5F9; border-left-color: var(--primary); color: var(--primary); 
+            background: var(--bg); border-left-color: var(--primary); color: var(--primary); 
         }
         .sidebar-links hr { border: 0; border-top: 1px solid var(--border); margin: 15px 20px; }
         
@@ -204,7 +210,7 @@
 
         .links { display: flex; flex-direction: column; gap: 10px; min-width: 140px; }
         .links a { 
-            background: white; color: var(--text); text-decoration: none; padding: 12px; 
+            background: var(--bg); color: var(--text); text-decoration: none; padding: 12px; 
             border-radius: 10px; font-size: 0.9rem; font-weight: 700; text-align: center; 
             border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s; 
         }
@@ -319,10 +325,11 @@
     <div class="sidebar-links">
         <a href="#" class="nav-link active" data-tab="lista" onclick="cambiarPestaña('lista'); return false;">☕ Explorar Cafés</a>
         <a href="#" class="nav-link" data-tab="mapa" onclick="cambiarPestaña('mapa'); return false;">🗺️ Mapa Federal</a>
-        <a href="#" class="nav-link" data-tab="eventos" onclick="cambiarPestaña('eventos'); return false;">📅 Agenda de Eventos</a>
-        <a href="#" class="nav-link" data-tab="cursos" onclick="cambiarPestaña('cursos'); return false;">🎓 Cursos y Formación</a>
-        <a href="#" class="nav-link" data-tab="running" onclick="cambiarPestaña('running'); return false;">🏃‍♂️ Running y Cafecito</a>
+        <a href="#" class="nav-link" data-tab="eventos" onclick="cambiarPestaña('eventos'); return false;">📅 Eventos</a>
+        <a href="#" class="nav-link" data-tab="cursos" onclick="cambiarPestaña('cursos'); return false;">🎓 Cursos</a>
         <hr>
+        <a href="#" class="nav-link" data-tab="tostadores" onclick="cambiarPestaña('tostadores'); return false;">🔥 Tostadores Nacionales</a>
+        <a href="#" class="nav-link" data-tab="running" onclick="cambiarPestaña('running'); return false;">🏃‍♂️ Running y Cafecito</a>
         <a href="#" class="nav-link" data-tab="newsletter" onclick="cambiarPestaña('newsletter'); return false;">💌 Mi Newsletter</a>
     </div>
     
@@ -341,6 +348,13 @@
         </div>
         <div class="spacer"></div>
     </header>
+
+    <div class="tabs">
+        <button class="tab-btn active" data-target="lista" onclick="cambiarPestaña('lista')">Explorar</button>
+        <button class="tab-btn" data-target="mapa" onclick="cambiarPestaña('mapa')">Mapa Federal</button>
+        <button class="tab-btn" data-target="eventos" onclick="cambiarPestaña('eventos')">📅 Eventos</button>
+        <button class="tab-btn" data-target="cursos" onclick="cambiarPestaña('cursos')">🎓 Cursos</button>
+    </div>
 
     <div id="tab-lista">
         <div class="panel">
@@ -364,7 +378,24 @@
     </div>
 
     <div id="tab-mapa" class="hidden">
+        <div style="display:flex; justify-content:center; gap:10px; margin-bottom:15px; flex-wrap:wrap; font-size:0.85rem; font-weight:700; padding: 10px; background: var(--card); border-radius: 12px; border: 1px solid var(--border);">
+            <span style="color:#059669;">● Excelente (4.5 a 5)</span>
+            <span style="color:#84CC16;">● Muy Bueno (4.0 a 4.4)</span>
+            <span style="color:#F59E0B;">● Bueno (3.0 a 3.9)</span>
+            <span style="color:#64748B;">● Color Base (Sin votos aún)</span>
+        </div>
         <div id="map" class="activo"></div>
+    </div>
+
+    <div id="tab-tostadores" class="hidden">
+        <div class="panel">
+            <div class="panel-header-flex">
+                <h2 class="panel-title">Tostadores Nacionales</h2>
+                <span id="contador-tostadores" class="badge-count">...</span>
+            </div>
+            <select id="select-ciudad-tostadores" class="input-moderno" style="margin-bottom: 0;" onchange="renderizarTostadores()"></select>
+        </div>
+        <div id="lista-tostadores" class="eventos-grid"></div>
     </div>
 
     <div id="tab-running" class="hidden">
@@ -444,6 +475,7 @@
     
     const EVENTOS_GID = "1650811704"; 
     const CURSOS_GID = "1424993305"; 
+    const TOSTADORES_GID = "1590442133"; // NUEVO GID DE TOSTADORES
 
     const PALETA_MARRONES = [
         '#3E2723', '#4E342E', '#5D4037', '#6D4C41', '#795548', 
@@ -460,10 +492,25 @@
         return PALETA_MARRONES[Math.abs(hash) % PALETA_MARRONES.length];
     }
 
+    // NUEVA FUNCIÓN: Color por puntaje de Supabase
+    function obtenerColorPorPuntaje(nombre, esTop) {
+        if (esTop) return '#D97706'; // Dorado para los TOP
+        
+        const prom = promedios[nombre];
+        if (!prom) return obtenerColorPorNombre(nombre); // Si no tiene votos, usa su color base
+        
+        const avg = parseFloat(prom.avg);
+        if (avg >= 4.5) return '#059669'; // Verde oscuro (Excelente)
+        if (avg >= 4.0) return '#84CC16'; // Verde claro (Muy Bueno)
+        if (avg >= 3.0) return '#F59E0B'; // Naranja (Bueno)
+        return '#EF4444'; // Rojo (Regular/Malo)
+    }
+
     let bd = []; 
     let promedios = {}; 
     let eventos = []; 
     let cursos = []; 
+    let tostadores = []; // NUEVA VARIABLE
     let mapaRunning, layerRunning, controlRuta;
 
     let mapaFederal = L.map('map').setView([-38.41, -63.61], 5);
@@ -510,6 +557,7 @@
             });
             await cargarPromedios(); 
             filtrarPorTexto();
+            dibujarMapaFederal(); // Actualizamos mapa para cambiar colores si aplica
         }
     }
 
@@ -517,6 +565,7 @@
         await cargarPromedios(); 
         await cargarEventos(); 
         await cargarCursos(); 
+        await cargarTostadores(); // CARGAMOS LOS TOSTADORES
         let completados = 0;
         
         for (const [ciu, gid] of Object.entries(GIDS)) {
@@ -560,6 +609,70 @@
         }
     }
 
+    // ==========================================
+    // SECCIÓN TOSTADORES
+    // ==========================================
+    async function cargarTostadores() {
+        Papa.parse(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${TOSTADORES_GID}&v=${new Date().getTime()}`, {
+            download: true, 
+            header: true, 
+            skipEmptyLines: true,
+            complete: function(res) {
+                tostadores = res.data.map(f => ({
+                    nombre: f.TOSTADOR || f.Tostador,
+                    ig: f.INSTAGRAM || f.Instagram || "#",
+                    tienda: f['Tienda ONLINE'] || f['TIENDA ONLINE'] || f.Tienda || f.TIENDA || "#",
+                    ciudad: f.CIUDAD || f.Ciudad || "Varias"
+                })).filter(t => t.nombre); // Solo guarda los que tienen nombre
+
+                const select = document.getElementById('select-ciudad-tostadores');
+                const ciudades = [...new Set(tostadores.map(t => t.ciudad))].sort();
+                
+                select.innerHTML = `<option value="Todas">Todas las ciudades (${tostadores.length})</option>`;
+                ciudades.forEach(c => {
+                    select.innerHTML += `<option value="${c}">${c} (${tostadores.filter(x => x.ciudad === c).length})</option>`;
+                });
+
+                document.getElementById('contador-tostadores').innerText = `${tostadores.length} tostadores`;
+                renderizarTostadores();
+            }
+        });
+    }
+
+    function renderizarTostadores() {
+        const contenedor = document.getElementById('lista-tostadores');
+        contenedor.innerHTML = "";
+        
+        const ciudadElegida = document.getElementById('select-ciudad-tostadores').value;
+        const filtrados = tostadores.filter(t => ciudadElegida === "Todas" || t.ciudad === ciudadElegida);
+
+        if (filtrados.length === 0) {
+            contenedor.innerHTML = `<p style="color:#64748B; font-weight:500;">Aún no tenemos tostadores cargados en esta ciudad.</p>`;
+            return;
+        }
+
+        filtrados.forEach(t => {
+            const div = document.createElement('div'); 
+            div.className = 'cafe-card';
+            div.style.flexDirection = 'column';
+            div.style.alignItems = 'flex-start';
+            div.innerHTML = `
+                <div class="cafe-info" style="width: 100%; margin-bottom: 15px;">
+                    <h3 class="cafe-title" style="margin-bottom: 5px;">🔥 ${t.nombre}</h3>
+                    <p style="font-size:0.85rem; color:#64748B; margin: 0;">📍 ${t.ciudad}</p>
+                </div>
+                <div class="links" style="width: 100%; flex-direction: row; gap: 10px;">
+                    <a href="${t.ig}" target="_blank" style="flex: 1; border: 2px solid var(--border); background: transparent;">Instagram</a>
+                    <a href="${t.tienda}" target="_blank" style="flex: 1; background: var(--primary); color: white; border-color: var(--primary);">Tienda Online</a>
+                </div>
+            `;
+            contenedor.appendChild(div);
+        });
+    }
+
+    // ==========================================
+    // SECCIÓN EVENTOS Y CURSOS
+    // ==========================================
     async function cargarEventos() {
         Papa.parse(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${EVENTOS_GID}&v=${new Date().getTime()}`, {
             download: true, 
@@ -748,7 +861,8 @@
             datos = datos.map(c => ({...c, dist: calcularD(origen.lat, origen.lon, c.lat, c.lon)})).sort((a,b) => a.dist - b.dist).slice(0, 15);
             
             datos.forEach(c => {
-                const color = c.esTop ? '#D97706' : obtenerColorPorNombre(c.nombre);
+                // EN EL RADAR TAMBIÉN USAMOS EL COLOR POR PUNTAJE
+                const color = obtenerColorPorPuntaje(c.nombre, c.esTop);
                 L.circleMarker([c.lat, c.lon], {
                     radius: c.esTop ? 9:7, color: color, fillColor: color, fillOpacity:0.9
                 }).addTo(layerRadar).bindPopup(`
@@ -961,19 +1075,25 @@
     }
 
     function cambiarPestaña(tab) {
-        // Mostrar/Ocultar Tabs
-        ['lista', 'mapa', 'running', 'eventos', 'cursos', 'newsletter'].forEach(t => {
+        // Ocultar todas
+        ['lista', 'mapa', 'running', 'eventos', 'cursos', 'tostadores', 'newsletter'].forEach(t => {
             const el = document.getElementById('tab-' + t);
             if(el) el.classList.toggle('hidden', t !== tab);
         });
         
-        // Actualizar visualmente el sidebar
+        // Actualizar sidebar (links del menú)
         document.querySelectorAll('.nav-link').forEach(link => {
             if(link.getAttribute('data-tab') === tab) link.classList.add('active');
             else link.classList.remove('active');
         });
 
-        // Cerrar el menú automáticamente
+        // Actualizar botones frontales (si existen para esa pestaña)
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            if(btn.getAttribute('data-target') === tab) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+
+        // Cerrar menú si está abierto
         if(document.getElementById('sidebar').classList.contains('abierto')) {
             toggleMenu();
         }
@@ -992,7 +1112,8 @@
     function dibujarMapaFederal() {
         layerFederal.clearLayers(); 
         bd.forEach(c => {
-            const color = c.esTop ? '#D97706' : obtenerColorPorNombre(c.nombre);
+            // AHORA USA LA FUNCIÓN DE PUNTAJES PARA EL COLOR
+            const color = obtenerColorPorPuntaje(c.nombre, c.esTop);
             const popupHtml = `<div class="popup-custom"><b>${c.nombre}</b><br><small>${c.ubicacion}</small><br><a href="${c.instagram}" target="_blank" class="popup-btn">Instagram</a></div>`;
             layerFederal.addLayer(L.circleMarker([c.lat, c.lon], { 
                 radius: c.esTop ? 8:5, color: color, fillColor: color, fillOpacity: 0.8 
@@ -1094,7 +1215,7 @@
     }
 
     // ==========================================
-    // LÓGICA DE COFI (CON TODOS SUS MENSAJES)
+    // LÓGICA DE COFI
     // ==========================================
     function abrirBienvenidaCofi() {
         const imagenesCofi = [
@@ -1109,7 +1230,6 @@
         const cofiFlotante = document.querySelector('.cofi-helper-container img');
         if (cofiFlotante) cofiFlotante.src = imagenElegida;
 
-        // ACÁ VOLVIERON TODOS LOS MENSAJES EXTENDIDOS
         let mensajes = [
             {
                 title: '¡Tip de Barista! ☕',
@@ -1133,14 +1253,13 @@
             }
         ];
 
-        // LÓGICA DEL PRÓXIMO EVENTO
         if (eventos && eventos.length > 0) {
             const proximoEvento = eventos[0]; 
             const mensajeEvento = {
                 title: '¡Hola! ¿Buscás un buen plan?',
                 html: `
                     <p style="font-size: 0.95rem; color: #64748B; margin-bottom: 15px;">Te sugiero este evento cafetero que se viene:</p>
-                    <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 15px; text-align: left; margin-bottom: 10px;">
+                    <div style="background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; text-align: left; margin-bottom: 10px;">
                         <strong style="color: var(--top); font-size: 0.85rem; text-transform: uppercase; display: block; margin-bottom: 4px;">📅 ${proximoEvento.fecha} • 📍 ${proximoEvento.ciudad}</strong>
                         <h4 style="margin: 0 0 6px 0; font-size: 1.15rem; color: var(--text); font-weight: 800;">${proximoEvento.titulo}</h4>
                         <p style="font-size: 0.85rem; margin: 0; color: #475569; line-height: 1.4;">${proximoEvento.desc.substring(0, 90)}...</p>
@@ -1151,7 +1270,7 @@
             };
             
             mensajes.push(mensajeEvento);
-            mensajes.push(mensajeEvento); // Doble chance de que salga el evento porque es importante
+            mensajes.push(mensajeEvento); 
         }
 
         const mensajeElegido = mensajes[Math.floor(Math.random() * mensajes.length)];
