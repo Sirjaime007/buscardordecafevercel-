@@ -8,6 +8,9 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#5D4037">
     
+    <meta name="apple-mobile-web-app-title" content="COFITECA">
+    <meta name="application-name" content="COFITECA">
+    
     <link rel="icon" type="image/png" href="https://i.postimg.cc/8zTgpkJD/13640-removebg-preview.png">
     <link rel="apple-touch-icon" href="https://i.postimg.cc/8zTgpkJD/13640-removebg-preview.png">
 
@@ -31,7 +34,6 @@
     <style>
         :root { 
             --primary: #5D4037; 
-            /* NUEVO FONDO: Un tono crema/latte muy sutil y elegante */
             --bg: #FAF8F5; 
             --card: #FFFFFF; 
             --text: #1E293B; 
@@ -103,7 +105,7 @@
         }
         .spacer { width: 44px; } 
 
-        /* PESTAÑAS FRONTALES (Restauradas) */
+        /* PESTAÑAS FRONTALES */
         .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
         .tab-btn { background: #E2E8F0; border: none; padding: 12px 18px; font-weight: 700; border-radius: 12px; cursor: pointer; color: #475569; font-size: 0.85rem; transition: all 0.2s; }
         .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(93, 64, 55, 0.2); }
@@ -328,7 +330,7 @@
         <a href="#" class="nav-link" data-tab="eventos" onclick="cambiarPestaña('eventos'); return false;">📅 Eventos</a>
         <a href="#" class="nav-link" data-tab="cursos" onclick="cambiarPestaña('cursos'); return false;">🎓 Cursos</a>
         <hr>
-        <a href="#" class="nav-link" data-tab="tostadores" onclick="cambiarPestaña('tostadores'); return false;">🔥 Tostadores Nacionales</a>
+        <a href="#" class="nav-link" data-tab="tostadores" onclick="cambiarPestaña('tostadores'); return false;">Tostadores</a>
         <a href="#" class="nav-link" data-tab="running" onclick="cambiarPestaña('running'); return false;">🏃‍♂️ Running y Cafecito</a>
         <a href="#" class="nav-link" data-tab="newsletter" onclick="cambiarPestaña('newsletter'); return false;">💌 Mi Newsletter</a>
     </div>
@@ -382,15 +384,15 @@
             <span style="color:#059669;">● Excelente (4.5 a 5)</span>
             <span style="color:#84CC16;">● Muy Bueno (4.0 a 4.4)</span>
             <span style="color:#F59E0B;">● Bueno (3.0 a 3.9)</span>
-            <span style="color:#64748B;">● Color Base (Sin votos aún)</span>
+            <span style="color:#64748B;">● Sin votos aún</span>
         </div>
         <div id="map" class="activo"></div>
     </div>
 
     <div id="tab-tostadores" class="hidden">
-        <div class="panel">
-            <div class="panel-header-flex">
-                <h2 class="panel-title">Tostadores Nacionales</h2>
+        <div class="panel" style="margin-bottom: 20px; padding: 15px;">
+            <div class="panel-header-flex" style="margin-bottom: 10px;">
+                <h2 class="panel-title">Tostadores</h2>
                 <span id="contador-tostadores" class="badge-count">...</span>
             </div>
             <select id="select-ciudad-tostadores" class="input-moderno" style="margin-bottom: 0;" onchange="renderizarTostadores()"></select>
@@ -475,7 +477,7 @@
     
     const EVENTOS_GID = "1650811704"; 
     const CURSOS_GID = "1424993305"; 
-    const TOSTADORES_GID = "1590442133"; // NUEVO GID DE TOSTADORES
+    const TOSTADORES_GID = "1590442133"; 
 
     const PALETA_MARRONES = [
         '#3E2723', '#4E342E', '#5D4037', '#6D4C41', '#795548', 
@@ -492,25 +494,23 @@
         return PALETA_MARRONES[Math.abs(hash) % PALETA_MARRONES.length];
     }
 
-    // NUEVA FUNCIÓN: Color por puntaje de Supabase
     function obtenerColorPorPuntaje(nombre, esTop) {
-        if (esTop) return '#D97706'; // Dorado para los TOP
-        
+        if (esTop) return '#D97706'; 
         const prom = promedios[nombre];
-        if (!prom) return obtenerColorPorNombre(nombre); // Si no tiene votos, usa su color base
+        if (!prom) return obtenerColorPorNombre(nombre); 
         
         const avg = parseFloat(prom.avg);
-        if (avg >= 4.5) return '#059669'; // Verde oscuro (Excelente)
-        if (avg >= 4.0) return '#84CC16'; // Verde claro (Muy Bueno)
-        if (avg >= 3.0) return '#F59E0B'; // Naranja (Bueno)
-        return '#EF4444'; // Rojo (Regular/Malo)
+        if (avg >= 4.5) return '#059669'; 
+        if (avg >= 4.0) return '#84CC16'; 
+        if (avg >= 3.0) return '#F59E0B'; 
+        return '#EF4444'; 
     }
 
     let bd = []; 
     let promedios = {}; 
     let eventos = []; 
     let cursos = []; 
-    let tostadores = []; // NUEVA VARIABLE
+    let tostadores = []; 
     let mapaRunning, layerRunning, controlRuta;
 
     let mapaFederal = L.map('map').setView([-38.41, -63.61], 5);
@@ -557,7 +557,7 @@
             });
             await cargarPromedios(); 
             filtrarPorTexto();
-            dibujarMapaFederal(); // Actualizamos mapa para cambiar colores si aplica
+            dibujarMapaFederal(); 
         }
     }
 
@@ -565,7 +565,7 @@
         await cargarPromedios(); 
         await cargarEventos(); 
         await cargarCursos(); 
-        await cargarTostadores(); // CARGAMOS LOS TOSTADORES
+        await cargarTostadores(); 
         let completados = 0;
         
         for (const [ciu, gid] of Object.entries(GIDS)) {
@@ -623,7 +623,7 @@
                     ig: f.INSTAGRAM || f.Instagram || "#",
                     tienda: f['Tienda ONLINE'] || f['TIENDA ONLINE'] || f.Tienda || f.TIENDA || "#",
                     ciudad: f.CIUDAD || f.Ciudad || "Varias"
-                })).filter(t => t.nombre); // Solo guarda los que tienen nombre
+                })).filter(t => t.nombre); 
 
                 const select = document.getElementById('select-ciudad-tostadores');
                 const ciudades = [...new Set(tostadores.map(t => t.ciudad))].sort();
@@ -651,22 +651,40 @@
             return;
         }
 
+        const gruposPorCiudad = {};
         filtrados.forEach(t => {
-            const div = document.createElement('div'); 
-            div.className = 'cafe-card';
-            div.style.flexDirection = 'column';
-            div.style.alignItems = 'flex-start';
-            div.innerHTML = `
-                <div class="cafe-info" style="width: 100%; margin-bottom: 15px;">
-                    <h3 class="cafe-title" style="margin-bottom: 5px;">🔥 ${t.nombre}</h3>
-                    <p style="font-size:0.85rem; color:#64748B; margin: 0;">📍 ${t.ciudad}</p>
-                </div>
-                <div class="links" style="width: 100%; flex-direction: row; gap: 10px;">
-                    <a href="${t.ig}" target="_blank" style="flex: 1; border: 2px solid var(--border); background: transparent;">Instagram</a>
-                    <a href="${t.tienda}" target="_blank" style="flex: 1; background: var(--primary); color: white; border-color: var(--primary);">Tienda Online</a>
-                </div>
-            `;
-            contenedor.appendChild(div);
+            if (!gruposPorCiudad[t.ciudad]) gruposPorCiudad[t.ciudad] = [];
+            gruposPorCiudad[t.ciudad].push(t);
+        });
+
+        Object.keys(gruposPorCiudad).sort().forEach(ciudad => {
+            const tituloCiudad = document.createElement('h3');
+            tituloCiudad.style.gridColumn = "1 / -1";
+            tituloCiudad.style.margin = "25px 0 10px 0";
+            tituloCiudad.style.fontSize = "1.4rem";
+            tituloCiudad.style.fontWeight = "800";
+            tituloCiudad.style.color = "var(--primary)";
+            tituloCiudad.style.borderBottom = "2px solid var(--border)";
+            tituloCiudad.style.paddingBottom = "6px";
+            tituloCiudad.innerHTML = `📍 Tostadores en ${ciudad}`;
+            contenedor.appendChild(tituloCiudad);
+
+            gruposPorCiudad[ciudad].forEach(t => {
+                const div = document.createElement('div'); 
+                div.className = 'cafe-card';
+                div.style.flexDirection = 'column';
+                div.style.alignItems = 'flex-start';
+                div.innerHTML = `
+                    <div class="cafe-info" style="width: 100%; margin-bottom: 15px;">
+                        <h3 class="cafe-title" style="margin-bottom: 5px;">${t.nombre}</h3>
+                    </div>
+                    <div class="links" style="width: 100%; flex-direction: row; gap: 10px;">
+                        <a href="${t.ig}" target="_blank" style="flex: 1; border: 2px solid var(--border); background: transparent;">Instagram</a>
+                        <a href="${t.tienda}" target="_blank" style="flex: 1; background: var(--primary); color: white; border-color: var(--primary);">Tienda Online</a>
+                    </div>
+                `;
+                contenedor.appendChild(div);
+            });
         });
     }
 
@@ -861,7 +879,6 @@
             datos = datos.map(c => ({...c, dist: calcularD(origen.lat, origen.lon, c.lat, c.lon)})).sort((a,b) => a.dist - b.dist).slice(0, 15);
             
             datos.forEach(c => {
-                // EN EL RADAR TAMBIÉN USAMOS EL COLOR POR PUNTAJE
                 const color = obtenerColorPorPuntaje(c.nombre, c.esTop);
                 L.circleMarker([c.lat, c.lon], {
                     radius: c.esTop ? 9:7, color: color, fillColor: color, fillOpacity:0.9
@@ -1112,7 +1129,6 @@
     function dibujarMapaFederal() {
         layerFederal.clearLayers(); 
         bd.forEach(c => {
-            // AHORA USA LA FUNCIÓN DE PUNTAJES PARA EL COLOR
             const color = obtenerColorPorPuntaje(c.nombre, c.esTop);
             const popupHtml = `<div class="popup-custom"><b>${c.nombre}</b><br><small>${c.ubicacion}</small><br><a href="${c.instagram}" target="_blank" class="popup-btn">Instagram</a></div>`;
             layerFederal.addLayer(L.circleMarker([c.lat, c.lon], { 
@@ -1343,3 +1359,4 @@
 </script>
 </body>
 </html>
+
