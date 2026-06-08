@@ -43,7 +43,10 @@
             --running: #ef4444; 
         }
         body { 
-            background-color: var(--bg); 
+            background-color: var(--bg);
+            /* PATRÓN DE FONDO: Micropuntos sutiles */
+            background-image: radial-gradient(#E2DCD0 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
             color: var(--text); 
             font-family: 'Inter', sans-serif; 
             margin: 0; 
@@ -70,7 +73,6 @@
 
         .container { max-width: 900px; margin: auto; }
         
-        /* HEADER MINIMALISTA Y MENÚ LATERAL */
         .header-main { 
             display: flex; 
             align-items: center; 
@@ -96,21 +98,24 @@
             letter-spacing: -1px; 
             line-height: 1.2; 
             color: var(--primary); 
+            text-shadow: 2px 2px 0px rgba(255,255,255,0.8);
         }
         .header-titles .subtitle { 
             color: #64748B; 
             font-size: 0.95rem; 
             margin-top: 6px; 
             font-weight: 500; 
+            background: rgba(255,255,255,0.7);
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 8px;
         }
         .spacer { width: 44px; } 
 
-        /* PESTAÑAS FRONTALES */
         .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
         .tab-btn { background: #E2E8F0; border: none; padding: 12px 18px; font-weight: 700; border-radius: 12px; cursor: pointer; color: #475569; font-size: 0.85rem; transition: all 0.2s; }
         .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(93, 64, 55, 0.2); }
 
-        /* ESTILOS DEL SIDEBAR */
         .sidebar-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.5); z-index: 10000; opacity: 0; 
@@ -158,10 +163,9 @@
             color: #94A3B8; border-top: 1px solid var(--border); 
         }
 
-        /* PANELES Y TARJETAS */
         .panel { 
             background: var(--card); padding: 25px; border-radius: 16px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04); margin-bottom: 20px; 
             border: 1px solid var(--border); 
         }
         .input-moderno { 
@@ -199,7 +203,7 @@
         .cafe-card { 
             background: var(--card); padding: 22px; border-radius: 16px; margin-bottom: 15px; 
             border: 1px solid var(--border); display: flex; justify-content: space-between; 
-            align-items: center; gap: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); transition: border-color 0.2s; 
+            align-items: center; gap: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); transition: border-color 0.2s; 
         }
         .cafe-card:hover { border-color: var(--primary); }
         .cafe-info { flex-grow: 1; }
@@ -207,7 +211,7 @@
         .puntuacion-box { color: var(--top); font-weight: 800; font-size: 0.9rem; margin: 6px 0; display: flex; align-items: center; gap: 4px; }
         
         .estrellas-voto { display: flex; gap: 6px; margin-top: 12px; }
-        .estrellas-voto span { cursor: pointer; font-size: 1.4rem; filter: grayscale(1); transition: transform 0.2s; }
+        .estrellas-voto span { cursor: pointer; font-size: 1.4rem; filter: grayscale(1); transition: transform 0.2s; user-select: none; }
         .estrellas-voto span:hover { filter: grayscale(0); transform: scale(1.25); }
 
         .links { display: flex; flex-direction: column; gap: 10px; min-width: 140px; }
@@ -221,7 +225,7 @@
         .eventos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 10px; }
         .event-card { 
             background: var(--card); border: 1px solid var(--border); border-radius: 16px; 
-            overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; flex-direction: column; 
+            overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.04); display: flex; flex-direction: column; 
         }
         .event-img { width: 100%; height: 160px; object-fit: cover; background-color: #e2e8f0; }
         .event-content { padding: 18px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
@@ -242,7 +246,6 @@
         .popup-custom { font-family: 'Inter', sans-serif; text-align: center; }
         .popup-btn { background: var(--primary); color: white !important; padding: 8px 12px; border-radius: 6px; text-decoration: none; display: inline-block; margin-top: 10px; font-weight: 700; font-size: 0.8rem; }
 
-        /* ESTILOS PREMIUM PARA LOS MODALES */
         .swal2-popup.swal-custom-popup { 
             border-radius: 24px !important; padding: 30px !important; border: 1px solid var(--border); 
             box-shadow: 0 10px 40px rgba(0,0,0,0.1) !important; font-family: 'Inter', sans-serif; 
@@ -264,7 +267,6 @@
         .swal2-styled.swal-custom-btn-confirm { background-color: var(--primary) !important; }
         .swal2-styled.swal-custom-btn-cancel { background-color: transparent !important; border: 2px solid var(--border) !important; color: #475569 !important; }
 
-        /* BOTONES FLOTANTES */
         .btn-flotante-reporte { 
             position: fixed; bottom: 20px; right: 20px; background: #1E293B; color: white; 
             border: none; padding: 14px 20px; border-radius: 30px; font-weight: 700; font-size: 0.9rem; 
@@ -278,7 +280,6 @@
             display: flex; align-items: center; gap: 8px; 
         }
 
-        /* MASCOTA COFI */
         .cofi-helper-container { 
             position: fixed; bottom: 90px; right: 25px; width: 130px; cursor: pointer; 
             z-index: 9996; text-align: center; 
@@ -333,6 +334,9 @@
         <a href="#" class="nav-link" data-tab="tostadores" onclick="cambiarPestaña('tostadores'); return false;">Tostadores</a>
         <a href="#" class="nav-link" data-tab="running" onclick="cambiarPestaña('running'); return false;">🏃‍♂️ Running y Cafecito</a>
         <a href="#" class="nav-link" data-tab="newsletter" onclick="cambiarPestaña('newsletter'); return false;">💌 Mi Newsletter</a>
+        <hr>
+        <a href="#" class="nav-link" data-tab="favoritos" onclick="cambiarPestaña('favoritos'); return false;">⭐ Mis Favoritos</a>
+        <a href="#" class="nav-link" data-tab="logros" onclick="cambiarPestaña('logros'); return false;">🏆 Logros de Ciudad</a>
     </div>
     
     <div class="sidebar-footer">
@@ -380,7 +384,7 @@
     </div>
 
     <div id="tab-mapa" class="hidden">
-        <div style="display:flex; justify-content:center; gap:10px; margin-bottom:15px; flex-wrap:wrap; font-size:0.85rem; font-weight:700; padding: 10px; background: var(--card); border-radius: 12px; border: 1px solid var(--border);">
+        <div style="display:flex; justify-content:center; gap:10px; margin-bottom:15px; flex-wrap:wrap; font-size:0.85rem; font-weight:700; padding: 10px; background: var(--card); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
             <span style="color:#059669;">● Excelente (4.5 a 5)</span>
             <span style="color:#84CC16;">● Muy Bueno (4.0 a 4.4)</span>
             <span style="color:#F59E0B;">● Bueno (3.0 a 3.9)</span>
@@ -442,6 +446,20 @@
                     <button class="btn-accion btn-primary-gps" style="margin-top: 0;" onclick="suscribirNewsletter()">¡Anotarme!</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div id="tab-favoritos" class="hidden">
+        <div class="panel">
+            <h2 class="panel-title">⭐ Mis Favoritos</h2>
+            <p style="color:#64748B; font-size: 0.9rem; margin-top: 10px;">Próximamente: Acá irán apareciendo los locales que guardes para tenerlos siempre a mano y armar tus propias rutas.</p>
+        </div>
+    </div>
+
+    <div id="tab-logros" class="hidden">
+        <div class="panel">
+            <h2 class="panel-title">🏆 Logros de la Ciudad</h2>
+            <p style="color:#64748B; font-size: 0.9rem; margin-top: 10px;">Próximamente: Desbloqueá medallas y beneficios visitando diferentes cafeterías de especialidad en tu ciudad.</p>
         </div>
     </div>
 
@@ -541,10 +559,40 @@
         }
     }
 
-    async function enviarVoto(nombre, puntos) {
+    // NUEVO SISTEMA DE VOTACIÓN INTERACTIVO (Medias Estrellas)
+    function calcularVoto(e, nombre, baseVal) {
+        const rect = e.target.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        
+        // Si clickea en la mitad izquierda, es .5 menos. Si no, entero.
+        let voto = baseVal;
+        if (x < rect.width / 2) {
+            voto = baseVal - 0.5;
+        }
+
+        Swal.fire({
+            title: `¿Votar ${voto} estrellas?`,
+            text: `Vas a calificar la experiencia en ${nombre}`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, enviar voto',
+            cancelButtonText: 'Cancelar',
+            customClass: { 
+                popup: 'swal-custom-popup', 
+                confirmButton: 'swal-custom-btn swal-custom-btn-confirm', 
+                cancelButton: 'swal-custom-btn swal-custom-btn-cancel' 
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                enviarVotoReal(nombre, voto);
+            }
+        });
+    }
+
+    async function enviarVotoReal(nombre, puntos) {
         const { error } = await _supabase.from('resenas').insert([{ cafe_nombre: nombre, estrellas: puntos }]);
         if (error) {
-            Swal.fire('Error', 'No se pudo registrar el voto', 'error');
+            Swal.fire('Error', 'No se pudo registrar el voto. Revisá la conexión.', 'error');
         } else {
             Swal.fire({ 
                 title: '¡Gracias!', 
@@ -609,9 +657,6 @@
         }
     }
 
-    // ==========================================
-    // SECCIÓN TOSTADORES (Corregida navegación y orden)
-    // ==========================================
     async function cargarTostadores() {
         Papa.parse(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${TOSTADORES_GID}&v=${new Date().getTime()}`, {
             download: true, 
@@ -688,9 +733,6 @@
         });
     }
 
-    // ==========================================
-    // SECCIÓN EVENTOS Y CURSOS
-    // ==========================================
     async function cargarEventos() {
         Papa.parse(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${EVENTOS_GID}&v=${new Date().getTime()}`, {
             download: true, 
@@ -903,6 +945,9 @@
                 textoDistancia = cuadras === 0 ? ` • <span style="color:var(--accent); font-weight:800;">¡A menos de 1 cuadra! 📍</span>` : ` • <span style="color:var(--accent); font-weight:800;">A ${cuadras} ${cuadras === 1 ? 'cuadra' : 'cuadras'} 📍</span>`;
             }
             
+            // SE INYECTA EL NOMBRE LIMPIO ESCAPADO PARA EVITAR ERRORES EN JS
+            const nombreLimpio = c.nombre.replace(/'/g, "\\'");
+
             const div = document.createElement('div'); 
             div.className = 'cafe-card';
             div.innerHTML = `
@@ -910,12 +955,12 @@
                     <h3 class="cafe-title">${c.nombre} ${c.esTop ? '★' : ''}</h3>
                     <p class="puntuacion-box">${stats}</p>
                     <p style="font-size:0.85rem; color:#64748B;">${c.ubicacion} • <b>${c.ciudad}</b>${textoDistancia}</p>
-                    <div class="estrellas-voto">
-                        <span onclick="enviarVoto('${c.nombre}', 1)">⭐</span>
-                        <span onclick="enviarVoto('${c.nombre}', 2)">⭐</span>
-                        <span onclick="enviarVoto('${c.nombre}', 3)">⭐</span>
-                        <span onclick="enviarVoto('${c.nombre}', 4)">⭐</span>
-                        <span onclick="enviarVoto('${c.nombre}', 5)">⭐</span>
+                    <div class="estrellas-voto" title="Votar (Clic en la izquierda para medio punto)">
+                        <span onclick="calcularVoto(event, '${nombreLimpio}', 1)">⭐</span>
+                        <span onclick="calcularVoto(event, '${nombreLimpio}', 2)">⭐</span>
+                        <span onclick="calcularVoto(event, '${nombreLimpio}', 3)">⭐</span>
+                        <span onclick="calcularVoto(event, '${nombreLimpio}', 4)">⭐</span>
+                        <span onclick="calcularVoto(event, '${nombreLimpio}', 5)">⭐</span>
                     </div>
                 </div>
                 <div class="links">
@@ -1084,7 +1129,7 @@
     }
 
     // ==========================================
-    // LOGICA DEL SIDEBAR Y NAVEGACIÓN (CORREGIDA)
+    // LOGICA DEL SIDEBAR Y NAVEGACIÓN
     // ==========================================
     function toggleMenu() {
         document.getElementById('sidebar').classList.toggle('abierto');
@@ -1092,25 +1137,21 @@
     }
 
     function cambiarPestaña(tab) {
-        // CORRECCIÓN CLAVE: Agregado 'tostadores' al array de chequeo
-        ['lista', 'mapa', 'running', 'eventos', 'cursos', 'tostadores', 'newsletter'].forEach(t => {
+        ['lista', 'mapa', 'running', 'eventos', 'cursos', 'tostadores', 'newsletter', 'favoritos', 'logros'].forEach(t => {
             const el = document.getElementById('tab-' + t);
             if(el) el.classList.toggle('hidden', t !== tab);
         });
         
-        // Actualizar sidebar (links del menú)
         document.querySelectorAll('.nav-link').forEach(link => {
             if(link.getAttribute('data-tab') === tab) link.classList.add('active');
             else link.classList.remove('active');
         });
 
-        // Actualizar botones frontales (si existen para esa pestaña)
         document.querySelectorAll('.tab-btn').forEach(btn => {
             if(btn.getAttribute('data-target') === tab) btn.classList.add('active');
             else btn.classList.remove('active');
         });
 
-        // Cerrar menú si está abierto
         if(document.getElementById('sidebar').classList.contains('abierto')) {
             toggleMenu();
         }
