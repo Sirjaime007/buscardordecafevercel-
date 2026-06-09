@@ -16,7 +16,7 @@
 
     <script defer src="/_vercel/insights/script.js"></script>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -91,22 +91,22 @@
         .btn-menu:active { transform: scale(0.9); }
         .header-titles { text-align: center; flex-grow: 1; }
         .header-titles h1 { 
-            font-size: 2.2rem; 
+            font-size: 2.8rem; /* Aumentado para mayor impacto */
             margin: 0; 
-            font-weight: 800; 
-            letter-spacing: -1px; 
-            line-height: 1.2; 
+            font-weight: 900; /* Extra bold */
+            letter-spacing: -1.5px; /* Más juntito */
+            line-height: 1.1; 
             color: var(--primary); 
-            text-shadow: 2px 2px 0px rgba(255,255,255,0.8);
+            text-shadow: 2px 2px 0px rgba(255,255,255,0.9);
         }
         .header-titles .subtitle { 
             color: #64748B; 
             font-size: 0.95rem; 
-            margin-top: 6px; 
+            margin-top: 8px; 
             font-weight: 500; 
             background: rgba(255,255,255,0.7);
             display: inline-block;
-            padding: 2px 8px;
+            padding: 4px 10px;
             border-radius: 8px;
         }
         .spacer { width: 44px; } 
@@ -209,29 +209,28 @@
         .cafe-title { margin: 0; font-size: 1.3rem; font-weight: 800; color: var(--text); }
         .puntuacion-box { color: var(--top); font-weight: 800; font-size: 0.9rem; margin: 6px 0; display: flex; align-items: center; gap: 4px; }
         
-        /* ESTILOS PARA ESTRELLAS CON RELLENO PARCIAL */
-        .estrellas-voto { display: flex; gap: 6px; margin-top: 12px; }
-        .estrella-interactiva {
+        /* ESTILOS PARA ESTRELLAS CON RELLENO PARCIAL DINÁMICO */
+        .estrellas-container {
+            display: inline-flex;
             cursor: pointer;
             font-size: 1.4rem;
-            color: transparent;
-            text-shadow: 0 0 0 #CBD5E1; 
-            transition: transform 0.2s;
+            position: relative;
+            margin-top: 8px;
+            color: #CBD5E1; /* Estrellas vacías por defecto */
             user-select: none;
-            -webkit-background-clip: text;
-            background-clip: text;
-            background-color: #CBD5E1; 
         }
-        .estrella-interactiva:hover { transform: scale(1.25); }
-        .estrella-llena {
-            text-shadow: none;
-            background-color: var(--top);
+        /* Contenedor que "pinta" las estrellas por encima */
+        .estrellas-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            color: var(--top);
+            width: 0%; /* Se actualiza con JS */
+            pointer-events: none; /* Que los clicks pasen al contenedor padre */
         }
-        .estrella-media {
-            text-shadow: none;
-            background-image: linear-gradient(to right, var(--top) 50%, #CBD5E1 50%);
-            background-color: transparent;
-        }
+        .estrellas-container:hover { transform: scale(1.05); transition: transform 0.2s; }
 
         .links { display: flex; flex-direction: column; gap: 10px; min-width: 140px; }
         .links a { 
@@ -264,6 +263,7 @@
 
         .popup-custom { font-family: 'Inter', sans-serif; text-align: center; }
         .popup-btn { background: var(--primary); color: white !important; padding: 8px 12px; border-radius: 6px; text-decoration: none; display: inline-block; margin-top: 10px; font-weight: 700; font-size: 0.8rem; }
+        .popup-estrellas { color: var(--top); font-weight: 800; font-size: 0.9rem; margin-top: 4px;}
 
         .swal2-popup.swal-custom-popup { 
             border-radius: 24px !important; padding: 30px !important; border: 1px solid var(--border); 
@@ -349,8 +349,8 @@
         <a href="#" class="nav-link" data-tab="mapa" onclick="cambiarPestaña('mapa'); return false;">🗺️ Mapa Federal</a>
         <a href="#" class="nav-link" data-tab="eventos" onclick="cambiarPestaña('eventos'); return false;">📅 Eventos</a>
         <a href="#" class="nav-link" data-tab="cursos" onclick="cambiarPestaña('cursos'); return false;">🎓 Cursos</a>
+        <a href="#" class="nav-link" data-tab="tostadores" onclick="cambiarPestaña('tostadores'); return false;">☕️ Tostadores</a>
         <hr>
-        <a href="#" class="nav-link" data-tab="tostadores" onclick="cambiarPestaña('tostadores'); return false;">📦 Tostadores Nacionales</a>
         <a href="#" class="nav-link" data-tab="running" onclick="cambiarPestaña('running'); return false;">🏃‍♂️ Running y Cafecito</a>
         <a href="#" class="nav-link" data-tab="newsletter" onclick="cambiarPestaña('newsletter'); return false;">💌 Mi Newsletter</a>
     </div>
@@ -376,6 +376,7 @@
         <button class="tab-btn" data-target="mapa" onclick="cambiarPestaña('mapa')">Mapa Federal</button>
         <button class="tab-btn" data-target="eventos" onclick="cambiarPestaña('eventos')">📅 Eventos</button>
         <button class="tab-btn" data-target="cursos" onclick="cambiarPestaña('cursos')">🎓 Cursos</button>
+        <button class="tab-btn" data-target="tostadores" onclick="cambiarPestaña('tostadores')">☕️ Tostadores</button>
     </div>
 
     <div id="tab-lista">
@@ -400,19 +401,13 @@
     </div>
 
     <div id="tab-mapa" class="hidden">
-        <div style="display:flex; justify-content:center; gap:10px; margin-bottom:15px; flex-wrap:wrap; font-size:0.85rem; font-weight:700; padding: 10px; background: var(--card); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
-            <span style="color:#059669;">● Excelente (4.5 a 5)</span>
-            <span style="color:#84CC16;">● Muy Bueno (4.0 a 4.4)</span>
-            <span style="color:#F59E0B;">● Bueno (3.0 a 3.9)</span>
-            <span style="color:#64748B;">● Sin votos aún</span>
-        </div>
         <div id="map" class="activo"></div>
     </div>
 
     <div id="tab-tostadores" class="hidden">
         <div class="panel" style="margin-bottom: 20px; padding: 15px;">
             <div class="panel-header-flex" style="margin-bottom: 10px;">
-                <h2 class="panel-title">Tostadores</h2>
+                <h2 class="panel-title">Tostadores Nacionales</h2>
                 <span id="contador-tostadores" class="badge-count">...</span>
             </div>
             <select id="select-ciudad-tostadores" class="input-moderno" style="margin-bottom: 0;" onchange="renderizarTostadores()"></select>
@@ -561,40 +556,44 @@
         }
     }
 
-    // LÓGICA DE VOTACIÓN CON MEDIAS ESTRELLAS
-    function mostrarVotoPreview(e, idBase, val) {
-        const rect = e.target.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const estrellas = document.querySelectorAll(`[data-base="${idBase}"] .estrella-interactiva`);
+    // FUNCIONES DE VOTACIÓN: Permiten elegir decimales de manera visual exacta
+    function manejarVotoInteractivo(e, idBase) {
+        const container = document.getElementById(`estrellas-${idBase}`);
+        const fill = document.getElementById(`fill-${idBase}`);
+        if(!container || !fill) return;
+
+        const rect = container.getBoundingClientRect();
+        // Calculamos el porcentaje donde está el cursor respecto al ancho total
+        let porcentaje = ((e.clientX - rect.left) / rect.width) * 100;
         
-        let valorHover = (x < rect.width / 2) ? val - 0.5 : val;
+        // Redondeamos el porcentaje a múltiplos de 10% (0.5 estrellas) o 20% (1 estrella) para el "snap"
+        // 5 estrellas = 100%, 1 estrella = 20%, 0.5 estrellas = 10%
+        let porcentajeAjustado = Math.ceil(porcentaje / 10) * 10;
+        if(porcentajeAjustado > 100) porcentajeAjustado = 100;
+        if(porcentajeAjustado < 10) porcentajeAjustado = 10;
 
-        estrellas.forEach((s, i) => {
-            const index = i + 1;
-            s.classList.remove('estrella-llena', 'estrella-media');
-            
-            if (index <= valorHover) {
-                s.classList.add('estrella-llena');
-            } else if (index === valorHover + 0.5) {
-                s.classList.add('estrella-media');
-            }
-        });
+        fill.style.width = `${porcentajeAjustado}%`;
     }
 
-    function resetearVotoPreview(idBase) {
-        const estrellas = document.querySelectorAll(`[data-base="${idBase}"] .estrella-interactiva`);
-        estrellas.forEach(s => {
-            s.classList.remove('estrella-llena', 'estrella-media');
-        });
+    function resetearVotoInteractivo(idBase) {
+        const fill = document.getElementById(`fill-${idBase}`);
+        if(fill) fill.style.width = '0%';
     }
 
-    function calcularVoto(e, nombre, baseVal) {
-        const rect = e.target.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        let voto = (x < rect.width / 2) ? baseVal - 0.5 : baseVal;
+    function ejecutarVoto(e, nombre, idBase) {
+        const container = document.getElementById(`estrellas-${idBase}`);
+        const fill = document.getElementById(`fill-${idBase}`);
+        if(!container || !fill) return;
+
+        // Obtenemos el porcentaje final
+        const widthVal = fill.style.width.replace('%', '');
+        let porcentaje = parseFloat(widthVal) || 0;
+        
+        // Convertimos el porcentaje (0 a 100) en estrellas (0.5 a 5.0)
+        let votoCalculado = (porcentaje / 100) * 5;
 
         Swal.fire({
-            title: `¿Votar ${voto} estrellas?`,
+            title: `¿Votar ${votoCalculado} estrellas?`,
             text: `Vas a calificar la experiencia en ${nombre}`,
             icon: 'question',
             showCancelButton: true,
@@ -607,7 +606,7 @@
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                enviarVotoReal(nombre, voto);
+                enviarVotoReal(nombre, votoCalculado);
             }
         });
     }
@@ -680,7 +679,6 @@
         }
     }
 
-    // SECCIÓN TOSTADORES CON TRAFORMACIÓN AUTOMÁTICA DE MAYÚSCULAS (Evita el fallo de lectura)
     async function cargarTostadores() {
         Papa.parse(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${TOSTADORES_GID}&v=${new Date().getTime()}`, {
             download: true, 
@@ -880,6 +878,47 @@
         });
     }
 
+    function calcularDiasRestantes(fechaOrdenStr) {
+        if (!fechaOrdenStr || fechaOrdenStr === "9999-12-31") return "";
+        const hoy = new Date(); 
+        hoy.setHours(0, 0, 0, 0);
+        const partes = fechaOrdenStr.split('-');
+        const diffDias = Math.floor((new Date(partes[0], partes[1] - 1, partes[2]) - hoy) / (1000 * 60 * 60 * 24));
+        
+        if (diffDias > 1) return `<span class="event-badge">Faltan ${diffDias} días</span>`;
+        if (diffDias === 1) return `<span class="event-badge">¡Falta 1 día!</span>`;
+        if (diffDias === 0) return `<span class="event-badge today">¡Es hoy! 🎉</span>`;
+        return `<span class="event-badge passed">Finalizado</span>`;
+    }
+
+    function renderizarEventos() {
+        const contenedor = document.getElementById('lista-eventos'); 
+        contenedor.innerHTML = "";
+        
+        if (eventos.length === 0) {
+            contenedor.innerHTML = `<p style="color:#64748B; font-weight:500;">No hay eventos agendados próximamente.</p>`;
+            return;
+        }
+        
+        eventos.forEach(e => {
+            const imgUrl = e.foto ? e.foto : 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600';
+            const div = document.createElement('div'); 
+            div.className = 'event-card';
+            div.innerHTML = `
+                <img src="${imgUrl}" class="event-img" onerror="this.src='https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600'">
+                <div class="event-content">
+                    <div>
+                        <div class="event-date"><span>📅 ${e.fecha} • 📍 ${e.ciudad}</span>${calcularDiasRestantes(e.fechaOrden)}</div>
+                        <h3 class="event-title">${e.titulo}</h3>
+                        <p class="event-desc">${e.desc}</p>
+                    </div>
+                    <a href="${e.link}" target="_blank" class="event-link">Más Información</a>
+                </div>
+            `;
+            contenedor.appendChild(div);
+        });
+    }
+
     function armarMenus() {
         const s1 = document.getElementById('select-ciudad'); 
         const s2 = document.getElementById('run-ciudad');
@@ -912,11 +951,14 @@
             
             datos.forEach(c => {
                 const color = obtenerColorPorPuntaje(c.nombre, c.esTop);
+                // ACÁ TAMBIÉN AGREGAMOS EL PUNTAJE AL POPUP DEL RADAR
+                const stats = promedios[c.nombre] ? `⭐ ${promedios[c.nombre].avg}` : "Sin votos";
                 L.circleMarker([c.lat, c.lon], {
                     radius: c.esTop ? 9:7, color: color, fillColor: color, fillOpacity:0.9
                 }).addTo(layerRadar).bindPopup(`
                     <div class="popup-custom">
                         <b>${c.nombre}</b><br>
+                        <span class="popup-estrellas">${stats}</span><br>
                         <small>${c.ubicacion}</small><br>
                         <a href="${c.instagram}" target="_blank" class="popup-btn">Instagram</a>
                     </div>
@@ -936,6 +978,7 @@
             }
             
             const nombreLimpio = c.nombre.replace(/'/g, "\\'");
+            const idUnico = 'stars-' + Math.random().toString(36).substr(2, 9);
 
             const div = document.createElement('div'); 
             div.className = 'cafe-card';
@@ -944,12 +987,9 @@
                     <h3 class="cafe-title">${c.nombre} ${c.esTop ? '★' : ''}</h3>
                     <p class="puntuacion-box">${stats}</p>
                     <p style="font-size:0.85rem; color:#64748B;">${c.ubicacion} • <b>${c.ciudad}</b>${textoDistancia}</p>
-                    <div class="estrellas-voto" data-base="${nombreLimpio}" onmouseleave="resetearVotoPreview('${nombreLimpio}')">
-                        <span class="estrella-interactiva" onmousemove="mostrarVotoPreview(event, '${nombreLimpio}', 1)" onclick="calcularVoto(event, '${nombreLimpio}', 1)">⭐</span>
-                        <span class="estrella-interactiva" onmousemove="mostrarVotoPreview(event, '${nombreLimpio}', 2)" onclick="calcularVoto(event, '${nombreLimpio}', 2)">⭐</span>
-                        <span class="estrella-interactiva" onmousemove="mostrarVotoPreview(event, '${nombreLimpio}', 3)" onclick="calcularVoto(event, '${nombreLimpio}', 3)">⭐</span>
-                        <span class="estrella-interactiva" onmousemove="mostrarVotoPreview(event, '${nombreLimpio}', 4)" onclick="calcularVoto(event, '${nombreLimpio}', 4)">⭐</span>
-                        <span class="estrella-interactiva" onmousemove="mostrarVotoPreview(event, '${nombreLimpio}', 5)" onclick="calcularVoto(event, '${nombreLimpio}', 5)">⭐</span>
+                    <div class="estrellas-container" id="${idUnico}" onmousemove="manejarVotoInteractivo(event, '${idUnico}')" onmouseleave="resetearVotoInteractivo('${idUnico}')" onclick="ejecutarVoto(event, '${nombreLimpio}', '${idUnico}')">
+                        ⭐⭐⭐⭐⭐
+                        <div class="estrellas-fill" id="fill-${idUnico}">⭐⭐⭐⭐⭐</div>
                     </div>
                 </div>
                 <div class="links">
@@ -1157,7 +1197,14 @@
         layerFederal.clearLayers(); 
         bd.forEach(c => {
             const color = obtenerColorPorPuntaje(c.nombre, c.esTop);
-            const popupHtml = `<div class="popup-custom"><b>${c.nombre}</b><br><small>${c.ubicacion}</small><br><a href="${c.instagram}" target="_blank" class="popup-btn">Instagram</a></div>`;
+            const stats = promedios[c.nombre] ? `⭐ ${promedios[c.nombre].avg}` : "Sin votos";
+            const popupHtml = `
+                <div class="popup-custom">
+                    <b>${c.nombre}</b><br>
+                    <span class="popup-estrellas">${stats}</span><br>
+                    <small>${c.ubicacion}</small><br>
+                    <a href="${c.instagram}" target="_blank" class="popup-btn">Instagram</a>
+                </div>`;
             layerFederal.addLayer(L.circleMarker([c.lat, c.lon], { 
                 radius: c.esTop ? 8:5, color: color, fillColor: color, fillOpacity: 0.8 
             }).bindPopup(popupHtml)); 
