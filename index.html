@@ -91,10 +91,10 @@
         .btn-menu:active { transform: scale(0.9); }
         .header-titles { text-align: center; flex-grow: 1; }
         .header-titles h1 { 
-            font-size: 2.8rem; /* Aumentado para mayor impacto */
+            font-size: 2.8rem; 
             margin: 0; 
-            font-weight: 900; /* Extra bold */
-            letter-spacing: -1.5px; /* Más juntito */
+            font-weight: 900; 
+            letter-spacing: -1.5px; 
             line-height: 1.1; 
             color: var(--primary); 
             text-shadow: 2px 2px 0px rgba(255,255,255,0.9);
@@ -209,17 +209,16 @@
         .cafe-title { margin: 0; font-size: 1.3rem; font-weight: 800; color: var(--text); }
         .puntuacion-box { color: var(--top); font-weight: 800; font-size: 0.9rem; margin: 6px 0; display: flex; align-items: center; gap: 4px; }
         
-        /* ESTILOS PARA ESTRELLAS CON RELLENO PARCIAL DINÁMICO */
+        .estrellas-voto { display: flex; gap: 6px; margin-top: 12px; }
         .estrellas-container {
             display: inline-flex;
             cursor: pointer;
             font-size: 1.4rem;
             position: relative;
             margin-top: 8px;
-            color: #CBD5E1; /* Estrellas vacías por defecto */
+            color: #CBD5E1; 
             user-select: none;
         }
-        /* Contenedor que "pinta" las estrellas por encima */
         .estrellas-fill {
             position: absolute;
             top: 0;
@@ -227,8 +226,8 @@
             white-space: nowrap;
             overflow: hidden;
             color: var(--top);
-            width: 0%; /* Se actualiza con JS */
-            pointer-events: none; /* Que los clicks pasen al contenedor padre */
+            width: 0%; 
+            pointer-events: none; 
         }
         .estrellas-container:hover { transform: scale(1.05); transition: transform 0.2s; }
 
@@ -299,6 +298,7 @@
             display: flex; align-items: center; gap: 8px; 
         }
 
+        /* WIDGET DE CHAT COFI */
         .cofi-helper-container { 
             position: fixed; bottom: 90px; right: 25px; width: 130px; cursor: pointer; 
             z-index: 9996; text-align: center; 
@@ -320,6 +320,48 @@
         }
         .cofi-helper-container:hover .cofi-bubble { opacity: 1; visibility: visible; }
 
+        #cofi-chat-widget {
+            position: fixed; bottom: 120px; right: 25px; width: 340px; max-height: 500px;
+            background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); display: flex; flex-direction: column;
+            z-index: 9999; overflow: hidden; opacity: 0; visibility: hidden; transition: 0.3s;
+            transform: translateY(20px);
+        }
+        #cofi-chat-widget.activo {
+            opacity: 1; visibility: visible; transform: translateY(0);
+        }
+        .chat-header {
+            background: var(--primary); color: white; padding: 15px; font-weight: 800;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .chat-header button {
+            background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;
+        }
+        .chat-body {
+            padding: 15px; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column;
+            gap: 10px; background: var(--bg); height: 280px;
+        }
+        .chat-msj {
+            font-size: 0.9rem; padding: 10px 14px; border-radius: 12px; line-height: 1.4;
+        }
+        .chat-msj.user {
+            background: #E2E8F0; align-self: flex-end; max-width: 80%; border-bottom-right-radius: 2px;
+        }
+        .chat-msj.cofi {
+            background: white; border: 1px solid var(--border); align-self: flex-start; max-width: 90%; border-bottom-left-radius: 2px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .chat-msj.error { color: #ef4444; border-color: #fecaca; background: #fef2f2; }
+        .chat-footer {
+            padding: 10px; border-top: 1px solid var(--border); display: flex; gap: 8px; background: white;
+        }
+        .chat-footer input {
+            flex-grow: 1; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; outline: none; font-family: 'Inter'; font-size: 0.9rem;
+        }
+        .chat-footer input:focus { border-color: var(--primary); }
+        .chat-footer button {
+            background: var(--primary); color: white; border: none; border-radius: 8px; padding: 0 15px; font-weight: 700; cursor: pointer;
+        }
+
         .hidden { display: none !important; }
         footer { margin-top: 50px; text-align: center; color: #64748B; border-top: 1px solid var(--border); padding: 30px 0 150px 0; font-size: 0.85rem; }
         .leaflet-routing-container { display: none !important; }
@@ -332,6 +374,7 @@
             .btn-flotante-reporte { bottom: 15px; right: 15px; left: auto; font-size: 0.8rem; padding: 12px 16px; } 
             .btn-flotante-sumate { bottom: 70px; right: 15px; left: auto; font-size: 0.8rem; padding: 12px 16px; } 
             .cofi-helper-container { bottom: 135px; right: 15px; width: 105px; }
+            #cofi-chat-widget { bottom: 0; right: 0; width: 100%; border-radius: 16px 16px 0 0; max-height: 80vh; }
         }
     </style>
 </head>
@@ -349,8 +392,8 @@
         <a href="#" class="nav-link" data-tab="mapa" onclick="cambiarPestaña('mapa'); return false;">🗺️ Mapa Federal</a>
         <a href="#" class="nav-link" data-tab="eventos" onclick="cambiarPestaña('eventos'); return false;">📅 Eventos</a>
         <a href="#" class="nav-link" data-tab="cursos" onclick="cambiarPestaña('cursos'); return false;">🎓 Cursos</a>
-        <a href="#" class="nav-link" data-tab="tostadores" onclick="cambiarPestaña('tostadores'); return false;">☕️ Tostadores</a>
         <hr>
+        <a href="#" class="nav-link" data-tab="tostadores" onclick="cambiarPestaña('tostadores'); return false;">☕️ Tostadores</a>
         <a href="#" class="nav-link" data-tab="running" onclick="cambiarPestaña('running'); return false;">🏃‍♂️ Running y Cafecito</a>
         <a href="#" class="nav-link" data-tab="newsletter" onclick="cambiarPestaña('newsletter'); return false;">💌 Mi Newsletter</a>
     </div>
@@ -467,8 +510,22 @@
     <button class="btn-flotante-reporte" onclick="abrirReporte()">💬 Reportar</button>
     <button class="btn-flotante-sumate" onclick="abrirSumate()">✨ ¡Sumar local!</button>
 
-    <div class="cofi-helper-container" onclick="abrirBienvenidaCofi()">
-        <div class="cofi-bubble">¡Hola! Haz clic</div>
+    <div id="cofi-chat-widget">
+        <div class="chat-header">
+            <span>☕ COFI</span>
+            <button onclick="toggleChatCofi()">✕</button>
+        </div>
+        <div class="chat-body" id="cofi-chat-history">
+            <div class="chat-msj cofi"><b>COFI:</b> ¡Hola! Soy el asistente de Cofiteca. Decime en qué ciudad estás y te ayudo a encontrar tu próximo café de especialidad.</div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="cofi-chat-input" placeholder="Preguntale algo a COFI..." onkeypress="if(event.key === 'Enter') enviarMensajeCofi()">
+            <button onclick="enviarMensajeCofi()">Enviar</button>
+        </div>
+    </div>
+
+    <div class="cofi-helper-container" onclick="toggleChatCofi()">
+        <div class="cofi-bubble">¡Hola! Escribime</div>
         <img src="https://i.postimg.cc/tCPMV008/1779904711534-removebg-preview.png" alt="COFI Asistente de Café">
     </div>
 </div>
@@ -556,18 +613,14 @@
         }
     }
 
-    // FUNCIONES DE VOTACIÓN: Permiten elegir decimales de manera visual exacta
     function manejarVotoInteractivo(e, idBase) {
         const container = document.getElementById(`estrellas-${idBase}`);
         const fill = document.getElementById(`fill-${idBase}`);
         if(!container || !fill) return;
 
         const rect = container.getBoundingClientRect();
-        // Calculamos el porcentaje donde está el cursor respecto al ancho total
         let porcentaje = ((e.clientX - rect.left) / rect.width) * 100;
         
-        // Redondeamos el porcentaje a múltiplos de 10% (0.5 estrellas) o 20% (1 estrella) para el "snap"
-        // 5 estrellas = 100%, 1 estrella = 20%, 0.5 estrellas = 10%
         let porcentajeAjustado = Math.ceil(porcentaje / 10) * 10;
         if(porcentajeAjustado > 100) porcentajeAjustado = 100;
         if(porcentajeAjustado < 10) porcentajeAjustado = 10;
@@ -585,11 +638,8 @@
         const fill = document.getElementById(`fill-${idBase}`);
         if(!container || !fill) return;
 
-        // Obtenemos el porcentaje final
         const widthVal = fill.style.width.replace('%', '');
         let porcentaje = parseFloat(widthVal) || 0;
-        
-        // Convertimos el porcentaje (0 a 100) en estrellas (0.5 a 5.0)
         let votoCalculado = (porcentaje / 100) * 5;
 
         Swal.fire({
@@ -951,7 +1001,6 @@
             
             datos.forEach(c => {
                 const color = obtenerColorPorPuntaje(c.nombre, c.esTop);
-                // ACÁ TAMBIÉN AGREGAMOS EL PUNTAJE AL POPUP DEL RADAR
                 const stats = promedios[c.nombre] ? `⭐ ${promedios[c.nombre].avg}` : "Sin votos";
                 L.circleMarker([c.lat, c.lon], {
                     radius: c.esTop ? 9:7, color: color, fillColor: color, fillOpacity:0.9
@@ -1301,83 +1350,56 @@
         }
     }
 
-    function abrirBienvenidaCofi() {
-        const imagenesCofi = [
-            'https://i.postimg.cc/tCPMV008/1779904711534-removebg-preview.png', 
-            'https://i.postimg.cc/hPVswwDr/1780436389315-removebg-preview.png',
-            'https://i.postimg.cc/7YrMgV37/1780436326622-removebg-preview.png',
-            'https://i.postimg.cc/K8JPhhds/1780436224561-removebg-preview.png'
-        ];
-
-        const imagenElegida = imagenesCofi[Math.floor(Math.random() * imagenesCofi.length)];
-        
-        const cofiFlotante = document.querySelector('.cofi-helper-container img');
-        if (cofiFlotante) cofiFlotante.src = imagenElegida;
-
-        let mensajes = [
-            {
-                title: '¡Tip de Barista! ☕',
-                html: '<p style="color: #475569; font-size: 0.95rem; line-height: 1.5;">¿Sabías que el agua hirviendo quema el café? Lo ideal es usar agua entre <b>90°C y 96°C</b> para extraer los mejores sabores en tu casa.</p>',
-                btnText: '¡Buen dato!'
-            },
-            {
-                title: 'A un clic de distancia 🎯',
-                html: '<p style="color: #475569; font-size: 0.95rem; line-height: 1.5;">Usá el botón <b>"Cerca de Mí"</b> en la pestaña Explorar para encontrar las cafeterías de especialidad que tenés a menos de un par de cuadras.</p>',
-                btnText: '¡Genial!'
-            },
-            {
-                title: '¿Te gusta correr? 🏃‍♂️',
-                html: '<p style="color: #475569; font-size: 0.95rem; line-height: 1.5;">En la pestaña <b>"Running y Cafecito"</b> podés armar una ruta desde tu casa hasta un café para ganarte tu dosis de cafeína.</p>',
-                btnText: 'Voy a probarlo'
-            },
-            {
-                title: 'Dato Curioso 💡',
-                html: '<p style="color: #475569; font-size: 0.95rem; line-height: 1.5;">Un café se considera "de especialidad" cuando alcanza más de <b>80 puntos</b> en la escala internacional de cata. ¡Acá solo listamos esos!</p>',
-                btnText: '¡Mirá vos!'
-            }
-        ];
-
-        if (eventos && eventos.length > 0) {
-            const proximoEvento = eventos[0]; 
-            const mensajeEvento = {
-                title: '¡Hola! ¿Buscás un buen plan?',
-                html: `
-                    <p style="font-size: 0.95rem; color: #64748B; margin-bottom: 15px;">Te sugiero este evento cafetero que se viene:</p>
-                    <div style="background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; text-align: left; margin-bottom: 10px;">
-                        <strong style="color: var(--top); font-size: 0.85rem; text-transform: uppercase; display: block; margin-bottom: 4px;">📅 ${proximoEvento.fecha} • 📍 ${proximoEvento.ciudad}</strong>
-                        <h4 style="margin: 0 0 6px 0; font-size: 1.15rem; color: var(--text); font-weight: 800;">${proximoEvento.titulo}</h4>
-                        <p style="font-size: 0.85rem; margin: 0; color: #475569; line-height: 1.4;">${proximoEvento.desc.substring(0, 90)}...</p>
-                    </div>
-                `,
-                btnText: 'Ver eventos',
-                esEvento: true
-            };
-            
-            mensajes.push(mensajeEvento);
-            mensajes.push(mensajeEvento); 
+    // ==========================================
+    // LÓGICA DE CHAT CON LA IA (COFI)
+    // ==========================================
+    function toggleChatCofi() {
+        const widget = document.getElementById('cofi-chat-widget');
+        widget.classList.toggle('activo');
+        if(widget.classList.contains('activo')) {
+            document.getElementById('cofi-chat-input').focus();
         }
+    }
 
-        const mensajeElegido = mensajes[Math.floor(Math.random() * mensajes.length)];
+    async function enviarMensajeCofi() {
+        const input = document.getElementById('cofi-chat-input');
+        const mensaje = input.value.trim();
+        if(!mensaje) return;
 
-        Swal.fire({
-            title: mensajeElegido.title,
-            html: mensajeElegido.html,
-            imageUrl: imagenElegida, 
-            imageWidth: 110, 
-            showCancelButton: mensajeElegido.esEvento === true, 
-            confirmButtonText: mensajeElegido.btnText,
-            cancelButtonText: 'Cerrar',
-            customClass: {
-                popup: 'swal-custom-popup',
-                title: 'swal-custom-title',
-                confirmButton: 'swal-custom-btn swal-custom-btn-confirm',
-                cancelButton: 'swal-custom-btn swal-custom-btn-cancel'
+        const history = document.getElementById('cofi-chat-history');
+        
+        // Agregar msj usuario a la pantalla
+        history.innerHTML += `<div class="chat-msj user"><b>Vos:</b> ${mensaje}</div>`;
+        input.value = '';
+        
+        // Mostrar "Escribiendo"
+        const loadingId = 'loading-' + Date.now();
+        history.innerHTML += `<div class="chat-msj cofi" id="${loadingId}"><b>COFI:</b> Escribiendo... ☕</div>`;
+        history.scrollTop = history.scrollHeight;
+
+        // Preparar contexto para la IA (Resumido para no exceder límites)
+        const contexto = bd.map(c => `- ${c.nombre} en ${c.ciudad} (${c.ubicacion})`).join(' | ');
+
+        try {
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mensaje: mensaje, contextoCafes: contexto })
+            });
+            const data = await res.json();
+            
+            document.getElementById(loadingId).remove();
+            
+            if(data.respuesta) {
+                history.innerHTML += `<div class="chat-msj cofi"><b>COFI:</b> ${data.respuesta.replace(/\n/g, '<br>')}</div>`;
+            } else {
+                history.innerHTML += `<div class="chat-msj cofi error"><b>COFI:</b> Uy, error de conexión con mi cerebro artificial.</div>`;
             }
-        }).then((result) => {
-            if (result.isConfirmed && mensajeElegido.esEvento) {
-                cambiarPestaña('eventos');
-            }
-        });
+        } catch(e) {
+            document.getElementById(loadingId).remove();
+            history.innerHTML += `<div class="chat-msj cofi error"><b>COFI:</b> No me pude conectar, probá de nuevo en un ratito.</div>`;
+        }
+        history.scrollTop = history.scrollHeight;
     }
 
     document.addEventListener('DOMContentLoaded', () => {
