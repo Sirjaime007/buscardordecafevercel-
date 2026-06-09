@@ -25,8 +25,8 @@ export default async function handler(req, res) {
     Pregunta del usuario: "${mensaje}"
     `;
 
-    // Nos comunicamos con Google Gemini (Flash 1.5)
-    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+    // CAMBIO CLAVE: Usamos gemini-1.5-flash-latest
+    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -45,7 +45,7 @@ export default async function handler(req, res) {
     res.status(200).json({ respuesta: respuestaTexto });
 
   } catch (error) {
-    console.error(error);
+    console.error("Error del servidor:", error);
     res.status(500).json({ error: 'Uy, los granos se atascaron. Intentá de nuevo en un ratito.' });
   }
 }
