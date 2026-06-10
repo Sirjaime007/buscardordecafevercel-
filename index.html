@@ -209,7 +209,7 @@
         .cafe-title { margin: 0; font-size: 1.3rem; font-weight: 800; color: var(--text); }
         .puntuacion-box { color: var(--top); font-weight: 800; font-size: 0.9rem; margin: 6px 0; display: flex; align-items: center; gap: 4px; }
         
-        .estrellas-voto { display: flex; gap: 6px; margin-top: 12px; }
+        /* ESTILOS PARA ESTRELLAS CON RELLENO PARCIAL DINÁMICO */
         .estrellas-container {
             display: inline-flex;
             cursor: pointer;
@@ -393,7 +393,7 @@
         <a href="#" class="nav-link" data-tab="eventos" onclick="cambiarPestaña('eventos'); return false;">📅 Eventos</a>
         <a href="#" class="nav-link" data-tab="cursos" onclick="cambiarPestaña('cursos'); return false;">🎓 Cursos</a>
         <hr>
-        <a href="#" class="nav-link" data-tab="tostadores" onclick="cambiarPestaña('tostadores'); return false;">☕️ Tostadores</a>
+        <a href="#" class="nav-link" data-tab="tostadores" onclick="cambiarPestaña('tostadores'); return false;">📦 Tostadores Nacionales</a>
         <a href="#" class="nav-link" data-tab="running" onclick="cambiarPestaña('running'); return false;">🏃‍♂️ Running y Cafecito</a>
         <a href="#" class="nav-link" data-tab="newsletter" onclick="cambiarPestaña('newsletter'); return false;">💌 Mi Newsletter</a>
     </div>
@@ -1036,7 +1036,7 @@
                     <h3 class="cafe-title">${c.nombre} ${c.esTop ? '★' : ''}</h3>
                     <p class="puntuacion-box">${stats}</p>
                     <p style="font-size:0.85rem; color:#64748B;">${c.ubicacion} • <b>${c.ciudad}</b>${textoDistancia}</p>
-                    <div class="estrellas-container" id="${idUnico}" onmousemove="manejarVotoInteractivo(event, '${idUnico}')" onmouseleave="resetearVotoInteractivo('${idUnico}')" onclick="ejecutarVoto(event, '${nombreLimpio}', '${idUnico}')">
+                    <div class="estrellas-container" id="estrellas-${idUnico}" onmousemove="manejarVotoInteractivo(event, '${idUnico}')" onmouseleave="resetearVotoInteractivo('${idUnico}')" onclick="ejecutarVoto(event, '${nombreLimpio}', '${idUnico}')">
                         ⭐⭐⭐⭐⭐
                         <div class="estrellas-fill" id="fill-${idUnico}">⭐⭐⭐⭐⭐</div>
                     </div>
@@ -1372,19 +1372,42 @@
         history.innerHTML += `<div class="chat-msj user"><b>Vos:</b> ${mensaje}</div>`;
         input.value = '';
         
-        // Mostrar "Escribiendo"
+        // Mostrar "Escribiendo" y bloquear botón temporalmente
         const loadingId = 'loading-' + Date.now();
         history.innerHTML += `<div class="chat-msj cofi" id="${loadingId}"><b>COFI:</b> Escribiendo... ☕</div>`;
         history.scrollTop = history.scrollHeight;
 
-        // Preparar contexto para la IA (Resumido para no exceder límites)
-        const contexto = bd.map(c => `- ${c.nombre} en ${c.ciudad} (${c.ubicacion})`).join(' | ');
+        // FILTRO INTELIGENTE (CIUDAD + IA)
+        const mensajeLower = mensaje.toLowerCase();
+        let cafesDeLaCiudad = [];
+        
+        // 1. Nos fijamos si el usuario escribió el nombre de alguna ciudad
+        const ciudadesUnicas = [...new Set(bd.map(c => c.ciudad))];
+        let ciudadDetectada = ciudadesUnicas.find(c => mensajeLower.includes(c.toLowerCase()));
+        
+        // 2. Si no la escribió, nos fijamos qué ciudad tiene seleccionada en la página
+        if (!ciudadDetectada) {
+            const ciudadSelect = document.getElementById('select-ciudad').value;
+            if (ciudadSelect !== 'Todas') {
+                ciudadDetectada = ciudadSelect;
+            }
+        }
+
+        // 3. Filtramos la base de datos
+        if (ciudadDetectada) {
+            cafesDeLaCiudad = bd.filter(c => c.ciudad === ciudadDetectada);
+        } else {
+            // Si el usuario pone "Todas" y no aclara ciudad, mandamos un mix
+            cafesDeLaCiudad = bd.slice(0, 80); 
+        }
+
+        const contextoCorto = cafesDeLaCiudad.map(c => `- ${c.nombre} (${c.ubicacion})`).join(' | ');
 
         try {
             const res = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mensaje: mensaje, contextoCafes: contexto })
+                body: JSON.stringify({ mensaje: mensaje, contextoCafes: contextoCorto })
             });
             const data = await res.json();
             
@@ -1393,11 +1416,11 @@
             if(data.respuesta) {
                 history.innerHTML += `<div class="chat-msj cofi"><b>COFI:</b> ${data.respuesta.replace(/\n/g, '<br>')}</div>`;
             } else {
-                history.innerHTML += `<div class="chat-msj cofi error"><b>COFI:</b> Uy, error de conexión con mi cerebro artificial.</div>`;
+                history.innerHTML += `<div class="chat-msj cofi error"><b>COFI:</b> ${data.error || 'Error desconocido'}</div>`;
             }
         } catch(e) {
             document.getElementById(loadingId).remove();
-            history.innerHTML += `<div class="chat-msj cofi error"><b>COFI:</b> No me pude conectar, probá de nuevo en un ratito.</div>`;
+            history.innerHTML += `<div class="chat-msj cofi error"><b>COFI:</b> ¡Ups! Mis engranajes se trabaron. Dame un segundito y volvé a preguntarme.</div>`;
         }
         history.scrollTop = history.scrollHeight;
     }
