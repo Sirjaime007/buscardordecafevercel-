@@ -209,7 +209,6 @@
         .cafe-title { margin: 0; font-size: 1.3rem; font-weight: 800; color: var(--text); }
         .puntuacion-box { color: var(--top); font-weight: 800; font-size: 0.9rem; margin: 6px 0; display: flex; align-items: center; gap: 4px; }
         
-        /* ESTILOS PARA ESTRELLAS CON RELLENO PARCIAL DINÁMICO */
         .estrellas-container {
             display: inline-flex;
             cursor: pointer;
@@ -494,6 +493,17 @@
         return '#EF4444'; 
     }
 
+    // FUNCIÓN CLAVE PARA ARREGLAR LOS LINKS ROTOS
+    function asegurarProtocolo(url) {
+        if (!url || url === "#" || url.trim() === "") return "#";
+        const trimmedUrl = url.trim();
+        // Si no empieza con http:// o https://, le agregamos https://
+        if (!/^https?:\/\//i.test(trimmedUrl)) {
+            return 'https://' + trimmedUrl;
+        }
+        return trimmedUrl;
+    }
+
     let bd = []; 
     let promedios = {}; 
     let eventos = []; 
@@ -624,7 +634,7 @@
                                     nombre: n.trim(), 
                                     ciudad: ciu === "Top Sudamérica" ? (f.CIUDAD || "Top") : ciu, 
                                     ubicacion: f.UBICACION || f.Ubicacion || "-", 
-                                    instagram: f.INSTAGRAM || f.Instagram || "#", 
+                                    instagram: asegurarProtocolo(f.INSTAGRAM || f.Instagram || "#"), 
                                     lat: latClean, 
                                     lon: lonClean, 
                                     esTop: ciu === "Top Sudamérica" 
@@ -656,10 +666,10 @@
             complete: function(res) {
                 tostadores = res.data.map(f => ({
                     nombre: f.TOSTADOR || f.TOSTADORES || f.NOMBRE,
-                    ig: f.INSTAGRAM || f.IG || "#",
-                    tienda: f['TIENDA ONLINE'] || f.TIENDA || f.LINK || "#",
+                    ig: asegurarProtocolo(f.INSTAGRAM || f.IG || "#"),
+                    tienda: asegurarProtocolo(f['TIENDA ONLINE'] || f.TIENDA || f.LINK || "#"),
                     ciudad: f.CIUDAD || "Varias",
-                    foto: f.IMAGENES || f.IMAGEN || f.FOTO || f.FOTOS || null
+                    foto: asegurarProtocolo(f.IMAGENES || f.IMAGEN || f.FOTO || f.FOTOS || null)
                 })).filter(t => t.nombre); 
 
                 const select = document.getElementById('select-ciudad-tostadores');
@@ -707,7 +717,7 @@
             contenedor.appendChild(tituloCiudad);
 
             gruposPorCiudad[ciudad].forEach(t => {
-                const imgUrl = t.foto ? t.foto : 'https://images.unsplash.com/photo-1559525839-b184a4d698c7?w=600';
+                const imgUrl = (t.foto && t.foto !== "#") ? t.foto : 'https://images.unsplash.com/photo-1559525839-b184a4d698c7?w=600';
                 
                 const div = document.createElement('div'); 
                 div.className = 'event-card'; 
@@ -744,7 +754,7 @@
                     ciudad: f.CIUDAD || f.Ciudad || "Varios", 
                     desc: f.DESCRIPCION || f.Descripcion, 
                     foto: f.FOTO || f.Foto, 
-                    link: f.LINK || f.Link 
+                    link: asegurarProtocolo(f.LINK || f.Link || "#") 
                 })).filter(e => {
                     if (!e.titulo) return false;
                     if (e.fechaOrden === "9999-12-31") return true; 
@@ -774,7 +784,7 @@
                     ciudad: f.CIUDAD || f.CUIDAD ? (f.CIUDAD || f.CUIDAD).trim() : "Varias/Online", 
                     desc: f.DESCRIPCION || f['DESCRIPCIÓN'] || "", 
                     foto: f.FOTO || f.IMAGEN, 
-                    link: f.LINK || f.ENLACE 
+                    link: asegurarProtocolo(f.LINK || f.ENLACE || "#") 
                 })).filter(c => c.titulo);
                 
                 armarMenuCursos(); 
@@ -825,7 +835,7 @@
             contenedor.appendChild(tituloCiudad);
 
             gruposPorCiudad[ciudad].forEach(e => {
-                const imgUrl = e.foto ? e.foto : 'https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=600';
+                const imgUrl = (e.foto && e.foto !== "#") ? e.foto : 'https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=600';
                 const div = document.createElement('div'); 
                 div.className = 'event-card';
                 div.innerHTML = `
@@ -867,7 +877,7 @@
         }
         
         eventos.forEach(e => {
-            const imgUrl = e.foto ? e.foto : 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600';
+            const imgUrl = (e.foto && e.foto !== "#") ? e.foto : 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600';
             const div = document.createElement('div'); 
             div.className = 'event-card';
             div.innerHTML = `
