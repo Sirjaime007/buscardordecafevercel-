@@ -207,27 +207,27 @@
         .cafe-card:hover { border-color: var(--primary); }
         .cafe-info { flex-grow: 1; }
         
-        /* ESTILOS PARA FAVORITOS */
-        .cafe-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        /* ESTILOS PARA FAVORITOS Y HEADER DE CAFE */
+        .cafe-header { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
         .btn-fav { 
             background: none; border: none; font-size: 1.5rem; cursor: pointer; 
-            padding: 0; margin-left: 10px; transition: transform 0.2s; user-select: none;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 0; transition: transform 0.2s; user-select: none;
+            display: flex; align-items: center; justify-content: center;
         }
         .btn-fav:active { transform: scale(0.7); }
         
         .cafe-title { margin: 0; font-size: 1.3rem; font-weight: 800; color: var(--text); }
         .puntuacion-box { color: var(--top); font-weight: 800; font-size: 0.9rem; margin: 6px 0; display: flex; align-items: center; gap: 4px; }
         
-        /* ESTILOS PARA ESTRELLAS CON RELLENO PARCIAL DINÁMICO */
+        /* ESTILOS PARA ESTRELLAS CON RELLENO PARCIAL DINÁMICO (VACÍAS POR DEFECTO) */
         .estrellas-container {
-            display: inline-flex;
+            display: inline-block;
             cursor: pointer;
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             position: relative;
-            margin-top: 8px;
-            color: #CBD5E1; 
+            color: #E2E8F0; /* Gris clarito para estrellas vacías */
             user-select: none;
+            letter-spacing: 2px;
         }
         .estrellas-fill {
             position: absolute;
@@ -235,7 +235,7 @@
             left: 0;
             white-space: nowrap;
             overflow: hidden;
-            color: var(--top);
+            color: var(--top); /* Color naranja para estrellas llenas */
             width: 0%; 
             pointer-events: none; 
         }
@@ -333,7 +333,6 @@
     
     <div class="sidebar-links">
         <a href="#" class="nav-link active" data-tab="lista" onclick="cambiarPestaña('lista'); return false;">☕ Explorar Cafés</a>
-        <a href="#" class="nav-link" data-tab="favoritos" onclick="cambiarPestaña('favoritos'); return false;">❤️ Mis Favoritos</a>
         <a href="#" class="nav-link" data-tab="mapa" onclick="cambiarPestaña('mapa'); return false;">🗺️ Mapa Federal</a>
         <a href="#" class="nav-link" data-tab="eventos" onclick="cambiarPestaña('eventos'); return false;">📅 Eventos</a>
         <a href="#" class="nav-link" data-tab="cursos" onclick="cambiarPestaña('cursos'); return false;">🎓 Cursos</a>
@@ -342,6 +341,7 @@
         <a href="#" class="nav-link" data-tab="running" onclick="cambiarPestaña('running'); return false;">🏃‍♂️ Running y Cafecito</a>
         <a href="#" class="nav-link" data-tab="logros" onclick="cambiarPestaña('logros'); return false;">🏆 Mis Logros</a>
         <a href="#" class="nav-link" data-tab="newsletter" onclick="cambiarPestaña('newsletter'); return false;">💌 Mi Newsletter</a>
+        <a href="#" class="nav-link" data-tab="favoritos" onclick="cambiarPestaña('favoritos'); return false;">❤️ Mis Favoritos</a>
     </div>
     
     <div class="sidebar-footer">
@@ -362,11 +362,11 @@
 
     <div class="tabs">
         <button class="tab-btn active" data-target="lista" onclick="cambiarPestaña('lista')">Explorar</button>
-        <button class="tab-btn" data-target="favoritos" onclick="cambiarPestaña('favoritos')">❤️ Favoritos</button>
         <button class="tab-btn" data-target="mapa" onclick="cambiarPestaña('mapa')">Mapa Federal</button>
         <button class="tab-btn" data-target="eventos" onclick="cambiarPestaña('eventos')">📅 Eventos</button>
         <button class="tab-btn" data-target="cursos" onclick="cambiarPestaña('cursos')">🎓 Cursos</button>
         <button class="tab-btn" data-target="tostadores" onclick="cambiarPestaña('tostadores')">☕️ Tostadores</button>
+        <button class="tab-btn" data-target="favoritos" onclick="cambiarPestaña('favoritos')">❤️ Favoritos</button>
     </div>
 
     <div id="tab-lista">
@@ -390,11 +390,13 @@
         <div id="resultados"></div>
     </div>
 
+    <!-- PESTAÑA FAVORITOS -->
     <div id="tab-favoritos" class="hidden">
         <h2 style="margin: 0 0 15px 0; font-weight: 800;">Mi Ruta Cafetera ❤️</h2>
         <div id="lista-favoritos"></div>
     </div>
 
+    <!-- PESTAÑA LOGROS -->
     <div id="tab-logros" class="hidden">
         <h2 style="margin: 0 0 15px 0; font-weight: 800;">Logros por Ciudad 🏆</h2>
         <p style="color: #64748B; font-size: 0.95rem; margin-bottom: 25px;">A medida que guardes cafeterías en tus favoritos, irás desbloqueando medallas en cada ciudad.</p>
@@ -518,11 +520,9 @@
         return '#EF4444'; 
     }
 
-    // FUNCIÓN CLAVE PARA ARREGLAR LOS LINKS ROTOS
     function asegurarProtocolo(url) {
         if (!url || url === "#" || url.trim() === "") return "#";
         const trimmedUrl = url.trim();
-        // Si no empieza con http:// o https://, le agregamos https://
         if (!/^https?:\/\//i.test(trimmedUrl)) {
             return 'https://' + trimmedUrl;
         }
@@ -534,7 +534,6 @@
     let eventos = []; 
     let cursos = []; 
     let tostadores = []; 
-    // CARGAR FAVORITOS DEL NAVEGADOR
     let favoritos = JSON.parse(localStorage.getItem('cofiteca_favoritos')) || [];
     let mapaRunning, layerRunning, controlRuta;
 
@@ -566,9 +565,6 @@
         }
     }
 
-    // ==========================================
-    // SISTEMA DE FAVORITOS
-    // ==========================================
     function toggleFavorito(nombre) {
         const index = favoritos.indexOf(nombre);
         if (index > -1) {
@@ -578,10 +574,8 @@
             favoritos.push(nombre);
             Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: '¡Guardado en favoritos!', showConfirmButton: false, timer: 1500 });
         }
-        // Guardamos en la memoria interna del celular/compu
         localStorage.setItem('cofiteca_favoritos', JSON.stringify(favoritos));
         
-        // Refrescamos la vista actual
         const tabActiva = document.querySelector('.tab-btn.active').getAttribute('data-target');
         if (tabActiva === 'lista') {
             filtrarPorTexto(); 
@@ -610,13 +604,9 @@
         cafesFavs.forEach(c => renderizarCardCafe(c, contenedor));
     }
 
-    // ==========================================
-    // SISTEMA DE LOGROS
-    // ==========================================
     function renderizarLogros() {
         const contenedor = document.getElementById('tab-logros-content');
         
-        // Filtramos en qué ciudades tiene al menos un café favorito
         const ciudadesConFavs = [...new Set(bd.filter(c => favoritos.includes(c.nombre)).map(c => c.ciudad))];
         
         if(ciudadesConFavs.length === 0) {
@@ -652,9 +642,6 @@
         contenedor.innerHTML = html;
     }
 
-    // ==========================================
-    // VOTACIONES Y MAPA
-    // ==========================================
     function manejarVotoInteractivo(e, idBase) {
         const container = document.getElementById(`estrellas-${idBase}`);
         const fill = document.getElementById(`fill-${idBase}`);
@@ -1023,7 +1010,6 @@
         });
     }
 
-    // FUNCIÓN PARA CREAR LA TARJETA (Se usa en Explorar y en Favoritos)
     function renderizarCardCafe(c, contenedor, textoDistancia = "") {
         const stats = promedios[c.nombre] ? `⭐ ${promedios[c.nombre].avg} (${promedios[c.nombre].total} votos)` : "Sin votos aún";
         const nombreLimpio = c.nombre.replace(/'/g, "\\'");
@@ -1035,14 +1021,18 @@
         div.innerHTML = `
             <div class="cafe-info">
                 <div class="cafe-header">
-                    <h3 class="cafe-title">${c.nombre} ${c.esTop ? '★' : ''}</h3>
-                    <button class="btn-fav" onclick="toggleFavorito('${nombreLimpio}')" title="Guardar en favoritos">${esFav ? '❤️' : '🤍'}</button>
+                    <h3 class="cafe-title" style="margin: 0;">${c.nombre} ${c.esTop ? '★' : ''}</h3>
+                    <button class="btn-fav" onclick="toggleFavorito('${nombreLimpio}')" title="Guardar en favoritos" style="margin: 0;">${esFav ? '❤️' : '🤍'}</button>
                 </div>
                 <p class="puntuacion-box">${stats}</p>
-                <p style="font-size:0.85rem; color:#64748B;">${c.ubicacion} • <b>${c.ciudad}</b>${textoDistancia}</p>
-                <div class="estrellas-container" id="estrellas-${idUnico}" onmousemove="manejarVotoInteractivo(event, '${idUnico}')" onmouseleave="resetearVotoInteractivo('${idUnico}')" onclick="ejecutarVoto(event, '${nombreLimpio}', '${idUnico}')">
-                    ⭐⭐⭐⭐⭐
-                    <div class="estrellas-fill" id="fill-${idUnico}">⭐⭐⭐⭐⭐</div>
+                <p style="font-size:0.85rem; color:#64748B; margin-top:4px;">${c.ubicacion} • <b>${c.ciudad}</b>${textoDistancia}</p>
+                
+                <div style="display:flex; align-items:center; gap: 8px; margin-top: 12px;">
+                    <span style="font-size: 0.75rem; color: #64748B; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Calificar:</span>
+                    <div class="estrellas-container" id="estrellas-${idUnico}" onmousemove="manejarVotoInteractivo(event, '${idUnico}')" onmouseleave="resetearVotoInteractivo('${idUnico}')" onclick="ejecutarVoto(event, '${nombreLimpio}', '${idUnico}')">
+                        <span style="color: #CBD5E1;">★★★★★</span>
+                        <div class="estrellas-fill" id="fill-${idUnico}" style="color: var(--top);">★★★★★</div>
+                    </div>
                 </div>
             </div>
             <div class="links">
