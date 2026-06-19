@@ -219,13 +219,13 @@
         .cafe-title { margin: 0; font-size: 1.3rem; font-weight: 800; color: var(--text); }
         .puntuacion-box { color: var(--top); font-weight: 800; font-size: 0.9rem; margin: 6px 0; display: flex; align-items: center; gap: 4px; }
         
-        /* ESTILOS PARA ESTRELLAS CON RELLENO PARCIAL DINÁMICO (VACÍAS POR DEFECTO) */
+        /* ESTILOS PARA ESTRELLAS CON RELLENO PARCIAL DINÁMICO */
         .estrellas-container {
             display: inline-block;
             cursor: pointer;
             font-size: 1.5rem;
             position: relative;
-            color: #E2E8F0; /* Gris clarito para estrellas vacías */
+            color: #E2E8F0;
             user-select: none;
             letter-spacing: 2px;
         }
@@ -235,7 +235,7 @@
             left: 0;
             white-space: nowrap;
             overflow: hidden;
-            color: var(--top); /* Color naranja para estrellas llenas */
+            color: var(--top);
             width: 0%; 
             pointer-events: none; 
         }
@@ -404,6 +404,16 @@
     </div>
 
     <div id="tab-mapa" class="hidden">
+        <div class="panel" style="margin-bottom: 20px; padding: 15px;">
+            <div class="botones-grid" style="grid-template-columns: 1fr 1fr; margin-top:0;">
+                <select id="select-mapa-ciudad" class="input-moderno" style="margin-bottom:0;" onchange="actualizarFiltrosMapa()">
+                    <option value="Todas">Toda Argentina</option>
+                </select>
+                <select id="select-mapa-zona" class="input-moderno" style="margin-bottom:0;" onchange="dibujarMapaFederal()">
+                    <option value="Todas">Todos los barrios</option>
+                </select>
+            </div>
+        </div>
         <div id="map" class="activo"></div>
     </div>
 
@@ -736,6 +746,7 @@
                                 bd.push({ 
                                     nombre: n.trim(), 
                                     ciudad: ciu === "Top Sudamérica" ? (f.CIUDAD || "Top") : ciu, 
+                                    zona: f.ZONA || f.Zona || f.BARRIO || f.Barrio || "Sin Zona",
                                     ubicacion: f.UBICACION || f.Ubicacion || "-", 
                                     instagram: asegurarProtocolo(f.INSTAGRAM || f.Instagram || "#"), 
                                     lat: latClean, 
@@ -749,6 +760,7 @@
                     if (++completados === Object.keys(GIDS).length) {
                         bd.sort((a,b) => a.nombre.localeCompare(b.nombre));
                         armarMenus(); 
+                        armarFiltrosMapa();
                         dibujarMapaFederal(); 
                         renderizarLista(bd);
                         document.getElementById('contador-total').innerText = `${bd.length} locales guardados`;
@@ -1008,6 +1020,38 @@
             s1.innerHTML += `<option value="${c}">${c} (${bd.filter(x => x.ciudad === c).length})</option>`;
             s2.innerHTML += `<option value="${c}">${c}</option>`;
         });
+    }
+
+    function armarFiltrosMapa() {
+        const selectCiudad = document.getElementById('select-mapa-ciudad');
+        const ciudades = [...new Set(bd.map(c => c.ciudad))].sort();
+        
+        selectCiudad.innerHTML = `<option value="Todas">Toda Argentina</option>`;
+        ciudades.forEach(c => {
+            selectCiudad.innerHTML += `<option value="${c}">${c}</option>`;
+        });
+        actualizarFiltrosMapa(); 
+    }
+
+    function actualizarFiltrosMapa() {
+        const ciudadElegida = document.getElementById('select-mapa-ciudad').value;
+        const selectZona = document.getElementById('select-mapa-zona');
+        
+        let zonasDisponibles = [];
+        if (ciudadElegida === "Todas") {
+            zonasDisponibles = [...new Set(bd.map(c => c.zona))];
+        } else {
+            zonasDisponibles = [...new Set(bd.filter(c => c.ciudad === ciudadElegida).map(c => c.zona))];
+        }
+        
+        zonasDisponibles = zonasDisponibles.filter(z => z && z !== "-" && z !== "Sin Zona").sort();
+        
+        selectZona.innerHTML = `<option value="Todas">Todos los barrios</option>`;
+        zonasDisponibles.forEach(z => {
+            selectZona.innerHTML += `<option value="${z}">${z}</option>`;
+        });
+        
+        dibujarMapaFederal();
     }
 
     function renderizarCardCafe(c, contenedor, textoDistancia = "") {
@@ -1286,20 +1330,44 @@
 
     function dibujarMapaFederal() {
         layerFederal.clearLayers(); 
-        bd.forEach(c => {
+        
+        const ciudadFiltro = document.getElementById('select-mapa-ciudad').value;
+        const zonaFiltro = document.getElementById('select-mapa-zona').value;
+        
+        const filtrados = bd.filter(c => {
+            const pasaCiudad = ciudadFiltro === "Todas" || c.ciudad === ciudadFiltro;
+            const pasaZona = zonaFiltro === "Todas" || c.zona === zonaFiltro;
+            return pasaCiudad && pasaZona;
+        });
+
+        filtrados.forEach(c => {
             const color = obtenerColorPorPuntaje(c.nombre, c.esTop);
             const stats = promedios[c.nombre] ? `⭐ ${promedios[c.nombre].avg}` : "Sin votos";
+            const zonaInfo = (c.zona && c.zona !== "Sin Zona") ? ` • <b>${c.zona}</b>` : "";
+            
             const popupHtml = `
                 <div class="popup-custom">
                     <b>${c.nombre}</b><br>
                     <span class="popup-estrellas">${stats}</span><br>
-                    <small>${c.ubicacion}</small><br>
+                    <small>${c.ubicacion}${zonaInfo}</small><br>
                     <a href="${c.instagram}" target="_blank" class="popup-btn">Instagram</a>
                 </div>`;
             layerFederal.addLayer(L.circleMarker([c.lat, c.lon], { 
                 radius: c.esTop ? 8:5, color: color, fillColor: color, fillOpacity: 0.8 
             }).bindPopup(popupHtml)); 
         });
+
+        if (filtrados.length > 0 && ciudadFiltro !== "Todas") {
+            const lats = filtrados.map(c => c.lat);
+            const lons = filtrados.map(c => c.lon);
+            const centroLat = lats.reduce((a, b) => a + b) / lats.length;
+            const centroLon = lons.reduce((a, b) => a + b) / lons.length;
+            
+            const zoomLevel = zonaFiltro === "Todas" ? 12 : 14;
+            mapaFederal.setView([centroLat, centroLon], zoomLevel);
+        } else if (ciudadFiltro === "Todas") {
+            mapaFederal.setView([-38.41, -63.61], 5); 
+        }
     }
 
     async function abrirReporte() {
