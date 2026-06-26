@@ -11,8 +11,8 @@
     <meta name="apple-mobile-web-app-title" content="COFITECA">
     <meta name="application-name" content="COFITECA">
     
-    <link rel="icon" type="image/png" href="https://i.postimg.cc/8zTgpkJD/13640-removebg-preview.png">
-    <link rel="apple-touch-icon" href="https://i.postimg.cc/8zTgpkJD/13640-removebg-preview.png">
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/yxbDGB7P/COFITECA-LOGO-02.png">
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/yxbDGB7P/COFITECA-LOGO-02.png">
 
     <script defer src="/_vercel/insights/script.js"></script>
 
@@ -44,8 +44,10 @@
         }
         body { 
             background-color: var(--bg);
-            background-image: radial-gradient(#E2DCD0 1.5px, transparent 1.5px);
-            background-size: 24px 24px;
+            background-image: url('https://i.postimg.cc/6qm8PwBc/COFITECA-FONDO.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             color: var(--text); 
             font-family: 'Inter', sans-serif; 
             margin: 0; 
@@ -355,7 +357,7 @@
         <button class="btn-menu" onclick="toggleMenu()">☰</button>
         <div class="header-titles">
             <h1>COFITECA</h1>
-            <p class="subtitle">Primer buscador de cafeterías de especialidad de Argentina.</p>
+            <p class="subtitle" style="background: rgba(255,255,255,0.85); box-shadow: 0 2px 4px rgba(0,0,0,0.05);">Primer buscador de cafeterías de especialidad de Argentina.</p>
         </div>
         <div class="spacer"></div>
     </header>
@@ -391,13 +393,13 @@
     </div>
 
     <div id="tab-favoritos" class="hidden">
-        <h2 style="margin: 0 0 15px 0; font-weight: 800;">Mi Ruta Cafetera ❤️</h2>
+        <h2 style="margin: 0 0 15px 0; font-weight: 800; background: rgba(255,255,255,0.8); padding: 10px; border-radius: 12px; display: inline-block;">Mi Ruta Cafetera ❤️</h2>
         <div id="lista-favoritos"></div>
     </div>
 
     <div id="tab-logros" class="hidden">
-        <h2 style="margin: 0 0 15px 0; font-weight: 800;">Logros por Ciudad 🏆</h2>
-        <p style="color: #64748B; font-size: 0.95rem; margin-bottom: 25px;">A medida que guardes cafeterías en tus favoritos, irás desbloqueando medallas en cada ciudad.</p>
+        <h2 style="margin: 0 0 15px 0; font-weight: 800; background: rgba(255,255,255,0.8); padding: 10px; border-radius: 12px; display: inline-block;">Logros por Ciudad 🏆</h2>
+        <p style="color: #64748B; font-size: 0.95rem; margin-bottom: 25px; background: rgba(255,255,255,0.8); padding: 10px; border-radius: 12px;">A medida que guardes cafeterías en tus favoritos, irás desbloqueando medallas en cada ciudad.</p>
         <div id="tab-logros-content"></div>
     </div>
 
@@ -444,12 +446,12 @@
     </div>
 
     <div id="tab-eventos" class="hidden">
-        <h2 style="margin: 0 0 15px 0; font-weight: 800;">Próximos Eventos Cafeteros</h2>
+        <h2 style="margin: 0 0 15px 0; font-weight: 800; background: rgba(255,255,255,0.8); padding: 10px; border-radius: 12px; display: inline-block;">Próximos Eventos Cafeteros</h2>
         <div id="lista-eventos" class="eventos-grid"></div>
     </div>
 
     <div id="tab-cursos" class="hidden">
-        <h2 style="margin: 0 0 15px 0; font-weight: 800;">Cursos y Formación Barista</h2>
+        <h2 style="margin: 0 0 15px 0; font-weight: 800; background: rgba(255,255,255,0.8); padding: 10px; border-radius: 12px; display: inline-block;">Cursos y Formación Barista</h2>
         <div class="panel" style="margin-bottom: 20px; padding: 15px;">
             <select id="select-ciudad-cursos" class="input-moderno" style="margin: 0;" onchange="renderizarCursos()"></select>
         </div>
@@ -471,7 +473,7 @@
         </div>
     </div>
 
-    <footer>
+    <footer style="background: rgba(255,255,255,0.85); padding: 20px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-top: 50px; margin-bottom: 80px;">
         <p><strong>© 2026 COFITECA Argentina</strong><br>Contacto: <a href="mailto:buscadordecafe@gmail.com" style="color:var(--primary); font-weight:800;">buscadordecafe@gmail.com</a></p>
     </footer>
     
@@ -807,7 +809,7 @@
         const filtrados = tostadores.filter(t => ciudadElegida === "Todas" || t.ciudad === ciudadElegida);
 
         if (filtrados.length === 0) {
-            contenedor.innerHTML = `<p style="color:#64748B; font-weight:500;">Aún no tenemos tostadores cargados en esta ciudad.</p>`;
+            contenedor.innerHTML = `<p style="color:#64748B; font-weight:500; background: rgba(255,255,255,0.8); padding: 10px; border-radius: 8px;">Aún no tenemos tostadores cargados en esta ciudad.</p>`;
             return;
         }
 
@@ -824,8 +826,11 @@
             tituloCiudad.style.fontSize = "1.4rem";
             tituloCiudad.style.fontWeight = "800";
             tituloCiudad.style.color = "var(--primary)";
-            tituloCiudad.style.borderBottom = "2px solid var(--border)";
+            tituloCiudad.style.borderBottom = "2px solid var(--primary)";
             tituloCiudad.style.paddingBottom = "6px";
+            tituloCiudad.style.background = "rgba(255,255,255,0.8)";
+            tituloCiudad.style.padding = "10px";
+            tituloCiudad.style.borderRadius = "8px";
             tituloCiudad.innerHTML = `📍 Tostadores en ${ciudad}`;
             contenedor.appendChild(tituloCiudad);
 
@@ -931,7 +936,7 @@
         const cursosFiltrados = cursos.filter(c => ciudadElegida === "Todas" || c.ciudad === ciudadElegida);
 
         if (cursosFiltrados.length === 0) {
-            contenedor.innerHTML = `<p style="color:#64748B; font-weight:500;">No hay cursos disponibles programados en este momento.</p>`;
+            contenedor.innerHTML = `<p style="color:#64748B; font-weight:500; background: rgba(255,255,255,0.8); padding: 10px; border-radius: 8px;">No hay cursos disponibles programados en este momento.</p>`;
             return;
         }
 
@@ -948,8 +953,11 @@
             tituloCiudad.style.fontSize = "1.4rem"; 
             tituloCiudad.style.fontWeight = "800"; 
             tituloCiudad.style.color = "var(--primary)"; 
-            tituloCiudad.style.borderBottom = "2px solid var(--border)"; 
+            tituloCiudad.style.borderBottom = "2px solid var(--primary)"; 
             tituloCiudad.style.paddingBottom = "6px";
+            tituloCiudad.style.background = "rgba(255,255,255,0.8)";
+            tituloCiudad.style.padding = "10px";
+            tituloCiudad.style.borderRadius = "8px";
             tituloCiudad.innerHTML = `📍 Cursos en ${ciudad}`;
             contenedor.appendChild(tituloCiudad);
 
@@ -991,7 +999,7 @@
         contenedor.innerHTML = "";
         
         if (eventos.length === 0) {
-            contenedor.innerHTML = `<p style="color:#64748B; font-weight:500;">No hay eventos agendados próximamente.</p>`;
+            contenedor.innerHTML = `<p style="color:#64748B; font-weight:500; background: rgba(255,255,255,0.8); padding: 10px; border-radius: 8px;">No hay eventos agendados próximamente.</p>`;
             return;
         }
         
@@ -1508,3 +1516,4 @@
 </script>
 </body>
 </html>
+
