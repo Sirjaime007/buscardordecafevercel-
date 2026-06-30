@@ -6,7 +6,7 @@
     <title>COFITECA | Buscador de Café de Especialidad</title>
     
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#5D4037">
+    <meta name="theme-color" content="#e4281f">
     
     <meta name="apple-mobile-web-app-title" content="COFITECA">
     <meta name="application-name" content="COFITECA">
@@ -33,11 +33,12 @@
     
     <style>
         :root { 
-            --primary: #5D4037; 
+            --primary: #e4281f; /* Rojo CofiTeca */
+            --primary-hover: #c1221a; /* Rojo oscuro para hover */
             --bg: #FAF8F5; 
-            --card: rgba(253, 248, 242, 0.88); /* Crema cálido con transparencia */
-            --text: #3E2723; /* Marrón bien oscuro para textos */
-            --border: #D4C5B9; /* Bordes tono café con leche */
+            --card: rgba(253, 248, 242, 0.88); 
+            --text: #3E2723; 
+            --border: #D4C5B9; 
             --accent: #059669; 
             --top: #D97706; 
             --running: #ef4444; 
@@ -63,7 +64,7 @@
         }
         
         select {
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235D4037' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233E2723' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat; 
             background-position: right 1rem center; 
             background-size: 1em; 
@@ -91,31 +92,33 @@
             transition: transform 0.2s; 
         }
         .btn-menu:active { transform: scale(0.9); }
-        .header-titles { text-align: center; flex-grow: 1; }
-        .header-titles h1 { 
-            font-size: 2.8rem; 
-            margin: 0; 
-            font-weight: 900; 
-            letter-spacing: -1.5px; 
-            line-height: 1.1; 
-            color: var(--primary); 
-            text-shadow: 2px 2px 0px rgba(255,255,255,0.7);
+        
+        .header-titles { 
+            text-align: center; 
+            flex-grow: 1; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+        .header-titles img {
+            max-height: 55px;
+            width: auto;
+            margin-bottom: 8px;
         }
         .header-titles .subtitle { 
-            color: #5D4037; 
+            color: var(--text); 
             font-size: 1.05rem; 
-            margin-top: 8px; 
+            margin-top: 0; 
             font-weight: 600; 
             display: inline-block;
             padding: 4px 10px;
-            /* Sombra blanca para despegar el texto del fondo sin usar una caja dura */
             text-shadow: 1px 1px 3px rgba(255,255,255,0.9), -1px -1px 3px rgba(255,255,255,0.9);
         }
         .spacer { width: 44px; } 
 
         .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
-        .tab-btn { background: rgba(234, 224, 213, 0.85); border: 1px solid rgba(255,255,255,0.4); padding: 12px 18px; font-weight: 700; border-radius: 12px; cursor: pointer; color: #5D4037; font-size: 0.85rem; transition: all 0.2s; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
-        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 10px rgba(93, 64, 55, 0.3); }
+        .tab-btn { background: rgba(234, 224, 213, 0.85); border: 1px solid rgba(255,255,255,0.4); padding: 12px 18px; font-weight: 700; border-radius: 12px; cursor: pointer; color: var(--text); font-size: 0.85rem; transition: all 0.2s; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 10px rgba(228, 40, 31, 0.3); }
 
         .sidebar-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
@@ -155,13 +158,13 @@
             transition: 0.2s; display: flex; align-items: center; gap: 12px; 
         }
         .sidebar-links a:hover, .sidebar-links a.active { 
-            background: rgba(93, 64, 55, 0.08); border-left-color: var(--primary); color: var(--primary); 
+            background: rgba(228, 40, 31, 0.08); border-left-color: var(--primary); color: var(--primary); 
         }
         .sidebar-links hr { border: 0; border-top: 1px solid var(--border); margin: 15px 20px; }
         
         .sidebar-footer { 
             padding: 20px; font-size: 0.8rem; text-align: center; 
-            color: #795548; border-top: 1px solid var(--border); 
+            color: var(--text); opacity: 0.7; border-top: 1px solid var(--border); 
         }
 
         .panel { 
@@ -176,7 +179,7 @@
             box-sizing: border-box; background: rgba(255,255,255,0.6); transition: all 0.2s; 
             outline: none; color: var(--text); margin-bottom: 12px; 
         }
-        .input-moderno:focus { border-color: var(--primary); background: rgba(255,255,255,0.95); box-shadow: 0 0 0 3px rgba(93,64,55,0.1); }
+        .input-moderno:focus { border-color: var(--primary); background: rgba(255,255,255,0.95); box-shadow: 0 0 0 3px rgba(228,40,31,0.15); }
         
         .botones-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 5px; }
         .btn-accion { 
@@ -186,14 +189,16 @@
         }
         .btn-accion:active { transform: scale(0.98); }
         
-        .btn-outline { background: rgba(255,255,255,0.5); border: 2px solid var(--border); color: var(--primary); }
-        .btn-outline:hover { border-color: var(--primary); background: rgba(255,255,255,0.9); }
-        .btn-primary-gps { background: var(--primary); color: white; border: none; box-shadow: 0 4px 10px rgba(93, 64, 55, 0.2); }
-        .btn-primary-gps:hover { background: #452f28; }
+        .btn-outline { background: rgba(255,255,255,0.5); border: 2px solid var(--border); color: var(--text); }
+        .btn-outline:hover { border-color: var(--primary); background: rgba(255,255,255,0.9); color: var(--primary); }
+        
+        .btn-primary-gps { background: var(--primary); color: white; border: none; box-shadow: 0 4px 10px rgba(228, 40, 31, 0.2); }
+        .btn-primary-gps:hover { background: var(--primary-hover); }
+        
         .btn-run { background: var(--running); color: white; border: none; width: 100%; margin-top: 5px; font-size: 1rem; }
 
         .panel-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
-        .panel-title { margin: 0; font-size: 1.2rem; font-weight: 800; color: var(--text); }
+        .panel-title { margin: 0; font-size: 1.2rem; font-weight: 800; color: var(--primary); }
         .badge-count { background: rgba(234, 224, 213, 0.6); color: var(--primary); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 800; border: 1px solid var(--border); }
 
         #map, #mapa-radar, #mapa-running { 
@@ -227,7 +232,7 @@
             cursor: pointer;
             font-size: 1.5rem;
             position: relative;
-            color: rgba(212, 197, 185, 0.6); /* Estrellas vacías cálidas */
+            color: rgba(212, 197, 185, 0.6); 
             user-select: none;
             letter-spacing: 2px;
         }
@@ -261,17 +266,17 @@
         .event-content { padding: 18px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
         .event-date { color: var(--top); font-weight: 700; font-size: 0.85rem; margin-bottom: 4px; text-transform: uppercase; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
         .event-title { margin: 0 0 8px 0; font-size: 1.2rem; font-weight: 800; color: var(--text); }
-        .event-desc { font-size: 0.88rem; color: #795548; margin: 0 0 15px 0; line-height: 1.4; }
+        .event-desc { font-size: 0.88rem; color: var(--text); opacity: 0.8; margin: 0 0 15px 0; line-height: 1.4; }
         .event-link { 
             display: block; text-align: center; background: var(--primary); color: white; 
             text-decoration: none; padding: 12px; border-radius: 10px; font-weight: 700; 
             font-size: 0.9rem; transition: background 0.2s; 
         }
-        .event-link:hover { background: #452f28; }
+        .event-link:hover { background: var(--primary-hover); }
         
         .event-badge { background: #fee2e2; color: var(--running); padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; display: inline-block; }
         .event-badge.today { background: rgba(5, 150, 105, 0.15); color: var(--accent); }
-        .event-badge.passed { background: #EAE0D5; color: #795548; }
+        .event-badge.passed { background: #EAE0D5; color: var(--text); opacity: 0.7; }
 
         .popup-custom { font-family: 'Inter', sans-serif; text-align: center; }
         .popup-btn { background: var(--primary); color: white !important; padding: 8px 12px; border-radius: 6px; text-decoration: none; display: inline-block; margin-top: 10px; font-weight: 700; font-size: 0.8rem; }
@@ -288,9 +293,9 @@
         .swal-scrollable-container::-webkit-scrollbar-track { background: rgba(234, 224, 213, 0.5); border-radius: 10px; }
         .swal-scrollable-container::-webkit-scrollbar-thumb { background: #D4C5B9; border-radius: 10px; }
         
-        .swal-custom-label { font-weight: 700; font-size: 0.85rem; color: #795548; display: block; text-align: left; margin: 15px 0 6px 4px; text-transform: uppercase; }
+        .swal-custom-label { font-weight: 700; font-size: 0.85rem; color: var(--text); opacity: 0.8; display: block; text-align: left; margin: 15px 0 6px 4px; text-transform: uppercase; }
         .swal-custom-input { width: 100% !important; padding: 14px 16px !important; border: 1px solid var(--border) !important; border-radius: 12px !important; font-family: 'Inter', sans-serif !important; font-size: 0.95rem !important; box-sizing: border-box !important; background: rgba(255,255,255,0.7) !important; color: var(--text) !important; transition: all 0.2s !important; margin: 0 !important; }
-        .swal-custom-input:focus { border-color: var(--primary) !important; background: white !important; outline: none !important; box-shadow: 0 0 0 3px rgba(93, 64, 55, 0.1) !important; }
+        .swal-custom-input:focus { border-color: var(--primary) !important; background: white !important; outline: none !important; box-shadow: 0 0 0 3px rgba(228, 40, 31, 0.15) !important; }
         .swal-custom-textarea { height: 100px !important; resize: vertical !important; }
         
         .swal2-actions { margin-top: 25px !important; gap: 12px !important; }
@@ -316,7 +321,7 @@
         .standalone-title {
             margin: 0 0 15px 0; 
             font-weight: 800; 
-            color: var(--text);
+            color: var(--primary);
             background: var(--card); 
             padding: 12px 18px; 
             border-radius: 12px; 
@@ -327,7 +332,7 @@
         }
 
         footer { 
-            margin-top: 50px; margin-bottom: 80px; text-align: center; color: #795548; 
+            margin-top: 50px; margin-bottom: 80px; text-align: center; color: var(--text); opacity: 0.8;
             background: var(--card); padding: 20px; border-radius: 16px; 
             border: 1px solid rgba(255,255,255,0.5);
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
@@ -377,7 +382,7 @@
     <header class="header-main">
         <button class="btn-menu" onclick="toggleMenu()">☰</button>
         <div class="header-titles">
-            <h1>COFITECA</h1>
+            <img src="https://i.postimg.cc/yxbDGB7P/COFITECA-LOGO-02.png" alt="COFITECA">
             <p class="subtitle">Primer buscador de cafeterías de especialidad de Argentina.</p>
         </div>
         <div class="spacer"></div>
@@ -422,7 +427,7 @@
     <!-- PESTAÑA LOGROS -->
     <div id="tab-logros" class="hidden">
         <h2 class="standalone-title">Logros por Ciudad 🏆</h2>
-        <p class="panel" style="color: #795548; font-size: 0.95rem; margin-bottom: 25px; padding: 15px;">A medida que guardes cafeterías en tus favoritos, irás desbloqueando medallas en cada ciudad.</p>
+        <p class="panel" style="color: var(--text); font-size: 0.95rem; margin-bottom: 25px; padding: 15px;">A medida que guardes cafeterías en tus favoritos, irás desbloqueando medallas en cada ciudad.</p>
         <div id="tab-logros-content"></div>
     </div>
 
@@ -433,7 +438,7 @@
                     <option value="Todas">Toda Argentina</option>
                 </select>
                 <select id="select-mapa-zona" class="input-moderno" style="margin-bottom:0;" onchange="dibujarMapaFederal()">
-                    <option value="Todas">Todos los barrios</option>
+                    <option value="Todas">Todas las zonas</option>
                 </select>
             </div>
         </div>
@@ -443,7 +448,7 @@
     <div id="tab-tostadores" class="hidden">
         <div class="panel" style="margin-bottom: 20px; padding: 15px;">
             <div class="panel-header-flex" style="margin-bottom: 10px;">
-                <h2 class="panel-title">Tostadores Nacionales</h2>
+                <h2 class="panel-title">Tostadores</h2>
                 <span id="contador-tostadores" class="badge-count">...</span>
             </div>
             <select id="select-ciudad-tostadores" class="input-moderno" style="margin-bottom: 0;" onchange="renderizarTostadores()"></select>
@@ -453,7 +458,7 @@
 
     <div id="tab-running" class="hidden">
         <div class="panel">
-            <h3 style="margin:0 0 15px 0; color: var(--text)">¿Cuánto corremos hoy?</h3>
+            <h3 style="margin:0 0 15px 0; color: var(--primary)">¿Cuánto corremos hoy?</h3>
             <select id="run-ciudad" class="input-moderno"><option value="">Seleccioná ciudad...</option></select>
             <input type="text" id="run-partida" class="input-moderno" placeholder="¿Dónde arrancás? (Ej: Parque Primavesi)">
             <select id="run-distancia" class="input-moderno">
@@ -484,9 +489,9 @@
     <div id="tab-newsletter" class="hidden">
         <div class="panel" style="text-align: center; border: 2px dashed var(--primary);">
             <div id="newsletter-form-container">
-                <img src="https://i.postimg.cc/8zTgpkJD/13640-removebg-preview.png" style="width: 60px; margin-bottom: 10px;">
-                <h2 style="margin: 0 0 10px 0; font-weight: 800; color: var(--text);">Comunidad Cafetera</h2>
-                <p style="color: #795548; font-size: 0.95rem; margin-bottom: 25px;">Dejanos tu correo y enterate antes que nadie de las nuevas tostadurías, catas y eventos de especialidad.</p>
+                <img src="https://i.postimg.cc/yxbDGB7P/COFITECA-LOGO-02.png" style="height: 40px; margin-bottom: 10px;">
+                <h2 style="margin: 0 0 10px 0; font-weight: 800; color: var(--primary);">Comunidad Cafetera</h2>
+                <p style="color: var(--text); opacity: 0.8; font-size: 0.95rem; margin-bottom: 25px;">Dejanos tu correo y enterate antes que nadie de las nuevas tostadurías, catas y eventos de especialidad.</p>
                 
                 <div style="display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap;">
                     <input type="email" id="input-newsletter" class="input-moderno" placeholder="tu@email.com" style="max-width: 300px; margin-bottom: 0;">
@@ -513,7 +518,7 @@
     const SHEET_ID = "10vUOhRr7IAXlRrkBphxEP4ApXYBgrnuxJq6G83GnfHI";
     const GIDS = { 
         "Mar del Plata": "0", 
-        "Buenos Aires": "1296176686", 
+        "CABA y Gran Buenos Aires": "1296176686", 
         "La Plata": "208452991", 
         "Córdoba": "1250014567", 
         "Rosario": "1691979590", 
@@ -627,8 +632,8 @@
             contenedor.innerHTML = `
             <div class="panel" style="text-align:center; padding: 40px 20px; border: 1px dashed var(--border);">
                 <span style="font-size: 3rem;">🤍</span>
-                <h3 style="color: var(--text); margin-top: 15px;">Aún no tenés favoritos</h3>
-                <p style="color: #795548;">Hacé clic en el corazón de cualquier cafetería para armar tu propia lista.</p>
+                <h3 style="color: var(--primary); margin-top: 15px;">Aún no tenés favoritos</h3>
+                <p style="color: var(--text); opacity: 0.8;">Hacé clic en el corazón de cualquier cafetería para armar tu propia lista.</p>
                 <button class="btn-accion btn-primary-gps" style="margin: 20px auto; width: auto;" onclick="cambiarPestaña('lista')">Ir a Explorar</button>
             </div>`;
             return;
@@ -646,8 +651,8 @@
             contenedor.innerHTML = `
             <div class="panel" style="text-align:center; padding: 40px 20px; border: 1px dashed var(--border);">
                 <span style="font-size: 3rem;">🏅</span>
-                <h3 style="color: var(--text); margin-top: 15px;">Empezá tu recorrido</h3>
-                <p style="color: #795548;">Agregá cafés a favoritos para empezar a ganar insignias por ciudad.</p>
+                <h3 style="color: var(--primary); margin-top: 15px;">Empezá tu recorrido</h3>
+                <p style="color: var(--text); opacity: 0.8;">Agregá cafés a favoritos para empezar a ganar insignias por ciudad.</p>
             </div>`;
             return;
         }
@@ -668,7 +673,7 @@
                 <div>
                     <h3 style="margin:0 0 5px 0; font-size: 1.3rem;">${ciudad}</h3>
                     <p style="margin:0; font-weight:800; color:var(--primary); font-size: 1rem;">${titulo}</p>
-                    <p style="margin:5px 0 0 0; font-size:0.85rem; color:#795548; font-weight:600;">${favsCiudad} cafés guardados en esta ruta.</p>
+                    <p style="margin:5px 0 0 0; font-size:0.85rem; color:var(--text); opacity: 0.8; font-weight:600;">${favsCiudad} cafés guardados en esta ruta.</p>
                 </div>
             </div>`;
         });
@@ -802,13 +807,17 @@
                 return header.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             },
             complete: function(res) {
-                tostadores = res.data.map(f => ({
-                    nombre: f.TOSTADOR || f.TOSTADORES || f.NOMBRE,
-                    ig: asegurarProtocolo(f.INSTAGRAM || f.IG || "#"),
-                    tienda: asegurarProtocolo(f['TIENDA ONLINE'] || f.TIENDA || f.LINK || "#"),
-                    ciudad: f.CIUDAD || "Varias",
-                    foto: asegurarProtocolo(f.IMAGENES || f.IMAGEN || f.FOTO || f.FOTOS || null)
-                })).filter(t => t.nombre); 
+                tostadores = res.data.map(f => {
+                    let c = f.CIUDAD || "Varias";
+                    if (c.trim() === "Buenos Aires") c = "CABA y Gran Buenos Aires";
+                    return {
+                        nombre: f.TOSTADOR || f.TOSTADORES || f.NOMBRE,
+                        ig: asegurarProtocolo(f.INSTAGRAM || f.IG || "#"),
+                        tienda: asegurarProtocolo(f['TIENDA ONLINE'] || f.TIENDA || f.LINK || "#"),
+                        ciudad: c,
+                        foto: asegurarProtocolo(f.IMAGENES || f.IMAGEN || f.FOTO || f.FOTOS || null)
+                    };
+                }).filter(t => t.nombre); 
 
                 const select = document.getElementById('select-ciudad-tostadores');
                 const ciudades = [...new Set(tostadores.map(t => t.ciudad))].sort();
@@ -832,7 +841,7 @@
         const filtrados = tostadores.filter(t => ciudadElegida === "Todas" || t.ciudad === ciudadElegida);
 
         if (filtrados.length === 0) {
-            contenedor.innerHTML = `<p class="standalone-title" style="color:#795548; font-weight:500;">Aún no tenemos tostadores cargados en esta ciudad.</p>`;
+            contenedor.innerHTML = `<p class="standalone-title" style="color:var(--text); opacity:0.8; font-weight:500;">Aún no tenemos tostadores cargados en esta ciudad.</p>`;
             return;
         }
 
@@ -888,15 +897,19 @@
                 const hoy = new Date(); 
                 hoy.setHours(0, 0, 0, 0);
                 
-                eventos = res.data.map(f => ({ 
-                    titulo: f.TITULO || f.Titulo, 
-                    fecha: f.FECHA || f.Fecha, 
-                    fechaOrden: f.FECHA_ORDEN || f.Fecha_Orden || "9999-12-31", 
-                    ciudad: f.CIUDAD || f.Ciudad || "Varios", 
-                    desc: f.DESCRIPCION || f.Descripcion, 
-                    foto: f.FOTO || f.Foto, 
-                    link: asegurarProtocolo(f.LINK || f.Link || "#") 
-                })).filter(e => {
+                eventos = res.data.map(f => {
+                    let c = f.CIUDAD || f.Ciudad || "Varios";
+                    if (c.trim() === "Buenos Aires") c = "CABA y Gran Buenos Aires";
+                    return { 
+                        titulo: f.TITULO || f.Titulo, 
+                        fecha: f.FECHA || f.Fecha, 
+                        fechaOrden: f.FECHA_ORDEN || f.Fecha_Orden || "9999-12-31", 
+                        ciudad: c, 
+                        desc: f.DESCRIPCION || f.Descripcion, 
+                        foto: f.FOTO || f.Foto, 
+                        link: asegurarProtocolo(f.LINK || f.Link || "#") 
+                    };
+                }).filter(e => {
                     if (!e.titulo) return false;
                     if (e.fechaOrden === "9999-12-31") return true; 
                     const partes = e.fechaOrden.split('-');
@@ -920,13 +933,17 @@
             skipEmptyLines: true, 
             transformHeader: h => h.trim().toUpperCase(),
             complete: function(res) {
-                cursos = res.data.map(f => ({ 
-                    titulo: f.TITULO || f['TÍTULO'], 
-                    ciudad: f.CIUDAD || f.CUIDAD ? (f.CIUDAD || f.CUIDAD).trim() : "Varias/Online", 
-                    desc: f.DESCRIPCION || f['DESCRIPCIÓN'] || "", 
-                    foto: f.FOTO || f.IMAGEN, 
-                    link: asegurarProtocolo(f.LINK || f.ENLACE || "#") 
-                })).filter(c => c.titulo);
+                cursos = res.data.map(f => {
+                    let c = f.CIUDAD || f.CUIDAD ? (f.CIUDAD || f.CUIDAD).trim() : "Varias/Online";
+                    if (c === "Buenos Aires") c = "CABA y Gran Buenos Aires";
+                    return { 
+                        titulo: f.TITULO || f['TÍTULO'], 
+                        ciudad: c, 
+                        desc: f.DESCRIPCION || f['DESCRIPCIÓN'] || "", 
+                        foto: f.FOTO || f.IMAGEN, 
+                        link: asegurarProtocolo(f.LINK || f.ENLACE || "#") 
+                    };
+                }).filter(c => c.titulo);
                 
                 armarMenuCursos(); 
                 renderizarCursos(); 
@@ -953,7 +970,7 @@
         const cursosFiltrados = cursos.filter(c => ciudadElegida === "Todas" || c.ciudad === ciudadElegida);
 
         if (cursosFiltrados.length === 0) {
-            contenedor.innerHTML = `<p class="standalone-title" style="color:#795548; font-weight:500;">No hay cursos disponibles programados en este momento.</p>`;
+            contenedor.innerHTML = `<p class="standalone-title" style="color:var(--text); opacity:0.8; font-weight:500;">No hay cursos disponibles programados en este momento.</p>`;
             return;
         }
 
@@ -1011,7 +1028,7 @@
         contenedor.innerHTML = "";
         
         if (eventos.length === 0) {
-            contenedor.innerHTML = `<p class="standalone-title" style="color:#795548; font-weight:500;">No hay eventos agendados próximamente.</p>`;
+            contenedor.innerHTML = `<p class="standalone-title" style="color:var(--text); opacity:0.8; font-weight:500;">No hay eventos agendados próximamente.</p>`;
             return;
         }
         
@@ -1070,7 +1087,7 @@
         
         zonasDisponibles = zonasDisponibles.filter(z => z && z !== "-" && z !== "Sin Zona").sort();
         
-        selectZona.innerHTML = `<option value="Todas">Todos los barrios</option>`;
+        selectZona.innerHTML = `<option value="Todas">Todas las zonas</option>`;
         zonasDisponibles.forEach(z => {
             selectZona.innerHTML += `<option value="${z}">${z}</option>`;
         });
@@ -1093,10 +1110,10 @@
                     <button class="btn-fav" onclick="toggleFavorito('${nombreLimpio}')" title="Guardar en favoritos" style="margin: 0;">${esFav ? '❤️' : '🤍'}</button>
                 </div>
                 <p class="puntuacion-box">${stats}</p>
-                <p style="font-size:0.85rem; color:#795548; margin-top:4px;">${c.ubicacion} • <b>${c.ciudad}</b>${textoDistancia}</p>
+                <p style="font-size:0.85rem; color:var(--text); opacity:0.8; margin-top:4px;">${c.ubicacion} • <b>${c.ciudad}</b>${textoDistancia}</p>
                 
                 <div style="display:flex; align-items:center; gap: 8px; margin-top: 12px;">
-                    <span style="font-size: 0.75rem; color: #795548; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Calificar:</span>
+                    <span style="font-size: 0.75rem; color: var(--text); opacity:0.8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Calificar:</span>
                     <div class="estrellas-container" id="estrellas-${idUnico}" onmousemove="manejarVotoInteractivo(event, '${idUnico}')" onmouseleave="resetearVotoInteractivo('${idUnico}')" onclick="ejecutarVoto(event, '${nombreLimpio}', '${idUnico}')">
                         <span style="color: rgba(212, 197, 185, 0.8);">★★★★★</span>
                         <div class="estrellas-fill" id="fill-${idUnico}" style="color: var(--top);">★★★★★</div>
@@ -1151,7 +1168,7 @@
             let textoDistancia = "";
             if (origen && c.dist !== undefined) {
                 const cuadras = Math.round(c.dist * 10); 
-                textoDistancia = cuadras === 0 ? ` • <span style="color:var(--accent); font-weight:800;">¡A menos de 1 cuadra! 📍</span>` : ` • <span style="color:var(--accent); font-weight:800;">A ${cuadras} ${cuadras === 1 ? 'cuadra' : 'cuadras'} 📍</span>`;
+                textoDistancia = cuadras === 0 ? ` • <span style="color:var(--primary); font-weight:800;">¡A menos de 1 cuadra! 📍</span>` : ` • <span style="color:var(--primary); font-weight:800;">A ${cuadras} ${cuadras === 1 ? 'cuadra' : 'cuadras'} 📍</span>`;
             }
             renderizarCardCafe(c, contenedor, textoDistancia);
         });
@@ -1284,7 +1301,7 @@
         controlRuta = L.Routing.control({
             waypoints: [L.latLng(origen.lat, origen.lon), L.latLng(cafe.lat, cafe.lon)],
             router: L.Routing.osrmv1({ serviceUrl: `https://router.project-osrm.org/route/v1`, profile: 'foot' }),
-            lineOptions: { styles: [{ color: '#ef4444', opacity: 0.7, weight: 6 }] },
+            lineOptions: { styles: [{ color: '#e4281f', opacity: 0.7, weight: 6 }] },
             createMarker: (i, wp) => i === 0 ? L.marker(wp.latLng).bindPopup("Salida") : L.circleMarker(wp.latLng, {color: 'red', radius: 10}).bindPopup(cafe.nombre),
             addWaypoints: false, show: false
         }).addTo(mapaRunning);
@@ -1293,14 +1310,14 @@
         const mapLink = `https://www.google.com/maps/dir/?api=1&origin=$${origen.lat},${origen.lon}&destination=${cafe.lat},${cafe.lon}&travelmode=walking`;
         
         document.getElementById('resultado-running').innerHTML = `
-            <div class="cafe-card" style="border: 2px solid var(--running); margin-top:15px">
+            <div class="cafe-card" style="border: 2px solid var(--primary); margin-top:15px">
                 <div class="cafe-info">
                     <h3 class="cafe-title">🏃‍♂️ Tu meta: ${cafe.nombre}</h3>
-                    <p style="color:var(--running); font-weight:800; font-size:1.1rem; margin:5px 0;">A ${distReal} km de tu salida</p>
-                    ${esFondo ? `<br><small style="color:#795548">Corré hasta el café y volvé para completar los <b>${distTotal} km</b>.</small>` : ""}
+                    <p style="color:var(--primary); font-weight:800; font-size:1.1rem; margin:5px 0;">A ${distReal} km de tu salida</p>
+                    ${esFondo ? `<br><small style="color:var(--text); opacity:0.8;">Corré hasta el café y volvé para completar los <b>${distTotal} km</b>.</small>` : ""}
                 </div>
                 <div class="links">
-                    <a href="${mapLink}" target="_blank" style="background:var(--running); color:white; border-color:var(--running)">Abrir Ruta</a>
+                    <a href="${mapLink}" target="_blank" style="background:var(--primary); color:white; border-color:var(--primary)">Abrir Ruta</a>
                 </div>
             </div>
         `;
@@ -1397,7 +1414,7 @@
     async function abrirReporte() {
         const { value: formValues } = await Swal.fire({
             title: 'Reportar Novedad', 
-            imageUrl: 'https://i.postimg.cc/fyrVPZML/COFITECA-LOGO-04.png', 
+            imageUrl: 'https://i.postimg.cc/yxbDGB7P/COFITECA-LOGO-02.png', 
             imageWidth: 60,
             customClass: { 
                 popup: 'swal-custom-popup', 
@@ -1432,7 +1449,7 @@
     async function abrirSumate() {
         const { value: formValues } = await Swal.fire({
             title: '¡Sumate al Buscador!', 
-            imageUrl: 'https://i.postimg.cc/fyrVPZML/COFITECA-LOGO-04.png', 
+            imageUrl: 'https://i.postimg.cc/yxbDGB7P/COFITECA-LOGO-02.png', 
             imageWidth: 60,
             customClass: { 
                 popup: 'swal-custom-popup', 
@@ -1489,9 +1506,9 @@
             const container = document.getElementById('newsletter-form-container');
             if(container) {
                 container.innerHTML = `
-                    <img src="https://i.postimg.cc/8zTgpkJD/13640-removebg-preview.png" style="width: 60px; margin-bottom: 10px;">
-                    <h2 style="margin: 0 0 10px 0; font-weight: 800; color: var(--accent);">¡Ya estás en la lista! 🎉</h2>
-                    <p style="color: #795548; font-size: 0.95rem;">Gracias por ser parte de la comunidad cafetera. Nos leemos pronto por correo.</p>
+                    <img src="https://i.postimg.cc/yxbDGB7P/COFITECA-LOGO-02.png" style="height: 40px; margin-bottom: 10px;">
+                    <h2 style="margin: 0 0 10px 0; font-weight: 800; color: var(--primary);">¡Ya estás en la lista! 🎉</h2>
+                    <p style="color: var(--text); opacity: 0.8; font-size: 0.95rem;">Gracias por ser parte de la comunidad cafetera. Nos leemos pronto por correo.</p>
                 `;
             }
         }
@@ -1519,7 +1536,7 @@
             Swal.fire({ title: '¡Adentro!', text: 'Prepará la taza para el próximo correo.', icon: 'success' });
             localStorage.setItem('cofi_suscrito', 'true');
             cambiarPestaña('lista'); 
-            document.getElementById('newsletter-form-container').innerHTML = `<h2 style="color: var(--accent);">¡Ya estás en la lista! 🎉</h2>`;
+            document.getElementById('newsletter-form-container').innerHTML = `<h2 style="color: var(--primary);">¡Ya estás en la lista! 🎉</h2>`;
         }
     }
 
@@ -1528,4 +1545,3 @@
 </script>
 </body>
 </html>
-
