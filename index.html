@@ -6,7 +6,7 @@
     <title>COFITECA | Buscador de Café de Especialidad</title>
     
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#e4281f">
+    <meta name="theme-color" content="#B03A2E">
     
     <meta name="apple-mobile-web-app-title" content="COFITECA">
     <meta name="application-name" content="COFITECA">
@@ -33,8 +33,8 @@
     
     <style>
         :root { 
-            --primary: #e4281f; /* Rojo CofiTeca */
-            --primary-hover: #c1221a; /* Rojo oscuro para hover */
+            --primary: #B03A2E; /* Terracota / Rojo Ladrillo cálido */
+            --primary-hover: #8A2D23; /* Tono más oscuro para hover */
             --bg: #FAF8F5; 
             --card: rgba(253, 248, 242, 0.88); 
             --text: #3E2723; 
@@ -100,10 +100,27 @@
             flex-direction: column; 
             align-items: center; 
         }
-        .header-titles img {
-            max-height: 55px;
-            width: auto;
+        .header-logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
             margin-bottom: 8px;
+        }
+        .header-logo-container img {
+            max-height: 45px;
+            width: auto;
+            margin: 0;
+            filter: drop-shadow(2px 2px 0px rgba(255,255,255,0.7));
+        }
+        .header-logo-container h1 {
+            font-size: 2.8rem; 
+            margin: 0; 
+            font-weight: 900; 
+            letter-spacing: -1.5px; 
+            line-height: 1.1; 
+            color: var(--primary); 
+            text-shadow: 2px 2px 0px rgba(255,255,255,0.7);
         }
         .header-titles .subtitle { 
             color: var(--text); 
@@ -118,7 +135,7 @@
 
         .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
         .tab-btn { background: rgba(234, 224, 213, 0.85); border: 1px solid rgba(255,255,255,0.4); padding: 12px 18px; font-weight: 700; border-radius: 12px; cursor: pointer; color: var(--text); font-size: 0.85rem; transition: all 0.2s; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
-        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 10px rgba(228, 40, 31, 0.3); }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 10px rgba(176, 58, 46, 0.3); }
 
         .sidebar-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
@@ -158,7 +175,7 @@
             transition: 0.2s; display: flex; align-items: center; gap: 12px; 
         }
         .sidebar-links a:hover, .sidebar-links a.active { 
-            background: rgba(228, 40, 31, 0.08); border-left-color: var(--primary); color: var(--primary); 
+            background: rgba(176, 58, 46, 0.08); border-left-color: var(--primary); color: var(--primary); 
         }
         .sidebar-links hr { border: 0; border-top: 1px solid var(--border); margin: 15px 20px; }
         
@@ -179,7 +196,7 @@
             box-sizing: border-box; background: rgba(255,255,255,0.6); transition: all 0.2s; 
             outline: none; color: var(--text); margin-bottom: 12px; 
         }
-        .input-moderno:focus { border-color: var(--primary); background: rgba(255,255,255,0.95); box-shadow: 0 0 0 3px rgba(228,40,31,0.15); }
+        .input-moderno:focus { border-color: var(--primary); background: rgba(255,255,255,0.95); box-shadow: 0 0 0 3px rgba(176, 58, 46, 0.15); }
         
         .botones-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 5px; }
         .btn-accion { 
@@ -192,7 +209,7 @@
         .btn-outline { background: rgba(255,255,255,0.5); border: 2px solid var(--border); color: var(--text); }
         .btn-outline:hover { border-color: var(--primary); background: rgba(255,255,255,0.9); color: var(--primary); }
         
-        .btn-primary-gps { background: var(--primary); color: white; border: none; box-shadow: 0 4px 10px rgba(228, 40, 31, 0.2); }
+        .btn-primary-gps { background: var(--primary); color: white; border: none; box-shadow: 0 4px 10px rgba(176, 58, 46, 0.2); }
         .btn-primary-gps:hover { background: var(--primary-hover); }
         
         .btn-run { background: var(--running); color: white; border: none; width: 100%; margin-top: 5px; font-size: 1rem; }
@@ -295,7 +312,7 @@
         
         .swal-custom-label { font-weight: 700; font-size: 0.85rem; color: var(--text); opacity: 0.8; display: block; text-align: left; margin: 15px 0 6px 4px; text-transform: uppercase; }
         .swal-custom-input { width: 100% !important; padding: 14px 16px !important; border: 1px solid var(--border) !important; border-radius: 12px !important; font-family: 'Inter', sans-serif !important; font-size: 0.95rem !important; box-sizing: border-box !important; background: rgba(255,255,255,0.7) !important; color: var(--text) !important; transition: all 0.2s !important; margin: 0 !important; }
-        .swal-custom-input:focus { border-color: var(--primary) !important; background: white !important; outline: none !important; box-shadow: 0 0 0 3px rgba(228, 40, 31, 0.15) !important; }
+        .swal-custom-input:focus { border-color: var(--primary) !important; background: white !important; outline: none !important; box-shadow: 0 0 0 3px rgba(176, 58, 46, 0.15) !important; }
         .swal-custom-textarea { height: 100px !important; resize: vertical !important; }
         
         .swal2-actions { margin-top: 25px !important; gap: 12px !important; }
@@ -382,7 +399,10 @@
     <header class="header-main">
         <button class="btn-menu" onclick="toggleMenu()">☰</button>
         <div class="header-titles">
-            <img src="https://i.postimg.cc/yxbDGB7P/COFITECA-LOGO-02.png" alt="COFITECA">
+            <div class="header-logo-container">
+                <img src="https://i.postimg.cc/yxbDGB7P/COFITECA-LOGO-02.png" alt="Logo">
+                <h1>COFITECA</h1>
+            </div>
             <p class="subtitle">Primer buscador de cafeterías de especialidad de Argentina.</p>
         </div>
         <div class="spacer"></div>
@@ -516,6 +536,8 @@
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const SHEET_ID = "10vUOhRr7IAXlRrkBphxEP4ApXYBgrnuxJq6G83GnfHI";
+    
+    // ATENCIÓN: "Top Sudamérica" retirado temporalmente de la lista activa.
     const GIDS = { 
         "Mar del Plata": "0", 
         "CABA y Gran Buenos Aires": "1296176686", 
@@ -523,8 +545,7 @@
         "Córdoba": "1250014567", 
         "Rosario": "1691979590", 
         "Mendoza": "2031963266", 
-        "Bahía Blanca": "1634818534", 
-        "Top Sudamérica": "35250567" 
+        "Bahía Blanca": "1634818534"
     };
     
     const EVENTOS_GID = "1650811704"; 
@@ -773,13 +794,13 @@
                             if (!isNaN(latClean) && !isNaN(lonClean)) {
                                 bd.push({ 
                                     nombre: n.trim(), 
-                                    ciudad: ciu === "Top Sudamérica" ? (f.CIUDAD || "Top") : ciu, 
+                                    ciudad: ciu, 
                                     zona: f.ZONA || f.Zona || f.BARRIO || f.Barrio || "Sin Zona",
                                     ubicacion: f.UBICACION || f.Ubicacion || "-", 
                                     instagram: asegurarProtocolo(f.INSTAGRAM || f.Instagram || "#"), 
                                     lat: latClean, 
                                     lon: lonClean, 
-                                    esTop: ciu === "Top Sudamérica" 
+                                    esTop: false 
                                 });
                             }
                         }
