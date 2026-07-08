@@ -572,7 +572,7 @@
 
     function obtenerColorPorPuntaje(nombre, esTop) {
         if (esTop) return '#D97706'; 
-        const prom = proredios[nombre];
+        const prom = promedios[nombre];
         if (!prom) return obtenerColorPorNombre(nombre); 
         
         const avg = parseFloat(prom.avg);
