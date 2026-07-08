@@ -546,9 +546,9 @@
         "Neuquén y Río Negro": "155647820", 
         "Salta y Jujuy": "1993653328",
         "Chubut, Santa Cruz y TDF": "1650814085",
-        "San Juan, San Luis, La Rioja, La Pampa": "1228328818",
+        "San Juan, San Luis, La Rioja, La Pampa": "228328818",
         "Corrientes Misiones Entre Rios Formosa Chaco": "1097354687",
-        "Catamarca Tucuman Santiago del Estero": "1483010757"
+        "Catamarca Tucuman Santiago del Estero": "483010757"
     };
     
     const EVENTOS_GID = "1650811704"; 
@@ -572,7 +572,7 @@
 
     function obtenerColorPorPuntaje(nombre, esTop) {
         if (esTop) return '#D97706'; 
-        const prom = promedios[nombre];
+        const prom = proredios[nombre];
         if (!prom) return obtenerColorPorNombre(nombre); 
         
         const avg = parseFloat(prom.avg);
@@ -599,7 +599,18 @@
     let favoritos = JSON.parse(localStorage.getItem('cofiteca_favoritos')) || [];
     let mapaRunning, layerRunning, controlRuta;
 
-    let mapaFederal = L.map('map').setView([-38.41, -63.61], 5);
+    // Límites de Argentina para georrestricción estricta
+    const boundsArgentina = L.latLngBounds(
+        L.latLng(-56.0, -74.0), 
+        L.latLng(-21.0, -53.0)  
+    );
+
+    let mapaFederal = L.map('map', {
+        maxBounds: boundsArgentina,
+        maxBoundsViscosity: 1.0,
+        minZoom: 4
+    }).setView([-38.41, -63.61], 4);
+    
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaFederal);
     
     let layerFederal = L.markerClusterGroup({ 
@@ -609,7 +620,12 @@
         showCoverageOnHover: false 
     }).addTo(mapaFederal);
 
-    let mapaRadar = L.map('mapa-radar').setView([-38.41, -63.61], 14);
+    let mapaRadar = L.map('mapa-radar', {
+        maxBounds: boundsArgentina,
+        maxBoundsViscosity: 1.0,
+        minZoom: 4
+    }).setView([-38.41, -63.61], 14);
+    
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaRadar);
     let layerRadar = L.layerGroup().addTo(mapaRadar);
 
@@ -1431,7 +1447,7 @@
             const zoomLevel = zonaFiltro === "Todas" ? 12 : 14;
             mapaFederal.setView([centroLat, centroLon], zoomLevel);
         } else if (ciudadFiltro === "Todas") {
-            mapaFederal.setView([-38.41, -63.61], 5); 
+            mapaFederal.setView([-38.41, -63.61], 4); 
         }
     }
 
