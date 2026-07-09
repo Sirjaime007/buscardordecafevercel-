@@ -425,7 +425,7 @@
             </div>
             
             <select id="select-ciudad" class="input-moderno" onchange="filtrarPorTexto()"></select>
-            <input type="text" id="input-busqueda" class="input-moderno" placeholder="Ej: Kopi, Cuervo, Gascón 2525..." onkeyup="filtrarPorTexto()">
+            <input type="text" id="input-busqueda" class="input-moderno" placeholder="Ej: Kopi, Cuervo, Güemes..." onkeyup="filtrarPorTexto()">
             
             <div class="botones-grid">
                 <button class="btn-accion btn-outline" onclick="medirDesdeDireccion()">📍 Buscar por Dirección</button>
@@ -1214,67 +1214,86 @@
         });
     }
 
+    /* -----------------------------------------------------------
+       NUEVA FUNCIÓN: Autocompletado de direcciones con SweetAlert
+    ----------------------------------------------------------- */
     async function medirDesdeDireccion() {
-        const dir = document.getElementById('input-busqueda').value.trim(); 
-        const ciu = document.getElementById('select-ciudad').value;
-        
-        if (!dir) return Swal.fire("Ingresá una dirección.");
-        document.getElementById('status').innerText = "Buscando...";
-        
-        try {
-            let queryText = dir + (ciu !== 'Todas' && !dir.toLowerCase().includes(ciu.toLowerCase()) ? ", " + ciu : "") + ", Argentina";
-            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=20&addressdetails=1&q=${encodeURIComponent(queryText)}`);
-            const data = await res.json();
-            
-            document.getElementById('status').innerText = ""; 
-            
-            if (data.length > 0) {
-                const opcionesUnicas = []; 
-                const nombresVistos = new Set();
-                
-                data.forEach((item) => {
-                    let partes = [];
-                    if (item.address) {
-                        if (item.address.road) partes.push(item.address.road + (item.address.house_number ? " " + item.address.house_number : ""));
-                        if (item.address.suburb || item.address.neighbourhood) partes.push(item.address.suburb || item.address.neighbourhood);
-                        if (item.address.city || item.address.town) partes.push(item.address.city || item.address.town);
-                    }
-                    let nombreLimpio = partes.length > 0 ? partes.join(", ") : item.display_name.split(',').slice(0, 3).join(', ').trim();
-                    if (!nombresVistos.has(nombreLimpio)) { 
-                        nombresVistos.add(nombreLimpio); 
-                        opcionesUnicas.push({ ...item, nombreLimpio }); 
-                    }
-                });
+        Swal.fire({
+            title: '¿Dónde estás?',
+            html: `
+                <p style="font-size:0.9rem; color:var(--text); opacity:0.8; margin-bottom:15px;">Empezá a escribir tu dirección (calle y ciudad) para buscar cafés cercanos.</p>
+                <input id="swal-autocomplete-input" class="swal-custom-input" placeholder="Ej: Paraguay 3123, Olivos..." autocomplete="off">
+                <div id="autocomplete-results" class="swal-scrollable-container" style="text-align:left; margin-top:10px; max-height:200px;"></div>
+            `,
+            showConfirmButton: false,
+            showCancelButton: true,
+            cancelButtonText: 'Cerrar',
+            customClass: { 
+                popup: 'swal-custom-popup', 
+                cancelButton: 'swal-custom-btn swal-custom-btn-cancel' 
+            },
+            didOpen: () => {
+                const input = document.getElementById('swal-autocomplete-input');
+                const resultsContainer = document.getElementById('autocomplete-results');
+                let timeout = null;
 
-                if (opcionesUnicas.length === 1) {
-                    renderizarLista(bd, { lat: parseFloat(opcionesUnicas[0].lat), lon: parseFloat(opcionesUnicas[0].lon) });
-                } else {
-                    let opcionesHTML = '<div class="swal-scrollable-container">';
-                    opcionesUnicas.slice(0, 15).forEach((item) => { 
-                        opcionesHTML += `<button onclick="seleccionarUbicacion(${item.lat}, ${item.lon})" style="text-align: left; background: rgba(255,255,255,0.7); color: var(--text); border: 1px solid var(--border); padding: 14px; border-radius: 10px; cursor: pointer; margin-bottom:8px;">📍 ${item.nombreLimpio}</button>`; 
-                    });
+                input.focus();
+
+                input.addEventListener('input', () => {
+                    clearTimeout(timeout);
+                    const val = input.value.trim();
                     
-                    Swal.fire({ 
-                        title: 'Elegí la ubicación correcta', 
-                        html: opcionesHTML + '</div>', 
-                        showConfirmButton: false, 
-                        showCancelButton: true, 
-                        cancelButtonText: 'Cancelar', 
-                        customClass: { popup: 'swal-custom-popup', cancelButton: 'swal-custom-btn swal-custom-btn-cancel' }
-                    });
-                }
-            } else {
-                Swal.fire("No encontramos esa dirección.", "Tip: Probá agregar la localidad exacta al final.", "warning"); 
-            }
-        } catch (e) { 
-            document.getElementById('status').innerText = ""; 
-            Swal.fire("Error", "No pudimos conectar con el servidor.", "error"); 
-        }
-    }
+                    if (val.length < 4) { 
+                        resultsContainer.innerHTML = ''; 
+                        return; 
+                    }
 
-    function seleccionarUbicacion(lat, lon) { 
-        Swal.close(); 
-        renderizarLista(bd, { lat: parseFloat(lat), lon: parseFloat(lon) }); 
+                    resultsContainer.innerHTML = '<div style="padding:10px; color:var(--primary); font-weight:bold; text-align:center;">Buscando...</div>';
+                    
+                    timeout = setTimeout(async () => {
+                        try {
+                            // Agregamos countrycodes=ar para forzar resultados solo en Argentina
+                            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&countrycodes=ar&addressdetails=1&limit=6`);
+                            const data = await res.json();
+                            
+                            resultsContainer.innerHTML = '';
+                            
+                            if(data.length === 0) {
+                                resultsContainer.innerHTML = '<div style="padding:10px; opacity:0.7; text-align:center;">No encontramos direcciones exactas.</div>';
+                                return;
+                            }
+
+                            data.forEach(item => {
+                                // Formateo limpio del nombre para la lista
+                                const partes = [];
+                                if (item.address.road) partes.push(item.address.road + (item.address.house_number ? " " + item.address.house_number : ""));
+                                if (item.address.city || item.address.town || item.address.village) partes.push(item.address.city || item.address.town || item.address.village);
+                                if (item.address.state) partes.push(item.address.state);
+                                
+                                const nombreLimpio = partes.length > 0 ? partes.join(", ") : item.display_name.split(',').slice(0, 3).join(', ');
+
+                                const btn = document.createElement('button');
+                                btn.style = 'width: 100%; text-align: left; background: rgba(255,255,255,0.7); color: var(--text); border: 1px solid var(--border); padding: 12px; border-radius: 10px; cursor: pointer; margin-bottom: 8px; font-family: "Inter", sans-serif; font-size:0.9rem; transition: 0.2s;';
+                                btn.innerHTML = `📍 <b>${nombreLimpio.split(',')[0]}</b><br><small style="opacity:0.7">${nombreLimpio.substring(nombreLimpio.indexOf(',') + 1)}</small>`;
+                                
+                                btn.onmouseover = () => btn.style.borderColor = 'var(--primary)';
+                                btn.onmouseout = () => btn.style.borderColor = 'var(--border)';
+                                
+                                btn.onclick = () => {
+                                    Swal.close();
+                                    document.getElementById('status').innerText = `Viendo lugares cerca de ${nombreLimpio.split(',')[0]}`; 
+                                    renderizarLista(bd, { lat: parseFloat(item.lat), lon: parseFloat(item.lon) });
+                                };
+                                
+                                resultsContainer.appendChild(btn);
+                            });
+                        } catch (e) {
+                            resultsContainer.innerHTML = '<div style="padding:10px; color:var(--running); text-align:center;">Error al conectar con el mapa.</div>';
+                        }
+                    }, 800); // 800ms de retraso para no saturar la API
+                });
+            }
+        });
     }
 
     function usarMiGPS() { 
@@ -1306,7 +1325,8 @@
         Swal.fire({ title: 'Trazando ruta...', didOpen: () => Swal.showLoading() });
         
         try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(partida + ", " + ciudad)}`);
+            // También se agregó countrycodes=ar acá por seguridad
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(partida + ", " + ciudad)}&countrycodes=ar`);
             const data = await res.json();
             
             if (data.length === 0) throw new Error("Dirección no encontrada");
