@@ -55,6 +55,21 @@
             padding: 20px; 
         }
         
+        /* ESTILOS PARA ETIQUETAS DE MAPA */
+        .cafe-label {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            color: var(--text);
+            font-weight: 800;
+            font-size: 0.85rem;
+            text-shadow: 2px 2px 0px white, -2px -2px 0px white, 2px -2px 0px white, -2px 2px 0px white;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        .show-labels .cafe-label { opacity: 1; }
+        
         * { -webkit-tap-highlight-color: transparent; }
         
         input, select, textarea, button { 
@@ -612,6 +627,15 @@
     }).setView([-38.41, -63.61], 4);
     
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaFederal);
+    
+    // Detector de Zoom para etiquetas
+    mapaFederal.on('zoomend', function() {
+        if (mapaFederal.getZoom() >= 15) {
+            document.getElementById('map').classList.add('show-labels');
+        } else {
+            document.getElementById('map').classList.remove('show-labels');
+        }
+    });
     
     let layerFederal = L.markerClusterGroup({ 
         maxClusterRadius: 40, 
@@ -1214,9 +1238,6 @@
         });
     }
 
-    /* -----------------------------------------------------------
-       NUEVA FUNCIÓN: Autocompletado de direcciones con SweetAlert
-    ----------------------------------------------------------- */
     async function medirDesdeDireccion() {
         Swal.fire({
             title: '¿Dónde estás?',
@@ -1252,7 +1273,6 @@
                     
                     timeout = setTimeout(async () => {
                         try {
-                            // Agregamos countrycodes=ar para forzar resultados solo en Argentina
                             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&countrycodes=ar&addressdetails=1&limit=6`);
                             const data = await res.json();
                             
@@ -1264,7 +1284,6 @@
                             }
 
                             data.forEach(item => {
-                                // Formateo limpio del nombre para la lista
                                 const partes = [];
                                 if (item.address.road) partes.push(item.address.road + (item.address.house_number ? " " + item.address.house_number : ""));
                                 if (item.address.city || item.address.town || item.address.village) partes.push(item.address.city || item.address.town || item.address.village);
@@ -1290,7 +1309,7 @@
                         } catch (e) {
                             resultsContainer.innerHTML = '<div style="padding:10px; color:var(--running); text-align:center;">Error al conectar con el mapa.</div>';
                         }
-                    }, 800); // 800ms de retraso para no saturar la API
+                    }, 800); 
                 });
             }
         });
@@ -1325,7 +1344,6 @@
         Swal.fire({ title: 'Trazando ruta...', didOpen: () => Swal.showLoading() });
         
         try {
-            // También se agregó countrycodes=ar acá por seguridad
             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(partida + ", " + ciudad)}&countrycodes=ar`);
             const data = await res.json();
             
@@ -1453,9 +1471,17 @@
                     <small>${c.ubicacion}${zonaInfo}</small><br>
                     <a href="${c.instagram}" target="_blank" class="popup-btn">Instagram</a>
                 </div>`;
+
             layerFederal.addLayer(L.circleMarker([c.lat, c.lon], { 
                 radius: c.esTop ? 8:5, color: color, fillColor: color, fillOpacity: 0.8 
-            }).bindPopup(popupHtml)); 
+            }).bindPopup(popupHtml)
+              .bindTooltip(c.nombre, { 
+                  permanent: true, 
+                  direction: 'top', 
+                  className: 'cafe-label', 
+                  offset: [0, -10] 
+              })
+            ); 
         });
 
         if (filtrados.length > 0 && ciudadFiltro !== "Todas") {
