@@ -421,6 +421,7 @@
         <a href="#" class="nav-link" data-tab="cursos" onclick="cambiarPestaña('cursos'); return false;">🎓 Cursos</a>
         <hr>
         <a href="#" class="nav-link" data-tab="tostadores" onclick="cambiarPestaña('tostadores'); return false;">☕️ Tostadores</a>
+        <a href="#" class="nav-link" data-tab="maquinas" onclick="cambiarPestaña('maquinas'); return false;">⚙️ Máquinas y Accesorios</a>
         <a href="#" class="nav-link" data-tab="running" onclick="cambiarPestaña('running'); return false;">🏃‍♂️ Running y Cafecito</a>
         <a href="#" class="nav-link" data-tab="logros" onclick="cambiarPestaña('logros'); return false;">🏆 Mis Logros</a>
         <a href="#" class="nav-link" data-tab="newsletter" onclick="cambiarPestaña('newsletter'); return false;">💌 Mi Newsletter</a>
@@ -452,7 +453,7 @@
         <button class="tab-btn" data-target="eventos" onclick="cambiarPestaña('eventos')">📅 Eventos</button>
         <button class="tab-btn" data-target="cursos" onclick="cambiarPestaña('cursos')">🎓 Cursos</button>
         <button class="tab-btn" data-target="tostadores" onclick="cambiarPestaña('tostadores')">☕️ Tostadores</button>
-        <button class="tab-btn" data-target="favoritos" onclick="cambiarPestaña('favoritos')">❤️ Favoritos</button>
+        <button class="tab-btn" data-target="maquinas" onclick="cambiarPestaña('maquinas')">⚙️ Máquinas</button>
     </div>
 
     <div id="tab-lista">
@@ -512,6 +513,17 @@
         <div id="lista-tostadores" class="eventos-grid"></div>
     </div>
 
+    <div id="tab-maquinas" class="hidden">
+        <div class="panel" style="margin-bottom: 20px; padding: 15px;">
+            <div class="panel-header-flex" style="margin-bottom: 10px;">
+                <h2 class="panel-title">Máquinas y Accesorios</h2>
+                <span id="contador-maquinas" class="badge-count">...</span>
+            </div>
+            <p style="margin:0; font-size: 0.9rem; color: var(--text); opacity: 0.8;">Todo lo que necesitás para preparar el mejor café en tu casa o local.</p>
+        </div>
+        <div id="lista-maquinas" class="eventos-grid"></div>
+    </div>
+
     <div id="tab-running" class="hidden">
         <div class="panel">
             <h3 style="margin:0 0 15px 0; color: var(--primary)">¿Cuánto corremos hoy?</h3>
@@ -558,6 +570,9 @@
     </div>
 
     <footer>
+        <div style="margin-bottom: 15px; font-size: 1.1rem; font-weight: 800; color: var(--primary);">
+            ☕ <span id="contador-visitas">...</span> cafecitos servidos
+        </div>
         <p><strong>© 2026 COFITECA Argentina</strong><br>Contacto: <a href="mailto:buscadordecafe@gmail.com" style="color:var(--primary); font-weight:800;">buscadordecafe@gmail.com</a></p>
     </footer>
 
@@ -599,14 +614,16 @@ const GIDS = {
 const EVENTOS_GID = "1650811704";
 const CURSOS_GID = "1424993305";
 const TOSTADORES_GID = "1590442133";
+const MAQUINAS_GID = "458190037"; // GID para Máquinas y Accesorios
 
 const IMG_FALLBACK_TOSTADOR = 'https://images.unsplash.com/photo-1559525839-b184a4d698c7?w=600';
 const IMG_FALLBACK_EVENTO   = 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600';
 const IMG_FALLBACK_CURSO    = 'https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=600';
+const IMG_FALLBACK_MAQUINA  = 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=600';
 
 const LIMITE_LISTA = 80;                 // tope de tarjetas renderizadas por búsqueda
 const CACHE_TTL = 10 * 60 * 1000;        // 10 minutos de caché local
-const TABS = ['lista', 'mapa', 'running', 'eventos', 'cursos', 'tostadores', 'newsletter', 'favoritos', 'logros'];
+const TABS = ['lista', 'mapa', 'running', 'eventos', 'cursos', 'tostadores', 'maquinas', 'newsletter', 'favoritos', 'logros'];
 
 /* ============================================================
    UTILIDADES
@@ -704,6 +721,7 @@ let promedios = {};
 let eventos = [];
 let cursos = [];
 let tostadores = [];
+let maquinas = [];
 let favoritos = [];
 try { favoritos = JSON.parse(localStorage.getItem('cofiteca_favoritos')) || []; } catch { favoritos = []; }
 if (!Array.isArray(favoritos)) favoritos = [];
@@ -959,6 +977,43 @@ async function cargarTostadores() {
     }
 }
 
+async function cargarMaquinas() {
+    const cached = cache.leer('cofi_maquinas');
+    if (cached) { maquinas = cached; renderizarMaquinas(); }
+
+    try {
+        const data = await cargarCSV(urlSheet(MAQUINAS_GID));
+        maquinas = data.map(f => ({
+            nombre: f.NOMBRE,
+            ig: asegurarProtocolo(f.INSTAGRAM || "#"),
+            tienda: asegurarProtocolo(f['TIENDA ONLINE'] || f.TIENDAONLINE || f.TIENDA || "#"),
+            foto: asegurarProtocolo(f.IMAGENES || f.IMAGEN || "#")
+        })).filter(m => m.nombre);
+
+        cache.guardar('cofi_maquinas', maquinas);
+        renderizarMaquinas();
+    } catch (e) {
+        if (!maquinas.length) {
+            $('contador-maquinas').innerText = 'Sin conexión';
+        }
+    }
+}
+
+async function registrarVisita() {
+    try {
+        // Utilizamos una API gratuita y confiable para sumar contadores
+        const res = await fetch('https://api.counterapi.dev/v1/cofiteca/visitas/up');
+        const data = await res.json();
+        $('contador-visitas').innerText = data.count;
+    } catch (e) {
+        // Fallback local por si la API falla, usando un número base alto
+        let visitas = parseInt(localStorage.getItem('cofiteca_visitas_locales') || '2540');
+        visitas++;
+        localStorage.setItem('cofiteca_visitas_locales', visitas);
+        $('contador-visitas').innerText = visitas;
+    }
+}
+
 async function iniciarSistema() {
     if (typeof Papa === 'undefined') {
         $('contador-total').innerText = 'No se pudo cargar el lector de datos.';
@@ -977,6 +1032,8 @@ async function iniciarSistema() {
     cargarEventos();
     cargarCursos();
     cargarTostadores();
+    cargarMaquinas();
+    registrarVisita();
 
     // 3) Promedios: cuando llegan, refrescan colores y estrellas
     cargarPromedios().then(() => {
@@ -1048,7 +1105,6 @@ function armarMenuTostadores() {
 /* ============================================================
    VOTACIÓN CON ESTRELLAS
 ============================================================ */
-// Porcentaje de voto según la posición del mouse/dedo (pasos de 10% = media estrella)
 function porcentajeVoto(e, container) {
     const rect = container.getBoundingClientRect();
     let p = ((e.clientX - rect.left) / rect.width) * 100;
@@ -1059,7 +1115,7 @@ function porcentajeVoto(e, container) {
 function ejecutarVoto(e, nombre, container, fill) {
     const p = porcentajeVoto(e, container);
     fill.style.width = p + '%';
-    const voto = p / 20; // 100% -> 5 estrellas, pasos de 0.5
+    const voto = p / 20;
 
     Swal.fire({
         title: `¿Votar ${voto.toFixed(1)} estrellas?`,
@@ -1128,7 +1184,6 @@ function renderizarCardCafe(c, contenedor, textoDistancia = "") {
         </div>
     `;
 
-    // Listeners por cierre (closure): evita inyectar nombres en atributos onclick
     div.querySelector('.btn-fav').addEventListener('click', () => toggleFavorito(c.nombre));
 
     const stars = div.querySelector('.estrellas-container');
@@ -1205,7 +1260,6 @@ function renderizarLista(datos, origen = null) {
     contenedor.appendChild(frag);
 }
 
-// Búsqueda con debounce (120 ms) e insensible a acentos
 let debounceFiltro = null;
 function filtrarPorTexto() {
     clearTimeout(debounceFiltro);
@@ -1300,7 +1354,7 @@ function renderizarLogros() {
 }
 
 /* ============================================================
-   EVENTOS, CURSOS Y TOSTADORES
+   EVENTOS, CURSOS, TOSTADORES Y MÁQUINAS
 ============================================================ */
 function crearCardImagen({ imgUrl, fallback, titulo, superiorHTML = '', desc = '', botonesHTML = '' }) {
     const div = document.createElement('div');
@@ -1317,7 +1371,6 @@ function crearCardImagen({ imgUrl, fallback, titulo, superiorHTML = '', desc = '
         </div>
     `;
     const img = div.querySelector('img');
-    // onerror anulado tras el primer fallo: evita bucle infinito si el fallback también falla
     img.onerror = () => { img.onerror = null; img.src = fallback; };
     return div;
 }
@@ -1416,6 +1469,34 @@ function renderizarTostadores() {
     });
 }
 
+function renderizarMaquinas() {
+    $('contador-maquinas').innerText = `${maquinas.length} opciones`;
+    const contenedor = $('lista-maquinas');
+
+    if (!maquinas.length) {
+        contenedor.innerHTML = `<p class="standalone-title" style="color:var(--text); opacity:0.8; font-weight:500;">Aún no tenemos proveedores cargados.</p>`;
+        return;
+    }
+
+    const frag = document.createDocumentFragment();
+    maquinas.forEach(m => {
+        let botones = `<a href="${esc(m.ig)}" target="_blank" rel="noopener noreferrer" class="event-link" style="background: rgba(255,255,255,0.6); border: 2px solid var(--border); color: var(--text);">Instagram</a>`;
+        if (m.tienda && m.tienda !== "#") {
+            botones += `<a href="${esc(m.tienda)}" target="_blank" rel="noopener noreferrer" class="event-link">Tienda Online</a>`;
+        }
+
+        frag.appendChild(crearCardImagen({
+            imgUrl: (m.foto && m.foto !== "#") ? m.foto : IMG_FALLBACK_MAQUINA,
+            fallback: IMG_FALLBACK_MAQUINA,
+            titulo: m.nombre,
+            botonesHTML: `<div style="display: flex; gap: 10px; flex-direction: column;">${botones}</div>`
+        }));
+    });
+    
+    // Al no tener ciudades, simplemente reemplazamos los hijos de forma plana y directa en la grilla
+    contenedor.replaceChildren(frag);
+}
+
 /* ============================================================
    BÚSQUEDA POR DIRECCIÓN Y GPS
 ============================================================ */
@@ -1438,7 +1519,7 @@ function medirDesdeDireccion() {
             const input = $('swal-autocomplete-input');
             const resultsContainer = $('autocomplete-results');
             let timeout = null;
-            let solicitudId = 0; // descarta respuestas viejas fuera de orden
+            let solicitudId = 0;
 
             input.focus();
 
@@ -1459,7 +1540,7 @@ function medirDesdeDireccion() {
                         const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&countrycodes=ar&addressdetails=1&limit=6`);
                         const data = await res.json();
 
-                        if (miId !== solicitudId) return; // llegó una búsqueda más nueva
+                        if (miId !== solicitudId) return;
                         resultsContainer.innerHTML = '';
 
                         if (!data.length) {
@@ -1588,7 +1669,6 @@ function dibujarRecorrido(origen, cafe, esFondo, distTotal) {
                 show: false
             }).addTo(mapaRunning);
         } else {
-            // Fallback simple si el motor de rutas no cargó
             L.marker([origen.lat, origen.lon]).addTo(layerRunning).bindPopup("Salida");
             L.circleMarker([cafe.lat, cafe.lon], { color: 'red', radius: 10 }).addTo(layerRunning).bindPopup(esc(cafe.nombre));
             mapaRunning.setView([cafe.lat, cafe.lon], 14);
@@ -1596,7 +1676,6 @@ function dibujarRecorrido(origen, cafe, esFondo, distTotal) {
     }
 
     const distReal = calcularD(origen.lat, origen.lon, cafe.lat, cafe.lon).toFixed(1);
-    // URL corregida (antes quedaba un "$" literal que rompía el enlace)
     const mapLink = `https://www.google.com/maps/dir/?api=1&origin=${origen.lat},${origen.lon}&destination=${cafe.lat},${cafe.lon}&travelmode=walking`;
 
     $('resultado-running').innerHTML = `
@@ -1805,6 +1884,7 @@ Object.assign(window, {
     actualizarFiltrosMapa,
     dibujarMapaFederal,
     renderizarTostadores,
+    renderizarMaquinas,
     renderizarCursos,
     generarRutaRunning,
     suscribirNewsletter,
@@ -1814,7 +1894,7 @@ Object.assign(window, {
 });
 
 inicializarMapas();
-if (localStorage.getItem('cofi_suscrito') === 'true') mostrarNewsletterSuscripto();
+if (localStorage.getItem('cofi_suscrito')) mostrarNewsletterSuscripto();
 iniciarSistema();
 
 });
