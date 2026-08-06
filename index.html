@@ -498,6 +498,7 @@
                     <option value="Todas">Todas las zonas</option>
                 </select>
             </div>
+            <button class="btn-accion btn-primary-gps" style="width: 100%; margin-top: 10px;" onclick="recomendarCafesAlAzar()">🎲 Recomendar 3 Cafés al Azar</button>
         </div>
         <div id="map" class="activo"></div>
     </div>
@@ -814,6 +815,52 @@ function dibujarMapaFederal() {
 }
 
 /* ============================================================
+   RECOMENDADOR DE CAFÉS AL AZAR
+============================================================ */
+function recomendarCafesAlAzar() {
+    const ciudadFiltro = $('select-mapa-ciudad').value;
+    const zonaFiltro = $('select-mapa-zona').value;
+
+    // Filtramos usando la misma lógica que aplica al mapa
+    const filtrados = bd.filter(c =>
+        (ciudadFiltro === "Todas" || c.ciudad === ciudadFiltro) &&
+        (zonaFiltro === "Todas" || c.zona === zonaFiltro)
+    );
+
+    if (filtrados.length === 0) {
+        Swal.fire('Ups', 'No hay cafés con estos filtros para recomendar.', 'info');
+        return;
+    }
+
+    // Orden aleatorio y tomar hasta 3
+    const shuffled = filtrados.sort(() => 0.5 - Math.random());
+    const seleccionados = shuffled.slice(0, 3);
+
+    let htmlContent = '<div style="text-align:left;">';
+    seleccionados.forEach(c => {
+        const stats = promedios[c.nombre] ? `⭐ ${promedios[c.nombre].avg}` : "Sin votos";
+        htmlContent += `
+            <div style="margin-bottom:15px; padding: 15px; border:1px solid var(--border); border-radius:12px; background: rgba(255,255,255,0.7);">
+                <h4 style="margin:0 0 5px 0; color:var(--primary); font-size:1.1rem;">${esc(c.nombre)}</h4>
+                <p style="margin:0 0 8px 0; font-size:0.85rem; opacity:0.8;">${stats} • ${esc(c.ubicacion)}</p>
+                <a href="${esc(c.instagram)}" target="_blank" rel="noopener noreferrer" class="popup-btn" style="margin:0;">Ver Instagram</a>
+            </div>
+        `;
+    });
+    htmlContent += '</div>';
+
+    Swal.fire({
+        title: '🎲 Te sugerimos ir a:',
+        html: htmlContent,
+        customClass: {
+            popup: 'swal-custom-popup',
+            confirmButton: 'swal-custom-btn swal-custom-btn-confirm'
+        },
+        confirmButtonText: '¡Genial!'
+    });
+}
+
+/* ============================================================
    CARGA DE DATOS
 ============================================================ */
 async function cargarPromedios() {
@@ -987,7 +1034,8 @@ async function cargarMaquinas() {
             nombre: f.NOMBRE,
             ig: asegurarProtocolo(f.INSTAGRAM || "#"),
             tienda: asegurarProtocolo(f['TIENDA ONLINE'] || f.TIENDAONLINE || f.TIENDA || "#"),
-            foto: asegurarProtocolo(f.IMAGENES || f.IMAGEN || "#")
+            foto: asegurarProtocolo(f.IMAGENES || f.IMAGEN || "#"),
+            desc: f.DESCRIPCION || "" // Capturamos la nueva columna de descripción
         })).filter(m => m.nombre);
 
         cache.guardar('cofi_maquinas', maquinas);
@@ -1001,12 +1049,10 @@ async function cargarMaquinas() {
 
 async function registrarVisita() {
     try {
-        // Utilizamos una API gratuita y confiable para sumar contadores
         const res = await fetch('https://api.counterapi.dev/v1/cofiteca/visitas/up');
         const data = await res.json();
         $('contador-visitas').innerText = data.count;
     } catch (e) {
-        // Fallback local por si la API falla, usando un número base alto
         let visitas = parseInt(localStorage.getItem('cofiteca_visitas_locales') || '2540');
         visitas++;
         localStorage.setItem('cofiteca_visitas_locales', visitas);
@@ -1020,14 +1066,12 @@ async function iniciarSistema() {
         return;
     }
 
-    // 1) Render instantáneo desde caché (si existe)
     const bdCache = cache.leer('cofi_bd');
     if (bdCache && bdCache.length) {
         bd = bdCache;
         renderizarTodoCafes();
     }
 
-    // 2) Revalidación en segundo plano
     cargarCafes();
     cargarEventos();
     cargarCursos();
@@ -1035,7 +1079,6 @@ async function iniciarSistema() {
     cargarMaquinas();
     registrarVisita();
 
-    // 3) Promedios: cuando llegan, refrescan colores y estrellas
     cargarPromedios().then(() => {
         if (bd.length) { filtrarPorTexto(); dibujarMapaFederal(); }
     });
@@ -1489,11 +1532,11 @@ function renderizarMaquinas() {
             imgUrl: (m.foto && m.foto !== "#") ? m.foto : IMG_FALLBACK_MAQUINA,
             fallback: IMG_FALLBACK_MAQUINA,
             titulo: m.nombre,
+            desc: m.desc, // Se agrega la descripción aquí
             botonesHTML: `<div style="display: flex; gap: 10px; flex-direction: column;">${botones}</div>`
         }));
     });
     
-    // Al no tener ciudades, simplemente reemplazamos los hijos de forma plana y directa en la grilla
     contenedor.replaceChildren(frag);
 }
 
@@ -1887,6 +1930,7 @@ Object.assign(window, {
     renderizarMaquinas,
     renderizarCursos,
     generarRutaRunning,
+    recomendarCafesAlAzar,
     suscribirNewsletter,
     abrirReporte,
     abrirSumate,
