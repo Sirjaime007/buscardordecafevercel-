@@ -490,7 +490,7 @@
 
     <div id="tab-mapa" class="hidden">
         <div class="panel" style="margin-bottom: 20px; padding: 15px;">
-            <div class="botones-grid" style="grid-template-columns: 1fr 1fr; margin-top:0;">
+            <div class="botones-grid" style="margin-top:0;">
                 <select id="select-mapa-ciudad" class="input-moderno" style="margin-bottom:0;" onchange="actualizarFiltrosMapa()">
                     <option value="Todas">Toda Argentina</option>
                 </select>
@@ -743,8 +743,8 @@ function crearMapa(id, opciones = {}) {
     const base = { maxBoundsViscosity: 1.0, minZoom: 4 };
     if (boundsArgentina) base.maxBounds = boundsArgentina;
     const m = L.map(id, { ...base, ...opciones });
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '© OpenStreetMap · © CARTO'
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(m);
     return m;
 }
