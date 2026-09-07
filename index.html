@@ -215,6 +215,7 @@
         <button class="tab-btn" data-target="mapa" onclick="cambiarPestaña('mapa')">Mapa Federal</button>
     </div>
 
+    <!-- PESTAÑA PRINCIPAL: BUSCADOR -->
     <div id="tab-lista">
         <div class="panel">
             <div class="panel-header-flex">
@@ -236,6 +237,7 @@
         <div id="resultados"></div>
     </div>
 
+    <!-- PESTAÑA: MAPA FEDERAL -->
     <div id="tab-mapa" class="hidden">
         <div class="panel" style="margin-bottom: 20px; padding: 15px;">
             <div class="botones-grid" style="margin-top:0;">
@@ -251,7 +253,7 @@
         <div id="map" class="activo"></div>
     </div>
 
-    <!-- MÓDULO DE TALENTO CON MAGIC LINK -->
+    <!-- PESTAÑA NUEVA: MÓDULO DE TALENTO -->
     <div id="tab-talento" class="hidden">
         <h2 class="standalone-title">Bolsa de Empleo & Talento</h2>
         
@@ -259,33 +261,62 @@
         <div id="talento-login" class="panel" style="text-align: center;">
             <span style="font-size: 3rem;">🔐</span>
             <h3 style="color: var(--primary); margin-top: 15px;">Ingreso Seguro</h3>
-            <p style="color: var(--text); opacity: 0.8; font-size: 0.95rem; margin-top:0;">El punto de encuentro entre cafeterías buscando staff y profesionales de la industria. Ingresá para publicar o postularte a ofertas.</p>
+            <p style="color: var(--text); opacity: 0.8; font-size: 0.95rem; margin-top:0;">
+                El punto de encuentro exclusivo para la industria. <br>Ingresá para buscar trabajo o publicar búsquedas de staff.
+            </p>
             <button class="btn-accion btn-primary-gps" style="width: 100%; max-width: 300px; margin: 20px auto 0;" onclick="ingresarConMagicLink()">Ingresar con Magic Link</button>
         </div>
 
         <!-- PANTALLA: PANEL DE CONTROL (USUARIO LOGUEADO) -->
         <div id="talento-dashboard" class="hidden">
-            <div class="panel" style="margin-bottom: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 15px;">
+            <!-- Header de Usuario -->
+            <div class="panel" style="margin-bottom: 20px; padding-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <p style="margin:0; font-size:0.8rem; font-weight:700; color:var(--text); opacity:0.6; text-transform:uppercase;">Sesión Iniciada</p>
                         <p id="talento-user-email" style="margin:0; font-weight:800; color:var(--primary); font-size:1.1rem;"></p>
                     </div>
                     <button class="btn-accion btn-outline" style="padding: 8px 12px; font-size:0.8rem;" onclick="cerrarSesion()">Cerrar Sesión</button>
                 </div>
-                <div class="botones-grid">
-                    <button class="btn-accion btn-outline" onclick="abrirRegistroTalento()">Mi Ficha Profesional</button>
-                    <button class="btn-accion btn-primary-gps" onclick="abrirPublicarOferta()">Publicar Búsqueda</button>
-                </div>
+            </div>
+
+            <!-- SELECTOR DE MODOS -->
+            <div class="tabs" style="margin-bottom: 20px;">
+                <button id="btn-modo-prof" class="tab-btn active" style="padding: 12px 20px; font-size:0.95rem;" onclick="setModoTalento('profesional')">🧑‍🍳 Busco Trabajo</button>
+                <button id="btn-modo-cafe" class="tab-btn" style="padding: 12px 20px; font-size:0.95rem;" onclick="setModoTalento('cafeteria')">🏪 Busco Staff</button>
             </div>
             
-            <h3 class="standalone-title grupo-titulo" style="margin-bottom: 15px;">Búsquedas Activas</h3>
-            <div id="lista-ofertas-trabajo">
-                <p style="text-align:center; opacity:0.7; font-weight:600;">Cargando ofertas desde la base de datos...</p>
+            <!-- MODO: SOY PROFESIONAL (BUSCANDO TRABAJO) -->
+            <div id="vista-profesional">
+                <div class="panel" style="text-align:center; padding: 20px; margin-bottom:20px; background: rgba(255,255,255,0.6);">
+                    <p style="color:var(--text); opacity:0.8; margin: 0 0 15px 0; font-size:0.95rem;">
+                        Asegurate de tener tu ficha actualizada para que las cafeterías puedan contactarte cuando te postules.
+                    </p>
+                    <button class="btn-accion btn-primary-gps" style="margin: 0 auto; min-width: 200px;" onclick="abrirFichaProfesional()">Mi Ficha Profesional</button>
+                </div>
+                <h3 class="standalone-title grupo-titulo" style="margin-bottom: 15px;">Oportunidades de la Comunidad</h3>
+                <div id="lista-ofertas-profesional">
+                    <p style="text-align:center; opacity:0.7;">Cargando ofertas...</p>
+                </div>
+            </div>
+
+            <!-- MODO: SOY CAFETERÍA (BUSCANDO STAFF) -->
+            <div id="vista-cafeteria" class="hidden">
+                <div class="panel" style="text-align:center; padding: 20px; margin-bottom:20px; border-color: var(--running); background: rgba(255,255,255,0.6);">
+                    <p style="color:var(--text); opacity:0.8; margin: 0 0 15px 0; font-size:0.95rem;">
+                        Publicá una vacante. Cuando un profesional se postule, su ficha llegará directo a tu correo.
+                    </p>
+                    <button class="btn-accion" style="margin: 0 auto; min-width: 200px; background: var(--running); color: white;" onclick="abrirPublicarOferta()">➕ Publicar Búsqueda</button>
+                </div>
+                <h3 class="standalone-title grupo-titulo" style="margin-bottom: 15px; color: var(--running);">Mis Búsquedas Publicadas</h3>
+                <div id="lista-ofertas-cafeteria">
+                    <p style="text-align:center; opacity:0.7;">Cargando tus búsquedas...</p>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- OTRAS PESTAÑAS -->
     <div id="tab-tostadores" class="hidden">
         <div class="panel" style="margin-bottom: 20px; padding: 15px;">
             <div class="panel-header-flex" style="margin-bottom: 10px;">
@@ -337,10 +368,16 @@
 document.addEventListener('DOMContentLoaded', () => {
 'use strict';
 
+// ----------------------------------------------------
+// 1. CONFIGURACIÓN SUPABASE
+// ----------------------------------------------------
 const SUPABASE_URL = 'https://acvjodjnjjwujrkriztc.supabase.co';
 const SUPABASE_KEY = 'sb_publishable__wLe7LUdE85jiO7UY8zQuA_tWCa76-l';
 const _supabase = (typeof supabase !== 'undefined') ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
+// ----------------------------------------------------
+// 2. CONFIGURACIÓN GOOGLE SHEETS
+// ----------------------------------------------------
 const SHEET_ID = "10vUOhRr7IAXlRrkBphxEP4ApXYBgrnuxJq6G83GnfHI";
 const urlSheet = gid => `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}`;
 
@@ -428,9 +465,11 @@ let cursos = [];
 let tostadores = [];
 let maquinas = [];
 
+// ----------------------------------------------------
+// 3. MAPAS Y GPS
+// ----------------------------------------------------
 let mapaFederal = null, layerFederal = null;
 let mapaRadar = null, layerRadar = null;
-
 const boundsArgentina = (typeof L !== 'undefined') ? L.latLngBounds(L.latLng(-56.0, -74.0), L.latLng(-21.0, -53.0)) : null;
 
 function crearMapa(id, opciones = {}) {
@@ -497,6 +536,62 @@ function recomendarCafesAlAzar() {
     Swal.fire({ title: '🎲 Te sugerimos ir a:', html: htmlContent, customClass: { popup: 'swal-custom-popup', confirmButton: 'swal-custom-btn swal-custom-btn-confirm' }, confirmButtonText: '¡Genial!' });
 }
 
+function medirDesdeDireccion() {
+    Swal.fire({
+        title: '¿Dónde estás?',
+        html: `<p style="font-size:0.9rem; color:var(--text); opacity:0.8; margin-bottom:15px;">Empezá a escribir tu dirección (calle y ciudad) para buscar cafés cercanos.</p><input id="swal-autocomplete-input" class="swal-custom-input" placeholder="Ej: Paraguay 3123, Olivos..." autocomplete="off"><div id="autocomplete-results" class="swal-scrollable-container" style="text-align:left; margin-top:10px; max-height:200px;"></div>`,
+        showConfirmButton: false, showCancelButton: true, cancelButtonText: 'Cerrar', customClass: { popup: 'swal-custom-popup', cancelButton: 'swal-custom-btn swal-custom-btn-cancel' },
+        didOpen: () => {
+            const input = $('swal-autocomplete-input'); const resultsContainer = $('autocomplete-results'); let timeout = null; let solicitudId = 0;
+            input.focus();
+            input.addEventListener('input', () => {
+                clearTimeout(timeout); const val = input.value.trim();
+                if (val.length < 4) { resultsContainer.innerHTML = ''; return; }
+                resultsContainer.innerHTML = '<div style="padding:10px; color:var(--primary); font-weight:bold; text-align:center;">Buscando...</div>';
+                timeout = setTimeout(async () => {
+                    const miId = ++solicitudId;
+                    try {
+                        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&countrycodes=ar&addressdetails=1&limit=6`);
+                        const data = await res.json();
+                        if (miId !== solicitudId) return;
+                        resultsContainer.innerHTML = '';
+                        if (!data.length) { resultsContainer.innerHTML = '<div style="padding:10px; opacity:0.7; text-align:center;">No encontramos direcciones exactas.</div>'; return; }
+                        data.forEach(item => {
+                            const partes = [];
+                            if (item.address.road) partes.push(item.address.road + (item.address.house_number ? " " + item.address.house_number : ""));
+                            const localidad = item.address.city || item.address.town || item.address.village;
+                            if (localidad) partes.push(localidad);
+                            if (item.address.state) partes.push(item.address.state);
+                            const nombreLimpio = partes.length > 0 ? partes.join(", ") : item.display_name.split(',').slice(0, 3).join(', ');
+                            const primera = nombreLimpio.split(',')[0]; const resto = nombreLimpio.includes(',') ? nombreLimpio.substring(nombreLimpio.indexOf(',') + 1) : '';
+                            const btn = document.createElement('button');
+                            btn.style.cssText = 'width: 100%; text-align: left; background: rgba(255,255,255,0.7); color: var(--text); border: 1px solid var(--border); padding: 12px; border-radius: 10px; cursor: pointer; margin-bottom: 8px; font-family: "Inter", sans-serif; font-size:0.9rem; transition: 0.2s;';
+                            btn.innerHTML = `📍 <b>${esc(primera)}</b><br><small style="opacity:0.7">${esc(resto)}</small>`;
+                            btn.onmouseover = () => btn.style.borderColor = 'var(--primary)';
+                            btn.onmouseout = () => btn.style.borderColor = 'var(--border)';
+                            btn.onclick = () => { Swal.close(); $('status').innerText = `Viendo lugares cerca de ${primera}`; renderizarLista(bd, { lat: parseFloat(item.lat), lon: parseFloat(item.lon) }); };
+                            resultsContainer.appendChild(btn);
+                        });
+                    } catch (e) { if (miId !== solicitudId) return; resultsContainer.innerHTML = '<div style="padding:10px; color:var(--running); text-align:center;">Error al conectar con el mapa.</div>'; }
+                }, 800);
+            });
+        }
+    });
+}
+
+function usarMiGPS() {
+    if (!navigator.geolocation) return Swal.fire("Error", "Tu navegador no soporta GPS.", "error");
+    $('status').innerText = "Conectando con GPS...";
+    navigator.geolocation.getCurrentPosition(
+        p => { $('status').innerText = ""; renderizarLista(bd, { lat: p.coords.latitude, lon: p.coords.longitude }); },
+        () => { $('status').innerText = ""; Swal.fire("Aviso", "No pudimos obtener tu ubicación. Revisá los permisos.", "warning"); },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+    );
+}
+
+// ----------------------------------------------------
+// 4. FUNCIONES PRINCIPALES BUSCADOR
+// ----------------------------------------------------
 async function cargarPromedios() {
     if (!_supabase) return;
     try {
@@ -845,10 +940,12 @@ async function registrarVisita() {
     }
 }
 
-/* ============================================================
-   MÓDULO DE TALENTO CON MAGIC LINK (SUPABASE AUTH)
-============================================================ */
+// ----------------------------------------------------
+// 5. MÓDULO DE TALENTO CON MAGIC LINK (SUPABASE AUTH)
+// ----------------------------------------------------
 let sesionActual = null;
+let modoTalento = 'profesional'; // 'profesional' o 'cafeteria'
+let ofertasLocalesGlobales = []; // Cache en memoria
 
 function verificarSesionActiva() {
     if (!_supabase) return;
@@ -873,7 +970,8 @@ function actualizarUITalento() {
     } else {
         $('talento-login').classList.remove('hidden');
         $('talento-dashboard').classList.add('hidden');
-        $('lista-ofertas-trabajo').innerHTML = '';
+        $('lista-ofertas-profesional').innerHTML = '';
+        $('lista-ofertas-cafeteria').innerHTML = '';
     }
 }
 
@@ -899,7 +997,7 @@ async function ingresarConMagicLink() {
         if (error) {
             Swal.fire('Error', 'No pudimos enviar el correo. Intentá de nuevo.', 'error');
         } else {
-            Swal.fire('¡Revisá tu correo!', 'Te enviamos un link para entrar. Podés cerrar esta ventana o minimizarla.', 'success');
+            Swal.fire('¡Revisá tu correo!', 'Te enviamos un link para entrar. Podés cerrar esta ventana.', 'success');
         }
     }
 }
@@ -910,44 +1008,40 @@ async function cerrarSesion() {
     Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Sesión cerrada', showConfirmButton: false, timer: 1500 });
 }
 
+function setModoTalento(modo) {
+    modoTalento = modo;
+    $('btn-modo-prof').classList.toggle('active', modo === 'profesional');
+    $('btn-modo-cafe').classList.toggle('active', modo === 'cafeteria');
+    $('vista-profesional').classList.toggle('hidden', modo !== 'profesional');
+    $('vista-cafeteria').classList.toggle('hidden', modo !== 'cafeteria');
+    renderizarOfertasTrabajoUI();
+}
+
 async function cargarOfertasTrabajo() {
     if (!_supabase || !sesionActual) return;
     try {
         const { data, error } = await _supabase.from('ofertas_trabajo').select('*').order('created_at', { ascending: false });
         if (error) throw error;
-        renderizarOfertasTrabajo(data || []);
-    } catch (error) { $('lista-ofertas-trabajo').innerHTML = `<p style="text-align:center; opacity:0.7;">No se pudieron cargar las ofertas.</p>`; }
+        ofertasLocalesGlobales = data || [];
+        renderizarOfertasTrabajoUI();
+    } catch (error) { 
+        console.error(error);
+        $('lista-ofertas-profesional').innerHTML = `<p style="text-align:center; opacity:0.7;">Error cargando datos.</p>`; 
+        $('lista-ofertas-cafeteria').innerHTML = `<p style="text-align:center; opacity:0.7;">Error cargando datos.</p>`; 
+    }
 }
 
-function renderizarOfertasTrabajo(ofertas) {
-    const contenedor = $('lista-ofertas-trabajo');
-    const misOfertas = ofertas.filter(o => o.cafeteria_id === sesionActual.user.id);
-    const ofertasActivas = ofertas.filter(o => o.estado_oferta === 'Activa' && o.cafeteria_id !== sesionActual.user.id);
+function renderizarOfertasTrabajoUI() {
+    const misOfertas = ofertasLocalesGlobales.filter(o => o.cafeteria_id === sesionActual.user.id);
+    const ofertasActivas = ofertasLocalesGlobales.filter(o => o.estado_oferta === 'Activa' && o.cafeteria_id !== sesionActual.user.id);
 
-    let html = '';
-
-    if (misOfertas.length > 0) {
-        html += `<h4 style="color:var(--running); margin-bottom:10px;">Búsquedas que publicaste:</h4>`;
-        misOfertas.forEach(oferta => {
-            const estadoTexto = oferta.estado_oferta === 'Activa' ? '🟢 Activa' : '🔴 Cerrada';
-            html += `
-                <div class="cafe-card" style="flex-direction:column; align-items:flex-start; background: rgba(255,255,255,0.4); border-color:var(--running);">
-                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                        <h4 style="margin:0; color:var(--text);">${esc(oferta.titulo)}</h4>
-                        <span style="font-size:0.8rem; font-weight:700;">${estadoTexto}</span>
-                    </div>
-                    ${oferta.estado_oferta === 'Activa' ? `<button class="btn-accion btn-outline" style="margin-top:10px; padding:6px 12px; font-size:0.8rem;" onclick="cerrarMiOferta('${oferta.id}')">Marcar como cubierta</button>` : ''}
-                </div>`;
-        });
-        html += `<hr style="border:0; border-top:1px solid var(--border); margin:20px 0;">`;
-    }
-
+    // RENDERIZAR VISTA PROFESIONAL
+    let htmlProf = '';
     if (ofertasActivas.length === 0) {
-        html += `<div class="panel" style="text-align:center; padding: 30px 20px; border: 1px dashed var(--border);"><p style="color: var(--text); opacity: 0.8; margin:0;">No hay otras búsquedas activas en este momento.</p></div>`;
+        htmlProf = `<div class="panel" style="text-align:center; padding: 30px 20px; border: 1px dashed var(--border);"><p style="color: var(--text); opacity: 0.8; margin:0;">No hay búsquedas activas de cafeterías en este momento.</p></div>`;
     } else {
-        html += `<h4 style="color:var(--primary); margin-bottom:10px;">Oportunidades de la comunidad:</h4>`;
         ofertasActivas.forEach(oferta => {
-            html += `
+            htmlProf += `
                 <div class="cafe-card" style="flex-direction:column; align-items:flex-start;">
                     <div style="width: 100%;">
                         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
@@ -960,48 +1054,92 @@ function renderizarOfertasTrabajo(ofertas) {
                 </div>`;
         });
     }
-    contenedor.innerHTML = html;
+    $('lista-ofertas-profesional').innerHTML = htmlProf;
+
+    // RENDERIZAR VISTA CAFETERÍA
+    let htmlCafe = '';
+    if (misOfertas.length === 0) {
+        htmlCafe = `<div class="panel" style="text-align:center; padding: 30px 20px; border: 1px dashed var(--border);"><p style="color: var(--text); opacity: 0.8; margin:0;">Aún no publicaste ninguna búsqueda.</p></div>`;
+    } else {
+        misOfertas.forEach(oferta => {
+            const estadoTexto = oferta.estado_oferta === 'Activa' ? '🟢 Activa' : '🔴 Cerrada';
+            htmlCafe += `
+                <div class="cafe-card" style="flex-direction:column; align-items:flex-start; background: rgba(255,255,255,0.4); border-color:var(--running);">
+                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                        <h4 style="margin:0; color:var(--text);">${esc(oferta.titulo)}</h4>
+                        <span style="font-size:0.8rem; font-weight:700;">${estadoTexto}</span>
+                    </div>
+                    <div style="display:flex; gap:10px; width:100%; margin-top:15px;">
+                        ${oferta.estado_oferta === 'Activa' 
+                            ? `<button class="btn-accion btn-outline" style="flex:1; font-size:0.8rem;" onclick="actualizarEstadoOferta('${oferta.id}', 'Cerrada')">Marcar Cubierta</button>` 
+                            : `<button class="btn-accion btn-outline" style="flex:1; font-size:0.8rem;" onclick="actualizarEstadoOferta('${oferta.id}', 'Activa')">Reabrir</button>`}
+                        <button class="btn-accion" style="background:var(--text); color:white; font-size:0.8rem; padding: 8px 15px;" onclick="eliminarOferta('${oferta.id}')">Eliminar</button>
+                    </div>
+                </div>`;
+        });
+    }
+    $('lista-ofertas-cafeteria').innerHTML = htmlCafe;
 }
 
-function abrirRegistroTalento() {
-    Swal.fire({
-        title: 'Mi Ficha Profesional',
-        html: `
-            <p style="font-size:0.9rem; color:var(--text); opacity:0.8; margin-bottom:15px; text-align:left;">Completá o actualizá tus datos. Si apagás el perfil, las cafeterías dejarán de verte.</p>
-            <input id="talento-nombre" class="swal-custom-input" placeholder="Nombre" style="margin-bottom:10px;">
-            <input id="talento-apellido" class="swal-custom-input" placeholder="Apellido (Oculto al público)" style="margin-bottom:10px;">
-            <input id="talento-contacto" type="text" class="swal-custom-input" placeholder="WhatsApp o Email de contacto" style="margin-bottom:10px;">
-            <select id="talento-rol" class="swal-custom-input" style="margin-bottom:10px;">
-                <option value="Barista">Barista</option>
-                <option value="Tostador">Tostador / Roaster</option>
-                <option value="Encargado">Encargado de Local</option>
-                <option value="All-rounder">All-rounder</option>
-            </select>
-            <select id="talento-estado" class="swal-custom-input" style="margin-bottom:10px; font-weight:bold; color:var(--running);">
-                <option value="Activo">🟢 Buscando Trabajo / Disponible</option>
-                <option value="Inactivo">🔴 No busco trabajo ahora</option>
-            </select>
-        `,
-        customClass: { popup: 'swal-custom-popup', confirmButton: 'swal-custom-btn swal-custom-btn-confirm', cancelButton: 'swal-custom-btn swal-custom-btn-cancel' },
-        showCancelButton: true, confirmButtonText: 'Guardar Ficha', cancelButtonText: 'Cancelar',
-        preConfirm: () => {
-            const nombre = $('talento-nombre').value.trim();
-            const contacto = $('talento-contacto').value.trim();
-            if(!nombre || !contacto) { Swal.showValidationMessage('Nombre y contacto son obligatorios.'); return false; }
-            return { nombre, apellido: $('talento-apellido').value.trim(), telefono: contacto, rol_principal: $('talento-rol').value, zona_residencia: $('talento-estado').value };
-        }
-    }).then(async (result) => {
-        if(result.isConfirmed) {
-            Swal.fire({ title: '¡Ficha Guardada!', text: 'Tus datos fueron actualizados en tu panel privado.', icon: 'success', customClass: { popup: 'swal-custom-popup', confirmButton: 'swal-custom-btn swal-custom-btn-confirm' } });
-        }
-    });
+async function abrirFichaProfesional() {
+    if (!_supabase || !sesionActual) return Swal.fire('Error', 'Debes iniciar sesión.', 'error');
+
+    Swal.fire({ title: 'Cargando tu ficha...', didOpen: () => Swal.showLoading() });
+
+    try {
+        const { data, error } = await _supabase.from('profesionales').select('*').eq('auth_id', sesionActual.user.id).single();
+        if (error && error.code !== 'PGRST116') throw error;
+
+        const ficha = data || { nombre: '', apellido: '', telefono: '', rol_principal: '', zona_residencia: 'Activo' };
+        Swal.close();
+
+        Swal.fire({
+            title: 'Mi Ficha Profesional',
+            html: `
+                <input id="talento-nombre" class="swal-custom-input" placeholder="Nombre" style="margin-bottom:10px;" value="${esc(ficha.nombre)}">
+                <input id="talento-apellido" class="swal-custom-input" placeholder="Apellido (Oculto)" style="margin-bottom:10px;" value="${esc(ficha.apellido)}">
+                <input id="talento-contacto" type="text" class="swal-custom-input" placeholder="WhatsApp / Email" style="margin-bottom:10px;" value="${esc(ficha.telefono)}">
+                <select id="talento-rol" class="swal-custom-input" style="margin-bottom:10px;">
+                    <option value="Barista" ${ficha.rol_principal === 'Barista' ? 'selected' : ''}>Barista</option>
+                    <option value="Tostador" ${ficha.rol_principal === 'Tostador' ? 'selected' : ''}>Tostador / Roaster</option>
+                    <option value="Encargado" ${ficha.rol_principal === 'Encargado' ? 'selected' : ''}>Encargado de Local</option>
+                    <option value="All-rounder" ${ficha.rol_principal === 'All-rounder' ? 'selected' : ''}>All-rounder</option>
+                </select>
+                <select id="talento-estado" class="swal-custom-input" style="margin-bottom:10px; font-weight:bold; color:var(--running);">
+                    <option value="Activo" ${ficha.zona_residencia === 'Activo' ? 'selected' : ''}>🟢 Buscando Trabajo / Disponible</option>
+                    <option value="Inactivo" ${ficha.zona_residencia === 'Inactivo' ? 'selected' : ''}>🔴 No busco trabajo ahora</option>
+                </select>
+            `,
+            customClass: { popup: 'swal-custom-popup', confirmButton: 'swal-custom-btn swal-custom-btn-confirm', cancelButton: 'swal-custom-btn swal-custom-btn-cancel' },
+            showCancelButton: true, confirmButtonText: 'Guardar Ficha', cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                const nombre = $('talento-nombre').value.trim();
+                const contacto = $('talento-contacto').value.trim();
+                if(!nombre || !contacto) { Swal.showValidationMessage('Nombre y contacto son obligatorios.'); return false; }
+                return { auth_id: sesionActual.user.id, nombre, apellido: $('talento-apellido').value.trim(), telefono: contacto, rol_principal: $('talento-rol').value, zona_residencia: $('talento-estado').value };
+            }
+        }).then(async (result) => {
+            if(result.isConfirmed) {
+                Swal.fire({ title: 'Guardando...', didOpen: () => Swal.showLoading() });
+                const { error: upsertError } = await _supabase.from('profesionales').upsert(result.value, { onConflict: 'auth_id' }); 
+                if (upsertError) {
+                    console.error("Error ficha:", upsertError);
+                    Swal.fire('Error', 'No se pudo guardar la ficha.', 'error');
+                } else {
+                    Swal.fire('¡Ficha Guardada!', 'Tus datos fueron actualizados.', 'success');
+                }
+            }
+        });
+    } catch (err) {
+        console.error(err);
+        Swal.fire('Error', 'Hubo un problema al cargar tu ficha.', 'error');
+    }
 }
 
 function abrirPublicarOferta() {
     Swal.fire({
         title: 'Publicar Búsqueda',
         html: `
-            <p style="font-size:0.9rem; color:var(--text); opacity:0.8; margin-bottom:15px; text-align:left;">Publicá tu necesidad. Los perfiles que se postulen llegarán a tu correo.</p>
             <input id="oferta-titulo" class="swal-custom-input" placeholder="Título (Ej: Buscamos Barista Semi-Sr)" style="margin-bottom:10px;">
             <select id="oferta-tipo" class="swal-custom-input" style="margin-bottom:10px;">
                 <option value="Fijo Full-time">Fijo Full-time</option>
@@ -1016,13 +1154,16 @@ function abrirPublicarOferta() {
         preConfirm: () => {
             const titulo = $('oferta-titulo').value.trim();
             if(!titulo) { Swal.showValidationMessage('El título es obligatorio.'); return false; }
-            return { titulo, tipo_puesto: $('oferta-tipo').value, descripcion_corta: $('oferta-desc').value.trim(), cafeteria_id: sesionActual.user.id };
+            return { titulo, tipo_puesto: $('oferta-tipo').value, descripcion_corta: $('oferta-desc').value.trim(), cafeteria_id: sesionActual.user.id, estado_oferta: 'Activa' };
         }
     }).then(async (result) => {
         if(result.isConfirmed) {
-            const { error } = await _supabase.from('ofertas_trabajo').insert([result.value]);
-            if(error) { Swal.fire('Error', 'No pudimos publicar la oferta', 'error'); }
-            else { 
+            Swal.fire({ title: 'Publicando...', didOpen: () => Swal.showLoading() });
+            const { error } = await _supabase.from('ofertas_trabajo').insert([result.value]).select();
+            if(error) { 
+                console.error("Error insertando oferta:", error);
+                Swal.fire('Error', 'No pudimos publicar la oferta', 'error'); 
+            } else { 
                 Swal.fire('¡Publicada!', 'La oferta ya está visible para los profesionales.', 'success'); 
                 cargarOfertasTrabajo();
             }
@@ -1030,24 +1171,37 @@ function abrirPublicarOferta() {
     });
 }
 
-async function cerrarMiOferta(ofertaId) {
+async function actualizarEstadoOferta(ofertaId, nuevoEstado) {
+    Swal.fire({ title: 'Procesando...', didOpen: () => Swal.showLoading() });
+    const { error } = await _supabase.from('ofertas_trabajo').update({ estado_oferta: nuevoEstado }).eq('id', ofertaId);
+    if(error) {
+        console.error(error);
+        Swal.fire('Error', 'No pudimos cambiar el estado.', 'error');
+    } else { 
+        toast('success', `Búsqueda ${nuevoEstado.toLowerCase()}`); 
+        cargarOfertasTrabajo(); 
+    }
+}
+
+async function eliminarOferta(ofertaId) {
     Swal.fire({
-        title: '¿Ya contrataste?', text: 'Esto quitará la publicación del muro público.', icon: 'warning',
-        showCancelButton: true, confirmButtonText: 'Sí, cerrar búsqueda', cancelButtonText: 'Cancelar',
+        title: '¿Eliminar definitivamente?', text: 'Esto borrará la publicación de tu historial para siempre.', icon: 'warning',
+        showCancelButton: true, confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar',
         customClass: { popup: 'swal-custom-popup', confirmButton: 'swal-custom-btn swal-custom-btn-confirm', cancelButton: 'swal-custom-btn swal-custom-btn-cancel' }
     }).then(async (result) => {
         if (result.isConfirmed) {
-            const { error } = await _supabase.from('ofertas_trabajo').update({ estado_oferta: 'Cerrada' }).eq('id', ofertaId);
-            if(error) Swal.fire('Error', 'No pudimos cerrarla', 'error');
-            else { toast('success', 'Búsqueda cerrada'); cargarOfertasTrabajo(); }
+            Swal.fire({ title: 'Eliminando...', didOpen: () => Swal.showLoading() });
+            const { error } = await _supabase.from('ofertas_trabajo').delete().eq('id', ofertaId);
+            if(error) Swal.fire('Error', 'No se pudo eliminar.', 'error');
+            else { toast('success', 'Búsqueda eliminada'); cargarOfertasTrabajo(); }
         }
     });
 }
 
 function postularseOferta(ofertaId, tituloOferta) {
     Swal.fire({
-        title: 'Postularse', text: `Vas a enviar tu perfil profesional a la oferta: "${tituloOferta}". ¿Confirmás?`, icon: 'question',
-        showCancelButton: true, confirmButtonText: 'Sí, enviar mi ficha', cancelButtonText: 'Cancelar',
+        title: 'Postularse', text: `Vas a enviar tu ficha profesional a la oferta: "${tituloOferta}". ¿Confirmás?`, icon: 'question',
+        showCancelButton: true, confirmButtonText: 'Sí, postularme', cancelButtonText: 'Cancelar',
         customClass: { popup: 'swal-custom-popup', confirmButton: 'swal-custom-btn swal-custom-btn-confirm', cancelButton: 'swal-custom-btn swal-custom-btn-cancel' }
     }).then(async (result) => {
         if(result.isConfirmed) {
@@ -1177,7 +1331,7 @@ async function iniciarSistema() {
 
 Object.assign(window, {
     toggleMenu, cambiarPestaña, filtrarPorTexto, medirDesdeDireccion, usarMiGPS, actualizarFiltrosMapa, dibujarMapaFederal, renderizarTostadores, renderizarMaquinas, renderizarCursos, recomendarCafesAlAzar, abrirReporte, abrirSumate,
-    ingresarConMagicLink, cerrarSesion, abrirRegistroTalento, abrirPublicarOferta, postularseOferta, cerrarMiOferta
+    ingresarConMagicLink, cerrarSesion, setModoTalento, abrirFichaProfesional, abrirPublicarOferta, actualizarEstadoOferta, eliminarOferta, postularseOferta
 });
 
 inicializarMapas();
