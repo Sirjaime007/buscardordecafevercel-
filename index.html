@@ -601,10 +601,16 @@ async function cargarMaquinas() {
 async function registrarVisita() {
     try {
         const res = await fetch('https://api.counterapi.dev/v1/cofiteca/visitas/up');
+        if (!res.ok) throw new Error("Fallo API");
         const data = await res.json();
-        $('contador-visitas').innerText = data.count;
+        if (data && data.count) {
+            $('contador-visitas').innerText = data.count;
+        } else {
+            throw new Error("Datos inválidos");
+        }
     } catch (e) {
         let visitas = parseInt(localStorage.getItem('cofiteca_visitas_locales') || '2540');
+        if (isNaN(visitas)) visitas = 2540;
         visitas++;
         localStorage.setItem('cofiteca_visitas_locales', visitas);
         $('contador-visitas').innerText = visitas;
@@ -619,13 +625,11 @@ let sesionActual = null;
 function verificarSesionActiva() {
     if (!_supabase) return;
     
-    // Check initial session
     _supabase.auth.getSession().then(({ data: { session } }) => {
         sesionActual = session;
         actualizarUITalento();
     });
 
-    // Listen for changes (login, logout, magic link verification)
     _supabase.auth.onAuthStateChange((_event, session) => {
         sesionActual = session;
         actualizarUITalento();
@@ -641,7 +645,7 @@ function actualizarUITalento() {
     } else {
         $('talento-login').classList.remove('hidden');
         $('talento-dashboard').classList.add('hidden');
-        $('lista-ofertas-trabajo').innerHTML = ''; // Limpiamos para seguridad
+        $('lista-ofertas-trabajo').innerHTML = '';
     }
 }
 
@@ -654,17 +658,11 @@ async function ingresarConMagicLink() {
         confirmButtonText: 'Enviar link mágico',
         showCancelButton: true,
         cancelButtonText: 'Cancelar',
-        customClass: {
-            popup: 'swal-custom-popup',
-            confirmButton: 'swal-custom-btn swal-custom-btn-confirm',
-            cancelButton: 'swal-custom-btn swal-custom-btn-cancel',
-            input: 'swal-custom-input'
-        }
+        customClass: { popup: 'swal-custom-popup', confirmButton: 'swal-custom-btn swal-custom-btn-confirm', cancelButton: 'swal-custom-btn swal-custom-btn-cancel', input: 'swal-custom-input' }
     });
 
     if (email) {
         Swal.fire({ title: 'Enviando...', didOpen: () => Swal.showLoading() });
-        
         const { error } = await _supabase.auth.signInWithOtp({ 
             email: email,
             options: { emailRedirectTo: window.location.origin }
@@ -695,8 +693,6 @@ async function cargarOfertasTrabajo() {
 
 function renderizarOfertasTrabajo(ofertas) {
     const contenedor = $('lista-ofertas-trabajo');
-    
-    // Dividir las ofertas: Las mías (si publiqué) y Las Activas de otros.
     const misOfertas = ofertas.filter(o => o.cafeteria_id === sesionActual.user.id);
     const ofertasActivas = ofertas.filter(o => o.estado_oferta === 'Activa' && o.cafeteria_id !== sesionActual.user.id);
 
@@ -736,7 +732,6 @@ function renderizarOfertasTrabajo(ofertas) {
                 </div>`;
         });
     }
-
     contenedor.innerHTML = html;
 }
 
@@ -765,7 +760,7 @@ function abrirRegistroTalento() {
             const nombre = $('talento-nombre').value.trim();
             const contacto = $('talento-contacto').value.trim();
             if(!nombre || !contacto) { Swal.showValidationMessage('Nombre y contacto son obligatorios.'); return false; }
-            return { nombre, apellido: $('talento-apellido').value.trim(), telefono: contacto, rol_principal: $('talento-rol').value, zona_residencia: $('talento-estado').value }; // Usamos zona_residencia temporalmente para guardar el estado en el MVP
+            return { nombre, apellido: $('talento-apellido').value.trim(), telefono: contacto, rol_principal: $('talento-rol').value, zona_residencia: $('talento-estado').value };
         }
     }).then(async (result) => {
         if(result.isConfirmed) {
@@ -828,8 +823,6 @@ function postularseOferta(ofertaId, tituloOferta) {
         customClass: { popup: 'swal-custom-popup', confirmButton: 'swal-custom-btn swal-custom-btn-confirm', cancelButton: 'swal-custom-btn swal-custom-btn-cancel' }
     }).then(async (result) => {
         if(result.isConfirmed) {
-            // Nota de seguridad: El envío del email a la cafetería se dispara vía webhook desde Supabase,
-            // pero el frontend registra la intención en la base de datos de manera segura.
             Swal.fire('¡Postulación Enviada!', 'La cafetería recibirá tu ficha de contacto. Suerte en el proceso.', 'success'); 
         }
     });
@@ -841,7 +834,6 @@ function postularseOferta(ofertaId, tituloOferta) {
 async function iniciarSistema() {
     if (typeof Papa === 'undefined') { $('contador-total').innerText = 'No se pudo cargar el lector de datos.'; return; }
     
-    // Inicializar lógica de Autenticación
     verificarSesionActiva();
 
     const bdCache = cache.leer('cofi_bd');
@@ -857,9 +849,109 @@ async function iniciarSistema() {
     cargarPromedios().then(() => { if (bd.length) { filtrarPorTexto(); dibujarMapaFederal(); } });
 }
 
+function toggleMenu() { $('sidebar').classList.toggle('abierto'); $('sidebar-overlay').classList.toggle('activo'); }
+
+function cambiarPestaña(tab) {
+    TABS.forEach(t => { const el = $('tab-' + t); if (el) el.classList.toggle('hidden', t !== tab); });
+    document.querySelectorAll('.nav-link').forEach(link => link.classList.toggle('active', link.getAttribute('data-tab') === tab));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-target') === tab));
+    if ($('sidebar').classList.contains('abierto')) toggleMenu();
+    if (tab === 'mapa' && mapaFederal) setTimeout(() => mapaFederal.invalidateSize(), 300);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function medirDesdeDireccion() {
+    Swal.fire({
+        title: '¿Dónde estás?',
+        html: `<p style="font-size:0.9rem; color:var(--text); opacity:0.8; margin-bottom:15px;">Empezá a escribir tu dirección (calle y ciudad) para buscar cafés cercanos.</p><input id="swal-autocomplete-input" class="swal-custom-input" placeholder="Ej: Paraguay 3123, Olivos..." autocomplete="off"><div id="autocomplete-results" class="swal-scrollable-container" style="text-align:left; margin-top:10px; max-height:200px;"></div>`,
+        showConfirmButton: false, showCancelButton: true, cancelButtonText: 'Cerrar', customClass: { popup: 'swal-custom-popup', cancelButton: 'swal-custom-btn swal-custom-btn-cancel' },
+        didOpen: () => {
+            const input = $('swal-autocomplete-input'); const resultsContainer = $('autocomplete-results'); let timeout = null; let solicitudId = 0;
+            input.focus();
+            input.addEventListener('input', () => {
+                clearTimeout(timeout); const val = input.value.trim();
+                if (val.length < 4) { resultsContainer.innerHTML = ''; return; }
+                resultsContainer.innerHTML = '<div style="padding:10px; color:var(--primary); font-weight:bold; text-align:center;">Buscando...</div>';
+                timeout = setTimeout(async () => {
+                    const miId = ++solicitudId;
+                    try {
+                        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&countrycodes=ar&addressdetails=1&limit=6`);
+                        const data = await res.json();
+                        if (miId !== solicitudId) return;
+                        resultsContainer.innerHTML = '';
+                        if (!data.length) { resultsContainer.innerHTML = '<div style="padding:10px; opacity:0.7; text-align:center;">No encontramos direcciones exactas.</div>'; return; }
+                        data.forEach(item => {
+                            const partes = [];
+                            if (item.address.road) partes.push(item.address.road + (item.address.house_number ? " " + item.address.house_number : ""));
+                            const localidad = item.address.city || item.address.town || item.address.village;
+                            if (localidad) partes.push(localidad);
+                            if (item.address.state) partes.push(item.address.state);
+                            const nombreLimpio = partes.length > 0 ? partes.join(", ") : item.display_name.split(',').slice(0, 3).join(', ');
+                            const primera = nombreLimpio.split(',')[0]; const resto = nombreLimpio.includes(',') ? nombreLimpio.substring(nombreLimpio.indexOf(',') + 1) : '';
+                            const btn = document.createElement('button');
+                            btn.style.cssText = 'width: 100%; text-align: left; background: rgba(255,255,255,0.7); color: var(--text); border: 1px solid var(--border); padding: 12px; border-radius: 10px; cursor: pointer; margin-bottom: 8px; font-family: "Inter", sans-serif; font-size:0.9rem; transition: 0.2s;';
+                            btn.innerHTML = `📍 <b>${esc(primera)}</b><br><small style="opacity:0.7">${esc(resto)}</small>`;
+                            btn.onmouseover = () => btn.style.borderColor = 'var(--primary)';
+                            btn.onmouseout = () => btn.style.borderColor = 'var(--border)';
+                            btn.onclick = () => { Swal.close(); $('status').innerText = `Viendo lugares cerca de ${primera}`; renderizarLista(bd, { lat: parseFloat(item.lat), lon: parseFloat(item.lon) }); };
+                            resultsContainer.appendChild(btn);
+                        });
+                    } catch (e) { if (miId !== solicitudId) return; resultsContainer.innerHTML = '<div style="padding:10px; color:var(--running); text-align:center;">Error al conectar con el mapa.</div>'; }
+                }, 800);
+            });
+        }
+    });
+}
+
+function usarMiGPS() {
+    if (!navigator.geolocation) return Swal.fire("Error", "Tu navegador no soporta GPS.", "error");
+    $('status').innerText = "Conectando con GPS...";
+    navigator.geolocation.getCurrentPosition(
+        p => { $('status').innerText = ""; renderizarLista(bd, { lat: p.coords.latitude, lon: p.coords.longitude }); },
+        () => { $('status').innerText = ""; Swal.fire("Aviso", "No pudimos obtener tu ubicación. Revisá los permisos.", "warning"); },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+    );
+}
+
+async function abrirReporte() {
+    const { value: formValues } = await Swal.fire({
+        title: 'Reportar Novedad', imageUrl: 'https://i.postimg.cc/yxbDGB7P/COFITECA-LOGO-02.png', imageWidth: 60,
+        customClass: { popup: 'swal-custom-popup', confirmButton: 'swal-custom-btn swal-custom-btn-confirm', cancelButton: 'swal-custom-btn swal-custom-btn-cancel', input: 'swal-custom-input' },
+        html: `<div style="text-align: left;"><select id="swal-tipo" class="swal-custom-input"><option value="Nuevo Local">☕ Sugerir nuevo local</option><option value="Local Cerrado">🚪 Local cerrado</option><option value="Dato Incorrecto">✏️ Dato incorrecto</option></select><input id="swal-local" class="swal-custom-input" placeholder="Ej: Café Gascón, MDQ" style="margin-top:10px;"><textarea id="swal-detalle" class="swal-custom-textarea swal-custom-input" placeholder="Detalles extras..." style="margin-top:10px;"></textarea></div>`,
+        showCancelButton: true, confirmButtonText: 'Enviar', cancelButtonText: 'Cancelar',
+        preConfirm: () => {
+            const local = $('swal-local').value.trim();
+            if (!local) { Swal.showValidationMessage('Contanos el nombre del local'); return false; }
+            return { tipo: $('swal-tipo').value, local, detalle: $('swal-detalle').value.trim() };
+        }
+    });
+    if (formValues) enviarReporteEmail(formValues);
+}
+
+async function abrirSumate() {
+    const { value: formValues } = await Swal.fire({
+        title: '¡Sumate al Buscador!', imageUrl: 'https://i.postimg.cc/yxbDGB7P/COFITECA-LOGO-02.png', imageWidth: 60,
+        customClass: { popup: 'swal-custom-popup', confirmButton: 'swal-custom-btn swal-custom-btn-confirm', cancelButton: 'swal-custom-btn swal-custom-btn-cancel', input: 'swal-custom-input' },
+        html: `<div style="text-align: left;"><select id="sumate-tipo" class="swal-custom-input"><option value="Cafetería / Tostaduría">☕ Cafetería / Tostaduría</option><option value="Evento">📅 Evento</option></select><input id="sumate-nombre" class="swal-custom-input" placeholder="Nombre de tu proyecto" style="margin-top:10px;"><input id="sumate-link" class="swal-custom-input" placeholder="Instagram o Link" style="margin-top:10px;"></div>`,
+        showCancelButton: true, confirmButtonText: 'Enviar', cancelButtonText: 'Cancelar',
+        preConfirm: () => {
+            const nombre = $('sumate-nombre').value.trim();
+            if (!nombre) { Swal.showValidationMessage('Contanos el nombre de tu proyecto'); return false; }
+            return { tipo: "✨ ALTA NUEVA: " + $('sumate-tipo').value, local: nombre, detalle: "Link/IG: " + $('sumate-link').value.trim() };
+        }
+    });
+    if (formValues) enviarReporteEmail(formValues);
+}
+
+async function enviarReporteEmail(datos) {
+    try {
+        const response = await fetch('/api/reporte?t=' + Date.now(), { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body: new URLSearchParams(datos) });
+        if (response.ok) { Swal.fire({ title: '¡Enviado!', text: 'Gracias por ayudar a mejorar la comunidad.', icon: 'success' }); } else { throw new Error("Error en servidor"); }
+    } catch (error) { Swal.fire({ title: 'Error Interno', text: 'El servidor rechazó el envío temporalmente.', icon: 'error' }); }
+}
+
 Object.assign(window, {
     toggleMenu, cambiarPestaña, filtrarPorTexto, medirDesdeDireccion, usarMiGPS, actualizarFiltrosMapa, dibujarMapaFederal, renderizarTostadores, renderizarMaquinas, renderizarCursos, recomendarCafesAlAzar, abrirReporte, abrirSumate,
-    // Funciones Talento
     ingresarConMagicLink, cerrarSesion, abrirRegistroTalento, abrirPublicarOferta, postularseOferta, cerrarMiOferta
 });
 
