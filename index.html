@@ -941,11 +941,12 @@ async function registrarVisita() {
 }
 
 // ----------------------------------------------------
-// 5. MÓDULO DE TALENTO CON MAGIC LINK (SUPABASE AUTH)
-// ----------------------------------------------------
+/* ============================================================
+   5. MÓDULO DE TALENTO CON MAGIC LINK (SUPABASE AUTH)
+============================================================ */
 let sesionActual = null;
-let modoTalento = 'profesional'; // 'profesional' o 'cafeteria'
-let ofertasLocalesGlobales = []; // Cache en memoria
+let rolUsuarioGuardado = null; // 'profesional' o 'cafeteria'
+let ofertasLocalesGlobales = []; 
 
 function verificarSesionActiva() {
     if (!_supabase) return;
@@ -966,12 +967,43 @@ function actualizarUITalento() {
         $('talento-login').classList.add('hidden');
         $('talento-dashboard').classList.remove('hidden');
         $('talento-user-email').innerText = sesionActual.user.email;
+        
+        // Verificar si ya eligió un rol previamente
+        rolUsuarioGuardado = localStorage.getItem('cofi_rol_' + sesionActual.user.id);
+        
+        if (!rolUsuarioGuardado) {
+            // Si es nuevo, forzamos a que elija rol
+            $('seleccion-rol-container').classList.remove('hidden');
+            $('vista-profesional').classList.add('hidden');
+            $('vista-cafeteria').classList.add('hidden');
+        } else {
+            // Ya tiene rol, ocultamos el selector y mostramos su vista
+            $('seleccion-rol-container').classList.add('hidden');
+            activarVistaPorRol(rolUsuarioGuardado);
+        }
         cargarOfertasTrabajo();
     } else {
+        // Usuario deslogueado
         $('talento-login').classList.remove('hidden');
         $('talento-dashboard').classList.add('hidden');
-        $('lista-ofertas-profesional').innerHTML = '';
-        $('lista-ofertas-cafeteria').innerHTML = '';
+    }
+}
+
+function definirRolUsuario(rol) {
+    localStorage.setItem('cofi_rol_' + sesionActual.user.id, rol);
+    rolUsuarioGuardado = rol;
+    $('seleccion-rol-container').classList.add('hidden');
+    activarVistaPorRol(rol);
+    if (rol === 'profesional') abrirFichaProfesional(); // Lo forzamos a crear su ficha si eligió profesional
+}
+
+function activarVistaPorRol(rol) {
+    if (rol === 'profesional') {
+        $('vista-profesional').classList.remove('hidden');
+        $('vista-cafeteria').classList.add('hidden');
+    } else {
+        $('vista-profesional').classList.add('hidden');
+        $('vista-cafeteria').classList.remove('hidden');
     }
 }
 
@@ -980,8 +1012,8 @@ async function ingresarConMagicLink() {
         title: 'Ingreso Seguro',
         input: 'email',
         inputPlaceholder: 'tu@email.com',
-        html: '<p style="font-size:0.9rem; opacity:0.8;">Te enviaremos un link de acceso seguro. No necesitás contraseña.</p>',
-        confirmButtonText: 'Enviar link mágico',
+        html: '<p style="font-size:0.9rem; opacity:0.8;">Te enviaremos un link mágico al correo.</p>',
+        confirmButtonText: 'Enviar link',
         showCancelButton: true,
         cancelButtonText: 'Cancelar',
         customClass: { popup: 'swal-custom-popup', confirmButton: 'swal-custom-btn swal-custom-btn-confirm', cancelButton: 'swal-custom-btn swal-custom-btn-cancel', input: 'swal-custom-input' }
@@ -990,14 +1022,12 @@ async function ingresarConMagicLink() {
     if (email) {
         Swal.fire({ title: 'Enviando...', didOpen: () => Swal.showLoading() });
         const { error } = await _supabase.auth.signInWithOtp({ 
-            email: email,
-            options: { emailRedirectTo: window.location.origin }
+            email: email, options: { emailRedirectTo: window.location.origin }
         });
-
         if (error) {
-            Swal.fire('Error', 'No pudimos enviar el correo. Intentá de nuevo.', 'error');
+            Swal.fire('Error', error.message.includes('rate') ? 'Límite de correos superado. Intentá en una hora.' : 'No pudimos enviar el correo.', 'error');
         } else {
-            Swal.fire('¡Revisá tu correo!', 'Te enviamos un link para entrar. Podés cerrar esta ventana.', 'success');
+            Swal.fire('¡Revisá tu correo!', 'Te enviamos un link para entrar.', 'success');
         }
     }
 }
@@ -1008,15 +1038,6 @@ async function cerrarSesion() {
     Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Sesión cerrada', showConfirmButton: false, timer: 1500 });
 }
 
-function setModoTalento(modo) {
-    modoTalento = modo;
-    $('btn-modo-prof').classList.toggle('active', modo === 'profesional');
-    $('btn-modo-cafe').classList.toggle('active', modo === 'cafeteria');
-    $('vista-profesional').classList.toggle('hidden', modo !== 'profesional');
-    $('vista-cafeteria').classList.toggle('hidden', modo !== 'cafeteria');
-    renderizarOfertasTrabajoUI();
-}
-
 async function cargarOfertasTrabajo() {
     if (!_supabase || !sesionActual) return;
     try {
@@ -1025,319 +1046,181 @@ async function cargarOfertasTrabajo() {
         ofertasLocalesGlobales = data || [];
         renderizarOfertasTrabajoUI();
     } catch (error) { 
-        console.error(error);
-        $('lista-ofertas-profesional').innerHTML = `<p style="text-align:center; opacity:0.7;">Error cargando datos.</p>`; 
-        $('lista-ofertas-cafeteria').innerHTML = `<p style="text-align:center; opacity:0.7;">Error cargando datos.</p>`; 
+        $('lista-ofertas-profesional').innerHTML = `<p style="text-align:center; opacity:0.7;">Error cargando ofertas. Permisos RLS bloqueados.</p>`; 
+        $('lista-ofertas-cafeteria').innerHTML = `<p style="text-align:center; opacity:0.7;">Error cargando tus búsquedas.</p>`; 
     }
 }
 
 function renderizarOfertasTrabajoUI() {
+    if (!rolUsuarioGuardado) return; // Si no tiene rol, no renderizamos nada aún
+
     const misOfertas = ofertasLocalesGlobales.filter(o => o.cafeteria_id === sesionActual.user.id);
     const ofertasActivas = ofertasLocalesGlobales.filter(o => o.estado_oferta === 'Activa' && o.cafeteria_id !== sesionActual.user.id);
 
-    // RENDERIZAR VISTA PROFESIONAL
-    let htmlProf = '';
-    if (ofertasActivas.length === 0) {
-        htmlProf = `<div class="panel" style="text-align:center; padding: 30px 20px; border: 1px dashed var(--border);"><p style="color: var(--text); opacity: 0.8; margin:0;">No hay búsquedas activas de cafeterías en este momento.</p></div>`;
-    } else {
-        ofertasActivas.forEach(oferta => {
-            htmlProf += `
-                <div class="cafe-card" style="flex-direction:column; align-items:flex-start;">
-                    <div style="width: 100%;">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
-                            <h3 class="cafe-title" style="margin: 0;">${esc(oferta.titulo)}</h3>
-                            <span class="event-badge job">${esc(oferta.tipo_puesto || 'General')}</span>
+    if (rolUsuarioGuardado === 'profesional') {
+        let htmlProf = '';
+        if (ofertasActivas.length === 0) {
+            htmlProf = `<div class="panel" style="text-align:center; padding: 30px 20px; border: 1px dashed var(--border);"><p style="opacity: 0.8; margin:0;">No hay búsquedas activas en este momento.</p></div>`;
+        } else {
+            ofertasActivas.forEach(oferta => {
+                htmlProf += `
+                    <div class="cafe-card" style="flex-direction:column; align-items:flex-start;">
+                        <div style="width: 100%;">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                                <h3 class="cafe-title" style="margin: 0;">${esc(oferta.titulo)}</h3>
+                                <span class="event-badge job">${esc(oferta.tipo_puesto || 'General')}</span>
+                            </div>
+                            <p style="font-size:0.95rem; color:var(--text); opacity:0.9; margin: 10px 0;">${esc(oferta.descripcion_corta)}</p>
+                            <button class="btn-accion btn-primary-gps" style="width:100%; margin-top:10px;" onclick="postularseOferta('${oferta.id}', '${esc(oferta.titulo)}')">Postularme</button>
                         </div>
-                        <p style="font-size:0.95rem; color:var(--text); opacity:0.9; margin: 10px 0;">${esc(oferta.descripcion_corta)}</p>
-                        <button class="btn-accion btn-primary-gps" style="width:100%; margin-top:10px;" onclick="postularseOferta('${oferta.id}', '${esc(oferta.titulo)}')">Postularme</button>
-                    </div>
-                </div>`;
-        });
+                    </div>`;
+            });
+        }
+        $('lista-ofertas-profesional').innerHTML = htmlProf;
     }
-    $('lista-ofertas-profesional').innerHTML = htmlProf;
 
-    // RENDERIZAR VISTA CAFETERÍA
-    let htmlCafe = '';
-    if (misOfertas.length === 0) {
-        htmlCafe = `<div class="panel" style="text-align:center; padding: 30px 20px; border: 1px dashed var(--border);"><p style="color: var(--text); opacity: 0.8; margin:0;">Aún no publicaste ninguna búsqueda.</p></div>`;
-    } else {
-        misOfertas.forEach(oferta => {
-            const estadoTexto = oferta.estado_oferta === 'Activa' ? '🟢 Activa' : '🔴 Cerrada';
-            htmlCafe += `
-                <div class="cafe-card" style="flex-direction:column; align-items:flex-start; background: rgba(255,255,255,0.4); border-color:var(--running);">
-                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                        <h4 style="margin:0; color:var(--text);">${esc(oferta.titulo)}</h4>
-                        <span style="font-size:0.8rem; font-weight:700;">${estadoTexto}</span>
-                    </div>
-                    <div style="display:flex; gap:10px; width:100%; margin-top:15px;">
-                        ${oferta.estado_oferta === 'Activa' 
-                            ? `<button class="btn-accion btn-outline" style="flex:1; font-size:0.8rem;" onclick="actualizarEstadoOferta('${oferta.id}', 'Cerrada')">Marcar Cubierta</button>` 
-                            : `<button class="btn-accion btn-outline" style="flex:1; font-size:0.8rem;" onclick="actualizarEstadoOferta('${oferta.id}', 'Activa')">Reabrir</button>`}
-                        <button class="btn-accion" style="background:var(--text); color:white; font-size:0.8rem; padding: 8px 15px;" onclick="eliminarOferta('${oferta.id}')">Eliminar</button>
-                    </div>
-                </div>`;
-        });
+    if (rolUsuarioGuardado === 'cafeteria') {
+        let htmlCafe = '';
+        if (misOfertas.length === 0) {
+            htmlCafe = `<div class="panel" style="text-align:center; padding: 30px 20px; border: 1px dashed var(--border);"><p style="opacity: 0.8; margin:0;">Aún no publicaste ninguna búsqueda.</p></div>`;
+        } else {
+            misOfertas.forEach(oferta => {
+                const estadoTexto = oferta.estado_oferta === 'Activa' ? '🟢 Activa' : '🔴 Cerrada';
+                htmlCafe += `
+                    <div class="cafe-card" style="flex-direction:column; align-items:flex-start; background: rgba(255,255,255,0.4); border-color:var(--running);">
+                        <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                            <h4 style="margin:0; color:var(--text);">${esc(oferta.titulo)}</h4>
+                            <span style="font-size:0.8rem; font-weight:700;">${estadoTexto}</span>
+                        </div>
+                        <p style="font-size:0.85rem; opacity:0.8; margin: 5px 0;">${esc(oferta.descripcion_corta)}</p>
+                        <div style="display:flex; gap:10px; width:100%; margin-top:15px;">
+                            ${oferta.estado_oferta === 'Activa' 
+                                ? `<button class="btn-accion btn-outline" style="flex:1; font-size:0.8rem;" onclick="actualizarEstadoOferta('${oferta.id}', 'Cerrada')">Cerrar Búsqueda</button>` 
+                                : `<button class="btn-accion btn-outline" style="flex:1; font-size:0.8rem;" onclick="actualizarEstadoOferta('${oferta.id}', 'Activa')">Reabrir</button>`}
+                            <button class="btn-accion" style="background:var(--text); color:white; font-size:0.8rem; padding: 8px 15px;" onclick="eliminarOferta('${oferta.id}')">Eliminar</button>
+                        </div>
+                    </div>`;
+            });
+        }
+        $('lista-ofertas-cafeteria').innerHTML = htmlCafe;
     }
-    $('lista-ofertas-cafeteria').innerHTML = htmlCafe;
 }
 
 async function abrirFichaProfesional() {
-    if (!_supabase || !sesionActual) return Swal.fire('Error', 'Debes iniciar sesión.', 'error');
+    Swal.fire({ title: 'Cargando datos...', didOpen: () => Swal.showLoading() });
+    
+    // Primero, traemos los datos existentes si los hay
+    const { data: fichaExistente, error: errSelect } = await _supabase.from('profesionales').select('*').eq('auth_id', sesionActual.user.id).single();
+    
+    const f = fichaExistente || { nombre: '', apellido: '', telefono: '', rol_principal: 'Barista', zona_residencia: 'Activo' };
+    Swal.close();
 
-    Swal.fire({ title: 'Cargando tu ficha...', didOpen: () => Swal.showLoading() });
-
-    try {
-        const { data, error } = await _supabase.from('profesionales').select('*').eq('auth_id', sesionActual.user.id).single();
-        if (error && error.code !== 'PGRST116') throw error;
-
-        const ficha = data || { nombre: '', apellido: '', telefono: '', rol_principal: '', zona_residencia: 'Activo' };
-        Swal.close();
-
-        Swal.fire({
-            title: 'Mi Ficha Profesional',
-            html: `
-                <input id="talento-nombre" class="swal-custom-input" placeholder="Nombre" style="margin-bottom:10px;" value="${esc(ficha.nombre)}">
-                <input id="talento-apellido" class="swal-custom-input" placeholder="Apellido (Oculto)" style="margin-bottom:10px;" value="${esc(ficha.apellido)}">
-                <input id="talento-contacto" type="text" class="swal-custom-input" placeholder="WhatsApp / Email" style="margin-bottom:10px;" value="${esc(ficha.telefono)}">
-                <select id="talento-rol" class="swal-custom-input" style="margin-bottom:10px;">
-                    <option value="Barista" ${ficha.rol_principal === 'Barista' ? 'selected' : ''}>Barista</option>
-                    <option value="Tostador" ${ficha.rol_principal === 'Tostador' ? 'selected' : ''}>Tostador / Roaster</option>
-                    <option value="Encargado" ${ficha.rol_principal === 'Encargado' ? 'selected' : ''}>Encargado de Local</option>
-                    <option value="All-rounder" ${ficha.rol_principal === 'All-rounder' ? 'selected' : ''}>All-rounder</option>
-                </select>
-                <select id="talento-estado" class="swal-custom-input" style="margin-bottom:10px; font-weight:bold; color:var(--running);">
-                    <option value="Activo" ${ficha.zona_residencia === 'Activo' ? 'selected' : ''}>🟢 Buscando Trabajo / Disponible</option>
-                    <option value="Inactivo" ${ficha.zona_residencia === 'Inactivo' ? 'selected' : ''}>🔴 No busco trabajo ahora</option>
-                </select>
-            `,
-            customClass: { popup: 'swal-custom-popup', confirmButton: 'swal-custom-btn swal-custom-btn-confirm', cancelButton: 'swal-custom-btn swal-custom-btn-cancel' },
-            showCancelButton: true, confirmButtonText: 'Guardar Ficha', cancelButtonText: 'Cancelar',
-            preConfirm: () => {
-                const nombre = $('talento-nombre').value.trim();
-                const contacto = $('talento-contacto').value.trim();
-                if(!nombre || !contacto) { Swal.showValidationMessage('Nombre y contacto son obligatorios.'); return false; }
-                return { auth_id: sesionActual.user.id, nombre, apellido: $('talento-apellido').value.trim(), telefono: contacto, rol_principal: $('talento-rol').value, zona_residencia: $('talento-estado').value };
+    Swal.fire({
+        title: 'Mi Ficha',
+        html: `
+            <input id="talento-nombre" class="swal-custom-input" placeholder="Nombre" style="margin-bottom:10px;" value="${esc(f.nombre)}">
+            <input id="talento-apellido" class="swal-custom-input" placeholder="Apellido (Privado)" style="margin-bottom:10px;" value="${esc(f.apellido)}">
+            <input id="talento-contacto" type="text" class="swal-custom-input" placeholder="WhatsApp (Privado)" style="margin-bottom:10px;" value="${esc(f.telefono)}">
+            <select id="talento-rol" class="swal-custom-input" style="margin-bottom:10px;">
+                <option value="Barista" ${f.rol_principal === 'Barista' ? 'selected' : ''}>Barista</option>
+                <option value="Tostador" ${f.rol_principal === 'Tostador' ? 'selected' : ''}>Tostador / Roaster</option>
+                <option value="Encargado" ${f.rol_principal === 'Encargado' ? 'selected' : ''}>Encargado de Local</option>
+                <option value="All-rounder" ${f.rol_principal === 'All-rounder' ? 'selected' : ''}>All-rounder</option>
+            </select>
+            <select id="talento-estado" class="swal-custom-input" style="margin-bottom:10px; font-weight:bold; color:var(--running);">
+                <option value="Activo" ${f.zona_residencia === 'Activo' ? 'selected' : ''}>🟢 Buscando Trabajo</option>
+                <option value="Inactivo" ${f.zona_residencia === 'Inactivo' ? 'selected' : ''}>🔴 No buscar ahora</option>
+            </select>
+        `,
+        customClass: { popup: 'swal-custom-popup', confirmButton: 'swal-custom-btn swal-custom-btn-confirm', cancelButton: 'swal-custom-btn swal-custom-btn-cancel' },
+        showCancelButton: true, confirmButtonText: 'Guardar', cancelButtonText: 'Cancelar',
+        preConfirm: () => {
+            const n = $('talento-nombre').value.trim(); const c = $('talento-contacto').value.trim();
+            if(!n || !c) { Swal.showValidationMessage('Nombre y contacto requeridos.'); return false; }
+            return { auth_id: sesionActual.user.id, nombre: n, apellido: $('talento-apellido').value.trim(), telefono: c, rol_principal: $('talento-rol').value, zona_residencia: $('talento-estado').value };
+        }
+    }).then(async (result) => {
+        if(result.isConfirmed) {
+            Swal.fire({ title: 'Guardando...', didOpen: () => Swal.showLoading() });
+            
+            // Lógica a prueba de fallos: Si existe hacemos Update, si no, Insert.
+            let dbError;
+            if (fichaExistente) {
+                const { error } = await _supabase.from('profesionales').update(result.value).eq('auth_id', sesionActual.user.id);
+                dbError = error;
+            } else {
+                const { error } = await _supabase.from('profesionales').insert([result.value]);
+                dbError = error;
             }
-        }).then(async (result) => {
-            if(result.isConfirmed) {
-                Swal.fire({ title: 'Guardando...', didOpen: () => Swal.showLoading() });
-                const { error: upsertError } = await _supabase.from('profesionales').upsert(result.value, { onConflict: 'auth_id' }); 
-                if (upsertError) {
-                    console.error("Error ficha:", upsertError);
-                    Swal.fire('Error', 'No se pudo guardar la ficha.', 'error');
-                } else {
-                    Swal.fire('¡Ficha Guardada!', 'Tus datos fueron actualizados.', 'success');
-                }
+
+            if(dbError) { 
+                Swal.fire('Error de DB', dbError.message, 'error'); 
+            } else { 
+                Swal.fire('¡Guardado!', 'Ficha actualizada.', 'success'); 
             }
-        });
-    } catch (err) {
-        console.error(err);
-        Swal.fire('Error', 'Hubo un problema al cargar tu ficha.', 'error');
-    }
+        }
+    });
 }
 
 function abrirPublicarOferta() {
     Swal.fire({
-        title: 'Publicar Búsqueda',
+        title: 'Nueva Búsqueda',
         html: `
-            <input id="oferta-titulo" class="swal-custom-input" placeholder="Título (Ej: Buscamos Barista Semi-Sr)" style="margin-bottom:10px;">
+            <input id="oferta-titulo" class="swal-custom-input" placeholder="Ej: Barista Turno Mañana" style="margin-bottom:10px;">
             <select id="oferta-tipo" class="swal-custom-input" style="margin-bottom:10px;">
                 <option value="Fijo Full-time">Fijo Full-time</option>
                 <option value="Fijo Part-time">Fijo Part-time</option>
                 <option value="Eventual / Pop-up">Eventual / Pop-up</option>
                 <option value="Reemplazo temporal">Reemplazo temporal</option>
             </select>
-            <textarea id="oferta-desc" class="swal-custom-textarea swal-custom-input" placeholder="Detalles, horarios, zona..." style="margin-bottom:10px;"></textarea>
+            <textarea id="oferta-desc" class="swal-custom-textarea swal-custom-input" placeholder="Detalles, horarios y zona..." style="margin-bottom:10px;"></textarea>
         `,
         customClass: { popup: 'swal-custom-popup', confirmButton: 'swal-custom-btn swal-custom-btn-confirm', cancelButton: 'swal-custom-btn swal-custom-btn-cancel' },
-        showCancelButton: true, confirmButtonText: 'Publicar Búsqueda', cancelButtonText: 'Cancelar',
+        showCancelButton: true, confirmButtonText: 'Publicar', cancelButtonText: 'Cancelar',
         preConfirm: () => {
             const titulo = $('oferta-titulo').value.trim();
             if(!titulo) { Swal.showValidationMessage('El título es obligatorio.'); return false; }
-            return { titulo, tipo_puesto: $('oferta-tipo').value, descripcion_corta: $('oferta-desc').value.trim(), cafeteria_id: sesionActual.user.id, estado_oferta: 'Activa' };
+            return { cafeteria_id: sesionActual.user.id, titulo, tipo_puesto: $('oferta-tipo').value, descripcion_corta: $('oferta-desc').value.trim(), estado_oferta: 'Activa' };
         }
     }).then(async (result) => {
         if(result.isConfirmed) {
             Swal.fire({ title: 'Publicando...', didOpen: () => Swal.showLoading() });
-            const { error } = await _supabase.from('ofertas_trabajo').insert([result.value]).select();
-            if(error) { 
-                console.error("Error insertando oferta:", error);
-                Swal.fire('Error', 'No pudimos publicar la oferta', 'error'); 
-            } else { 
-                Swal.fire('¡Publicada!', 'La oferta ya está visible para los profesionales.', 'success'); 
-                cargarOfertasTrabajo();
-            }
+            const { error } = await _supabase.from('ofertas_trabajo').insert([result.value]);
+            if(error) { Swal.fire('Error', error.message, 'error'); }
+            else { Swal.fire('¡Lista!', 'Tu oferta está pública.', 'success'); cargarOfertasTrabajo(); }
         }
     });
 }
 
 async function actualizarEstadoOferta(ofertaId, nuevoEstado) {
-    Swal.fire({ title: 'Procesando...', didOpen: () => Swal.showLoading() });
+    Swal.fire({ title: 'Cambiando estado...', didOpen: () => Swal.showLoading() });
     const { error } = await _supabase.from('ofertas_trabajo').update({ estado_oferta: nuevoEstado }).eq('id', ofertaId);
-    if(error) {
-        console.error(error);
-        Swal.fire('Error', 'No pudimos cambiar el estado.', 'error');
-    } else { 
-        toast('success', `Búsqueda ${nuevoEstado.toLowerCase()}`); 
-        cargarOfertasTrabajo(); 
-    }
+    if(error) Swal.fire('Error', error.message, 'error');
+    else { toast('success', `Oferta ${nuevoEstado}`); cargarOfertasTrabajo(); }
 }
 
-async function eliminarOferta(ofertaId) {
+function eliminarOferta(ofertaId) {
     Swal.fire({
-        title: '¿Eliminar definitivamente?', text: 'Esto borrará la publicación de tu historial para siempre.', icon: 'warning',
-        showCancelButton: true, confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar',
-        customClass: { popup: 'swal-custom-popup', confirmButton: 'swal-custom-btn swal-custom-btn-confirm', cancelButton: 'swal-custom-btn swal-custom-btn-cancel' }
+        title: '¿Eliminar definitivamente?', icon: 'warning',
+        showCancelButton: true, confirmButtonText: 'Sí, borrar',
+        customClass: { popup: 'swal-custom-popup', confirmButton: 'swal-custom-btn swal-custom-btn-confirm' }
     }).then(async (result) => {
         if (result.isConfirmed) {
-            Swal.fire({ title: 'Eliminando...', didOpen: () => Swal.showLoading() });
             const { error } = await _supabase.from('ofertas_trabajo').delete().eq('id', ofertaId);
-            if(error) Swal.fire('Error', 'No se pudo eliminar.', 'error');
-            else { toast('success', 'Búsqueda eliminada'); cargarOfertasTrabajo(); }
+            if(error) Swal.fire('Error', error.message, 'error');
+            else { toast('success', 'Oferta eliminada'); cargarOfertasTrabajo(); }
         }
     });
 }
 
 function postularseOferta(ofertaId, tituloOferta) {
     Swal.fire({
-        title: 'Postularse', text: `Vas a enviar tu ficha profesional a la oferta: "${tituloOferta}". ¿Confirmás?`, icon: 'question',
-        showCancelButton: true, confirmButtonText: 'Sí, postularme', cancelButtonText: 'Cancelar',
-        customClass: { popup: 'swal-custom-popup', confirmButton: 'swal-custom-btn swal-custom-btn-confirm', cancelButton: 'swal-custom-btn swal-custom-btn-cancel' }
+        title: 'Postularse', text: `Vas a enviar tu contacto a la búsqueda: "${tituloOferta}".`, icon: 'question',
+        showCancelButton: true, confirmButtonText: 'Sí, postularme',
+        customClass: { popup: 'swal-custom-popup', confirmButton: 'swal-custom-btn swal-custom-btn-confirm' }
     }).then(async (result) => {
         if(result.isConfirmed) {
-            Swal.fire('¡Postulación Enviada!', 'La cafetería recibirá tu ficha de contacto. Suerte en el proceso.', 'success'); 
+            Swal.fire('¡Éxito!', 'Te postulaste correctamente.', 'success'); 
         }
     });
 }
-
-function toggleMenu() { $('sidebar').classList.toggle('abierto'); $('sidebar-overlay').classList.toggle('activo'); }
-
-function cambiarPestaña(tab) {
-    TABS.forEach(t => { const el = $('tab-' + t); if (el) el.classList.toggle('hidden', t !== tab); });
-    document.querySelectorAll('.nav-link').forEach(link => link.classList.toggle('active', link.getAttribute('data-tab') === tab));
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-target') === tab));
-    if ($('sidebar').classList.contains('abierto')) toggleMenu();
-    if (tab === 'mapa' && mapaFederal) setTimeout(() => mapaFederal.invalidateSize(), 300);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function medirDesdeDireccion() {
-    Swal.fire({
-        title: '¿Dónde estás?',
-        html: `<p style="font-size:0.9rem; color:var(--text); opacity:0.8; margin-bottom:15px;">Empezá a escribir tu dirección (calle y ciudad) para buscar cafés cercanos.</p><input id="swal-autocomplete-input" class="swal-custom-input" placeholder="Ej: Paraguay 3123, Olivos..." autocomplete="off"><div id="autocomplete-results" class="swal-scrollable-container" style="text-align:left; margin-top:10px; max-height:200px;"></div>`,
-        showConfirmButton: false, showCancelButton: true, cancelButtonText: 'Cerrar', customClass: { popup: 'swal-custom-popup', cancelButton: 'swal-custom-btn swal-custom-btn-cancel' },
-        didOpen: () => {
-            const input = $('swal-autocomplete-input'); const resultsContainer = $('autocomplete-results'); let timeout = null; let solicitudId = 0;
-            input.focus();
-            input.addEventListener('input', () => {
-                clearTimeout(timeout); const val = input.value.trim();
-                if (val.length < 4) { resultsContainer.innerHTML = ''; return; }
-                resultsContainer.innerHTML = '<div style="padding:10px; color:var(--primary); font-weight:bold; text-align:center;">Buscando...</div>';
-                timeout = setTimeout(async () => {
-                    const miId = ++solicitudId;
-                    try {
-                        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&countrycodes=ar&addressdetails=1&limit=6`);
-                        const data = await res.json();
-                        if (miId !== solicitudId) return;
-                        resultsContainer.innerHTML = '';
-                        if (!data.length) { resultsContainer.innerHTML = '<div style="padding:10px; opacity:0.7; text-align:center;">No encontramos direcciones exactas.</div>'; return; }
-                        data.forEach(item => {
-                            const partes = [];
-                            if (item.address.road) partes.push(item.address.road + (item.address.house_number ? " " + item.address.house_number : ""));
-                            const localidad = item.address.city || item.address.town || item.address.village;
-                            if (localidad) partes.push(localidad);
-                            if (item.address.state) partes.push(item.address.state);
-                            const nombreLimpio = partes.length > 0 ? partes.join(", ") : item.display_name.split(',').slice(0, 3).join(', ');
-                            const primera = nombreLimpio.split(',')[0]; const resto = nombreLimpio.includes(',') ? nombreLimpio.substring(nombreLimpio.indexOf(',') + 1) : '';
-                            const btn = document.createElement('button');
-                            btn.style.cssText = 'width: 100%; text-align: left; background: rgba(255,255,255,0.7); color: var(--text); border: 1px solid var(--border); padding: 12px; border-radius: 10px; cursor: pointer; margin-bottom: 8px; font-family: "Inter", sans-serif; font-size:0.9rem; transition: 0.2s;';
-                            btn.innerHTML = `📍 <b>${esc(primera)}</b><br><small style="opacity:0.7">${esc(resto)}</small>`;
-                            btn.onmouseover = () => btn.style.borderColor = 'var(--primary)';
-                            btn.onmouseout = () => btn.style.borderColor = 'var(--border)';
-                            btn.onclick = () => { Swal.close(); $('status').innerText = `Viendo lugares cerca de ${primera}`; renderizarLista(bd, { lat: parseFloat(item.lat), lon: parseFloat(item.lon) }); };
-                            resultsContainer.appendChild(btn);
-                        });
-                    } catch (e) { if (miId !== solicitudId) return; resultsContainer.innerHTML = '<div style="padding:10px; color:var(--running); text-align:center;">Error al conectar con el mapa.</div>'; }
-                }, 800);
-            });
-        }
-    });
-}
-
-function usarMiGPS() {
-    if (!navigator.geolocation) return Swal.fire("Error", "Tu navegador no soporta GPS.", "error");
-    $('status').innerText = "Conectando con GPS...";
-    navigator.geolocation.getCurrentPosition(
-        p => { $('status').innerText = ""; renderizarLista(bd, { lat: p.coords.latitude, lon: p.coords.longitude }); },
-        () => { $('status').innerText = ""; Swal.fire("Aviso", "No pudimos obtener tu ubicación. Revisá los permisos.", "warning"); },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
-    );
-}
-
-async function abrirReporte() {
-    const { value: formValues } = await Swal.fire({
-        title: 'Reportar Novedad', imageUrl: 'https://i.postimg.cc/yxbDGB7P/COFITECA-LOGO-02.png', imageWidth: 60,
-        customClass: { popup: 'swal-custom-popup', confirmButton: 'swal-custom-btn swal-custom-btn-confirm', cancelButton: 'swal-custom-btn swal-custom-btn-cancel', input: 'swal-custom-input' },
-        html: `<div style="text-align: left;"><select id="swal-tipo" class="swal-custom-input"><option value="Nuevo Local">☕ Sugerir nuevo local</option><option value="Local Cerrado">🚪 Local cerrado</option><option value="Dato Incorrecto">✏️ Dato incorrecto</option></select><input id="swal-local" class="swal-custom-input" placeholder="Ej: Café Gascón, MDQ" style="margin-top:10px;"><textarea id="swal-detalle" class="swal-custom-textarea swal-custom-input" placeholder="Detalles extras..." style="margin-top:10px;"></textarea></div>`,
-        showCancelButton: true, confirmButtonText: 'Enviar', cancelButtonText: 'Cancelar',
-        preConfirm: () => {
-            const local = $('swal-local').value.trim();
-            if (!local) { Swal.showValidationMessage('Contanos el nombre del local'); return false; }
-            return { tipo: $('swal-tipo').value, local, detalle: $('swal-detalle').value.trim() };
-        }
-    });
-    if (formValues) enviarReporteEmail(formValues);
-}
-
-async function abrirSumate() {
-    const { value: formValues } = await Swal.fire({
-        title: '¡Sumate al Buscador!', imageUrl: 'https://i.postimg.cc/yxbDGB7P/COFITECA-LOGO-02.png', imageWidth: 60,
-        customClass: { popup: 'swal-custom-popup', confirmButton: 'swal-custom-btn swal-custom-btn-confirm', cancelButton: 'swal-custom-btn swal-custom-btn-cancel', input: 'swal-custom-input' },
-        html: `<div style="text-align: left;"><select id="sumate-tipo" class="swal-custom-input"><option value="Cafetería / Tostaduría">☕ Cafetería / Tostaduría</option><option value="Evento">📅 Evento</option></select><input id="sumate-nombre" class="swal-custom-input" placeholder="Nombre de tu proyecto" style="margin-top:10px;"><input id="sumate-link" class="swal-custom-input" placeholder="Instagram o Link" style="margin-top:10px;"></div>`,
-        showCancelButton: true, confirmButtonText: 'Enviar', cancelButtonText: 'Cancelar',
-        preConfirm: () => {
-            const nombre = $('sumate-nombre').value.trim();
-            if (!nombre) { Swal.showValidationMessage('Contanos el nombre de tu proyecto'); return false; }
-            return { tipo: "✨ ALTA NUEVA: " + $('sumate-tipo').value, local: nombre, detalle: "Link/IG: " + $('sumate-link').value.trim() };
-        }
-    });
-    if (formValues) enviarReporteEmail(formValues);
-}
-
-async function enviarReporteEmail(datos) {
-    try {
-        const response = await fetch('/api/reporte?t=' + Date.now(), { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body: new URLSearchParams(datos) });
-        if (response.ok) { Swal.fire({ title: '¡Enviado!', text: 'Gracias por ayudar a mejorar la comunidad.', icon: 'success' }); } else { throw new Error("Error en servidor"); }
-    } catch (error) { Swal.fire({ title: 'Error Interno', text: 'El servidor rechazó el envío temporalmente.', icon: 'error' }); }
-}
-
-async function iniciarSistema() {
-    if (typeof Papa === 'undefined') { $('contador-total').innerText = 'No se pudo cargar el lector de datos.'; return; }
-    
-    verificarSesionActiva();
-
-    const bdCache = cache.leer('cofi_bd');
-    if (bdCache && bdCache.length) { bd = bdCache; renderizarTodoCafes(); }
-
-    cargarCafes();
-    cargarEventos();
-    cargarCursos();
-    cargarTostadores();
-    cargarMaquinas();
-    registrarVisita();
-
-    cargarPromedios().then(() => { if (bd.length) { filtrarPorTexto(); dibujarMapaFederal(); } });
-}
-
-Object.assign(window, {
-    toggleMenu, cambiarPestaña, filtrarPorTexto, medirDesdeDireccion, usarMiGPS, actualizarFiltrosMapa, dibujarMapaFederal, renderizarTostadores, renderizarMaquinas, renderizarCursos, recomendarCafesAlAzar, abrirReporte, abrirSumate,
-    ingresarConMagicLink, cerrarSesion, setModoTalento, abrirFichaProfesional, abrirPublicarOferta, actualizarEstadoOferta, eliminarOferta, postularseOferta
-});
-
-inicializarMapas();
-iniciarSistema();
-
-});
-</script>
-</body>
-</html>
